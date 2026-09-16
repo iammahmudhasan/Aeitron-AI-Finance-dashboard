@@ -33,7 +33,7 @@ export default function MonthlySalesPerformanceChart() {
   const [activeIdx, setActiveIdx] = useState(3); // Default to Apr (index 3) matching mockup
 
   const yTicks = [6000, 4500, 3000, 1500, 0];
-  const chartW = 680;
+  const chartW = 960;
   const chartH = 260;
   const padLeft = 45;
   const padRight = 25;

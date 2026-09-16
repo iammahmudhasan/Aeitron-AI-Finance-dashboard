@@ -7,45 +7,45 @@
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 
-  /* Sidebar – deep indigo/charcoal */
-  --color-sidebar: #1a1a2e;
-  --color-sidebar-hover: #25254a;
-  --color-sidebar-active: #302f6b;
-  --color-sidebar-text: #b0b0cc;
+  /* Sidebar – deep obsidian */
+  --color-sidebar: #12141b;
+  --color-sidebar-hover: #1a1d26;
+  --color-sidebar-active: #241d24;
+  --color-sidebar-text: #8b92a4;
   --color-sidebar-text-active: #ffffff;
-  --color-sidebar-border: #2a2a50;
+  --color-sidebar-border: #1e222d;
 
-  /* Main content – light, clean */
-  --color-bg: #f4f5f7;
-  --color-bg-card: #ffffff;
-  --color-bg-hover: #f0f1f4;
-  --color-border: #e2e4ea;
-  --color-border-light: #edeef2;
-  --color-text: #1a1d26;
-  --color-text-secondary: #4a4f5e;
-  --color-text-muted: #8c90a0;
+  /* Main content – obsidian dark */
+  --color-bg: #0d0f14;
+  --color-bg-card: #171922;
+  --color-bg-hover: #1f222d;
+  --color-border: #232734;
+  --color-border-light: #1c1f2a;
+  --color-text: #ffffff;
+  --color-text-secondary: #9ea4b5;
+  --color-text-muted: #656b7c;
 
-  /* Accent – vibrant purple */
-  --color-accent: #6c5ce7;
-  --color-accent-hover: #5a4bd6;
-  --color-accent-light: #ece9fc;
+  /* Accent – fiery coral */
+  --color-accent: #ff5530;
+  --color-accent-hover: #ea4420;
+  --color-accent-light: #2c1a1e;
 
   /* Semantic */
-  --color-success: #10b981;
-  --color-success-light: #ecfdf5;
+  --color-success: #22c55e;
+  --color-success-light: #0d281a;
   --color-warning: #f59e0b;
-  --color-warning-light: #fffbeb;
+  --color-warning-light: #281d0c;
   --color-danger: #ef4444;
-  --color-danger-light: #fef2f2;
-  --color-info: #3b82f6;
-  --color-info-light: #eff6ff;
+  --color-danger-light: #2a1418;
+  --color-info: #6366f1;
+  --color-info-light: #1a1b32;
   --color-retainer: #8b5cf6;
-  --color-retainer-light: #f5f3ff;
+  --color-retainer-light: #1e1932;
 
   /* Shadows */
-  --shadow-card: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06);
-  --shadow-card-hover: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
-  --shadow-modal: 0 20px 60px rgba(0,0,0,0.15), 0 8px 20px rgba(0,0,0,0.1);
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
+  --shadow-card-hover: 0 6px 16px rgba(0,0,0,0.4), 0 2px 6px rgba(0,0,0,0.25);
+  --shadow-modal: 0 24px 70px rgba(0,0,0,0.65), 0 10px 24px rgba(0,0,0,0.45);
 }
 
 /* Dark theme overrides - Obsidian & Coral Palette */
