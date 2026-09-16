@@ -24,6 +24,7 @@ import {
   Check,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import ProfileSettingsModal from '../profile/ProfileSettingsModal';
 
 const NAV_GROUPS = [
   {
@@ -141,6 +142,7 @@ export default function Sidebar({ open, onClose, activeView, onNavigate }) {
   }, [activeView]);
 
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [profileSettingsOpen, setProfileSettingsOpen] = useState(false);
   const profileMenuRef = useRef(null);
 
   // Close profile dropdown when clicking outside
@@ -328,21 +330,34 @@ export default function Sidebar({ open, onClose, activeView, onNavigate }) {
 
               <div className="space-y-0.5 pt-0.5">
                 <button
+                  type="button"
+                  onClick={() => {
+                    setProfileMenuOpen(false);
+                    setProfileSettingsOpen(true);
+                  }}
+                  className="w-full flex items-center gap-2 px-2.5 py-1.5 text-xs text-text hover:bg-bg-hover rounded-lg transition-colors cursor-pointer"
+                >
+                  <Settings size={14} className="text-text-muted" />
+                  <span>Settings</span>
+                </button>
+                <button
+                  type="button"
                   onClick={() => {
                     onNavigate('roles');
                     setProfileMenuOpen(false);
                   }}
-                  className="w-full flex items-center gap-2 px-2.5 py-1.5 text-xs text-text hover:bg-bg-hover rounded-lg transition-colors"
+                  className="w-full flex items-center gap-2 px-2.5 py-1.5 text-xs text-text hover:bg-bg-hover rounded-lg transition-colors cursor-pointer"
                 >
                   <ShieldCheck size={14} className="text-text-muted" />
                   <span>Roles & Permissions</span>
                 </button>
                 <button
+                  type="button"
                   onClick={() => {
                     setProfileMenuOpen(false);
                     logout();
                   }}
-                  className="w-full flex items-center gap-2 px-2.5 py-1.5 text-xs text-danger hover:bg-danger/10 rounded-lg transition-colors"
+                  className="w-full flex items-center gap-2 px-2.5 py-1.5 text-xs text-danger hover:bg-danger/10 rounded-lg transition-colors cursor-pointer"
                 >
                   <LogOut size={14} />
                   <span>Sign Out</span>
@@ -385,6 +400,12 @@ export default function Sidebar({ open, onClose, activeView, onNavigate }) {
           </button>
         </div>
       </aside>
+
+      {/* Profile Customization Settings Modal */}
+      <ProfileSettingsModal
+        isOpen={profileSettingsOpen}
+        onClose={() => setProfileSettingsOpen(false)}
+      />
     </>
   );
 }
