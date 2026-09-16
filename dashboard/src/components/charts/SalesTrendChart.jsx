@@ -1,5 +1,14 @@
-import { useState } from 'react';
-import { Info, MoreHorizontal } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import {
+  Info,
+  MoreHorizontal,
+  Download,
+  RefreshCw,
+  FileSpreadsheet,
+  Layers,
+  Check,
+  Calendar,
+} from 'lucide-react';
 
 const MONTHS_DATA = [
   { month: 'JAN', newUsers: 14, existingUsers: 8, totalK: 22 },
@@ -19,6 +28,46 @@ const MONTHS_DATA = [
 export default function SalesTrendChart() {
   const [period, setPeriod] = useState('Monthly');
   const [hoveredIndex, setHoveredIndex] = useState(5); // Default hovered on JUN to match screenshot!
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const menuRef = useRef(null);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setMenuOpen(false);
+      }
+    }
+    if (menuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [menuOpen]);
+
+  const handleExportCsv = () => {
+    const rows = [
+      ['Month', 'New Users (k)', 'Existing Users (k)', 'Total Users (k)', 'Est Revenue ($)'],
+      ...MONTHS_DATA.map((m) => [m.month, m.newUsers, m.existingUsers, m.totalK, m.totalK * 360]),
+    ];
+    const csvContent = 'data:text/csv;charset=utf-8,' + rows.map((e) => e.join(',')).join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `Sales_Trend_Report_${period}_${Date.now()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setMenuOpen(false);
+  };
+
+  const handleRefresh = () => {
+    setIsRefreshing(true);
+    setTimeout(() => {
+      setIsRefreshing(false);
+      setMenuOpen(false);
+    }, 600);
+  };
 
   const yLabels = ['60k', '50k', '40k', '30k', '20k', '10k', '0k'];
   const maxK = 60;
@@ -53,8 +102,8 @@ export default function SalesTrendChart() {
           </div>
         </div>
 
-        {/* Right Controls: Period Selector */}
-        <div className="flex items-center gap-2 self-start sm:self-auto">
+        {/* Right Controls: Period Selector & 3-Dot Menu */}
+        <div className="flex items-center gap-2 self-start sm:self-auto relative" ref={menuRef}>
           <div className="inline-flex p-1 bg-bg border border-border rounded-xl text-xs font-medium">
             {['Weekly', 'Monthly', 'Yearly'].map((item) => (
               <button
@@ -71,12 +120,71 @@ export default function SalesTrendChart() {
               </button>
             ))}
           </div>
+
+          {/* 3-Dot Trigger Button */}
           <button
             type="button"
-            className="p-1.5 text-text-muted hover:text-text rounded-lg hover:bg-bg transition-colors"
+            onClick={() => setMenuOpen(!menuOpen)}
+            className={`p-1.5 rounded-lg border transition-colors cursor-pointer ${
+              menuOpen
+                ? 'bg-bg border-accent text-accent'
+                : 'text-text-muted hover:text-text hover:bg-bg border-transparent'
+            }`}
+            title="Chart Options"
+            aria-label="Open Chart Menu"
           >
             <MoreHorizontal size={16} />
           </button>
+
+          {/* Functional 3-Dot Dropdown Popover */}
+          {menuOpen && (
+            <div className="absolute right-0 top-full mt-2 w-52 bg-bg-card border border-border shadow-2xl rounded-2xl p-1.5 z-50 animate-fade-in text-xs">
+              <div className="px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-text-muted border-b border-border/60 mb-1">
+                Chart Actions
+              </div>
+
+              <button
+                type="button"
+                onClick={handleExportCsv}
+                className="w-full flex items-center gap-2 px-2.5 py-2 text-text hover:bg-bg rounded-xl transition-colors text-left"
+              >
+                <Download size={13} className="text-accent" />
+                <span>Export Data to CSV</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleRefresh}
+                disabled={isRefreshing}
+                className="w-full flex items-center gap-2 px-2.5 py-2 text-text hover:bg-bg rounded-xl transition-colors text-left"
+              >
+                <RefreshCw size={13} className={isRefreshing ? 'animate-spin text-accent' : 'text-text-muted'} />
+                <span>{isRefreshing ? 'Refreshing Data...' : 'Refresh Live Metrics'}</span>
+              </button>
+
+              <div className="border-t border-border/60 my-1 pt-1">
+                <div className="px-2.5 py-1 text-[10px] font-semibold text-text-muted uppercase">
+                  Timeframe
+                </div>
+                {['Weekly', 'Monthly', 'Yearly'].map((p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => {
+                      setPeriod(p);
+                      setMenuOpen(false);
+                    }}
+                    className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg transition-colors ${
+                      period === p ? 'bg-accent/10 text-accent font-semibold' : 'text-text hover:bg-bg'
+                    }`}
+                  >
+                    <span>{p} View</span>
+                    {period === p && <Check size={12} className="text-accent" />}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

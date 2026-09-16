@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Info, Sparkles, ChevronDown, MoreHorizontal, CheckCircle2, ArrowRight, X } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { Info, Sparkles, ChevronDown, MoreHorizontal, CheckCircle2, ArrowRight, X, Download, RefreshCw, Check } from 'lucide-react';
 
 const CATEGORY_BARS = [
   { day: '1 JAN', height: 45, dark: true },
@@ -19,6 +19,36 @@ export default function RevenueBreakdownCard() {
   const [showAiModal, setShowAiModal] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [dateRange, setDateRange] = useState('Jan 1 - Aug 30');
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setMenuOpen(false);
+      }
+    }
+    if (menuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [menuOpen]);
+
+  const handleExportCsv = () => {
+    const rows = [
+      ['Date', 'Revenue ($)', 'Tier'],
+      ...CATEGORY_BARS.map((b) => [b.day, b.height * 240, b.dark ? 'Direct Enterprise' : 'Inbound Platform']),
+    ];
+    const csvContent = 'data:text/csv;charset=utf-8,' + rows.map((e) => e.join(',')).join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `Revenue_Breakdown_${Date.now()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setMenuOpen(false);
+  };
 
   const handleTriggerAiInsight = () => {
     setShowAiModal(true);
@@ -32,19 +62,49 @@ export default function RevenueBreakdownCard() {
     <div className="bg-bg-card border border-border/80 rounded-2xl p-6 shadow-xs flex flex-col justify-between relative">
       {/* Header */}
       <div className="pb-3 border-b border-border/50">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between relative" ref={menuRef}>
           <div className="flex items-center gap-1.5">
             <span className="text-xs font-bold text-text uppercase tracking-wider">
               REVENUE BREAKDOWN
             </span>
             <Info size={13} className="text-text-muted/60" />
           </div>
+
           <button
             type="button"
-            className="p-1 text-text-muted hover:text-text rounded-lg hover:bg-bg transition-colors"
+            onClick={() => setMenuOpen(!menuOpen)}
+            className={`p-1.5 rounded-lg border transition-colors cursor-pointer ${
+              menuOpen ? 'bg-bg border-accent text-accent' : 'text-text-muted hover:text-text hover:bg-bg border-transparent'
+            }`}
+            title="Options"
           >
             <MoreHorizontal size={16} />
           </button>
+
+          {menuOpen && (
+            <div className="absolute right-0 top-full mt-1.5 w-48 bg-bg-card border border-border shadow-2xl rounded-2xl p-1.5 z-50 animate-fade-in text-xs">
+              <button
+                type="button"
+                onClick={handleExportCsv}
+                className="w-full flex items-center gap-2 px-2.5 py-2 text-text hover:bg-bg rounded-xl transition-colors text-left"
+              >
+                <Download size={13} className="text-accent" />
+                <span>Export Breakdown CSV</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setMenuOpen(false);
+                  handleTriggerAiInsight();
+                }}
+                className="w-full flex items-center gap-2 px-2.5 py-2 text-text hover:bg-bg rounded-xl transition-colors text-left"
+              >
+                <Sparkles size={13} className="text-accent" />
+                <span>Get AI Insight</span>
+              </button>
+            </div>
+          )}
         </div>
 
         <div className="flex items-center justify-between mt-2">
