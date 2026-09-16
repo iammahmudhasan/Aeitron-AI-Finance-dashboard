@@ -93,18 +93,35 @@ export default function TransactionsTable({ globalSearch = '' }) {
   const [activeMenuId, setActiveMenuId] = useState(null);
   const [headerMenuOpen, setHeaderMenuOpen] = useState(false);
   const headerMenuRef = useRef(null);
+  const rowMenuRef = useRef(null);
 
   useEffect(() => {
     function handleClickOutside(e) {
       if (headerMenuRef.current && !headerMenuRef.current.contains(e.target)) {
         setHeaderMenuOpen(false);
       }
+      if (rowMenuRef.current && !rowMenuRef.current.contains(e.target)) {
+        setActiveMenuId(null);
+      }
     }
-    if (headerMenuOpen) {
+
+    function handleKeyDown(e) {
+      if (e.key === 'Escape') {
+        setHeaderMenuOpen(false);
+        setActiveMenuId(null);
+      }
+    }
+
+    if (headerMenuOpen || activeMenuId !== null) {
       document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
     }
-  }, [headerMenuOpen]);
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [headerMenuOpen, activeMenuId]);
 
   const handleExportAllCsv = () => {
     const rows = [
@@ -351,11 +368,15 @@ export default function TransactionsTable({ globalSearch = '' }) {
                   <td className="py-3 px-3 text-right font-mono font-bold text-text">
                     ${tx.totalRevenue.toLocaleString()}
                   </td>
-                  <td className="py-3 px-3 text-center relative">
+                  <td
+                    className="py-3 px-3 text-center relative"
+                    ref={activeMenuId === tx.id ? rowMenuRef : null}
+                  >
                     <button
                       type="button"
-                      onClick={() => setActiveMenuId(activeMenuId === tx.id ? null : tx.id)}
-                      className="p-1 rounded-lg text-text-muted hover:text-text hover:bg-bg transition-colors"
+                      onClick={() => setActiveMenuId((prev) => (prev === tx.id ? null : tx.id))}
+                      className="p-1 rounded-lg text-text-muted hover:text-text hover:bg-bg transition-colors cursor-pointer"
+                      title="Row Actions"
                     >
                       <MoreHorizontal size={15} />
                     </button>
@@ -365,7 +386,7 @@ export default function TransactionsTable({ globalSearch = '' }) {
                         <button
                           type="button"
                           onClick={() => handleDelete(tx.id)}
-                          className="w-full flex items-center gap-2 px-2.5 py-1.5 text-xs text-danger hover:bg-danger/10 rounded-lg transition-colors"
+                          className="w-full flex items-center gap-2 px-2.5 py-1.5 text-xs text-danger hover:bg-danger/10 rounded-lg transition-colors cursor-pointer"
                         >
                           <Trash2 size={13} />
                           <span>Delete</span>
@@ -388,7 +409,12 @@ export default function TransactionsTable({ globalSearch = '' }) {
 
       {/* Add Transaction Modal */}
       {modalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+        <div
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setModalOpen(false);
+          }}
+        >
           <div className="bg-bg-card border border-border shadow-2xl rounded-2xl max-w-md w-full p-6 animate-fade-in">
             <div className="flex items-center justify-between pb-3 border-b border-border mb-4">
               <h3 className="text-sm font-bold text-text">Add New Transaction</h3>
