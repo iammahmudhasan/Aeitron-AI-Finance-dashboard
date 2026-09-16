@@ -92,12 +92,11 @@ export default function Sidebar({ open, onClose, activeView, onNavigate }) {
           {!collapsed && (
             <div className="flex items-center gap-3">
               <img
-                src="/aeitron_icon_fb.png"
+                src="/aeitron_logo.jpeg"
                 alt="Aeitron Logo"
-                className="w-8 h-8 rounded-lg object-contain"
+                className="w-8 h-8 rounded-lg object-contain bg-white p-1 shadow-sm"
                 onError={(e) => {
-                  e.target.style.display = 'none';
-                  e.target.nextSibling.style.display = 'flex';
+                  e.target.src = '/aeitron_icon_fb.png';
                 }}
               />
               { <div className="w-8 h-8 rounded-lg bg-accent items-center justify-center text-white font-bold text-sm hidden">

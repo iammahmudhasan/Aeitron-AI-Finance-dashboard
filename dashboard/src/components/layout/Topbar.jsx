@@ -85,8 +85,8 @@ export default function Topbar({ onMenuClick, onAddClient, activeView, searchQue
         )}
 
         {/* Avatar */}
-        <div className="w-8 h-8 rounded-full bg-accent/15 flex items-center justify-center text-accent text-xs font-bold ml-1">
-          <img src="/aeitron_icon_fb.png" alt="Aeitron Logo" />
+        <div className="w-8 h-8 rounded-full bg-white border border-border flex items-center justify-center p-1 overflow-hidden shadow-sm ml-1">
+          <img src="/aeitron_logo.jpeg" alt="Aeitron Logo" className="w-full h-full object-contain" />
         </div>
       </div>
     </header>
