@@ -11,6 +11,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import OverviewStatCards from '../components/cards/OverviewStatCards';
+import EarningsLineChart from '../components/charts/EarningsLineChart';
 import SalesTrendChart from '../components/charts/SalesTrendChart';
 import RevenueBreakdownCard from '../components/charts/RevenueBreakdownCard';
 import TransactionsTable from '../components/transactions/TransactionsTable';
@@ -439,17 +440,15 @@ function DashboardView({ currentUser, searchQuery }) {
         </div>
       </div>
 
-      {/* 4 Stat Cards */}
+      {/* 3 Pastel KPI Cards matching reference mockup */}
       <OverviewStatCards />
 
-      {/* Middle 2-Column Analytics Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <div className="lg:col-span-8">
-          <SalesTrendChart />
-        </div>
-        <div className="lg:col-span-4">
-          <RevenueBreakdownCard />
-        </div>
+      {/* Main Earnings Dual-Line Spline Chart matching reference mockup */}
+      <EarningsLineChart />
+
+      {/* Revenue Breakdown by Category */}
+      <div className="grid grid-cols-1 gap-6">
+        <RevenueBreakdownCard />
       </div>
 
       {/* Bottom Recent Transactions Table */}
