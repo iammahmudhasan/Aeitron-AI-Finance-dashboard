@@ -397,7 +397,7 @@ function DashboardView({ currentUser, searchQuery }) {
       {/* Welcome & Filter Controls Row */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-text tracking-tight">
+          <h1 className="text-xl font-bold text-text">
             Welcome back, {firstName}
           </h1>
           <p className="text-xs text-text-muted mt-0.5">
@@ -474,7 +474,7 @@ function ClientsView({ onEdit, onRequestDelete, onViewDetail, searchQuery }) {
   return (
     <>
       <div>
-        <h2 className="text-xl font-semibold text-text">Customer Portfolio</h2>
+        <h2 className="text-xl font-bold text-text">Customer Portfolio</h2>
         <p className="text-xs text-text-muted mt-0.5">
           Manage your enterprise client accounts and track contract volume
         </p>
@@ -490,7 +490,7 @@ function ExpensesView({ onEdit, onRequestDelete, searchQuery }) {
     <>
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold text-text">Expenses</h2>
+          <h2 className="text-xl font-bold text-text">Expenses</h2>
           <p className="text-xs text-text-muted mt-0.5">
             Track and manage operational business expenses
           </p>
@@ -511,7 +511,7 @@ function LeadsView({ onEdit, onRequestDelete, searchQuery }) {
   return (
     <>
       <div>
-        <h2 className="text-xl font-semibold text-text">Lead Pipeline</h2>
+        <h2 className="text-xl font-bold text-text">Lead Pipeline</h2>
         <p className="text-xs text-text-muted mt-0.5">
           Track prospects through your sales pipeline
         </p>
@@ -549,7 +549,7 @@ function TeamView({ onEdit, onRequestDelete }) {
   return (
     <>
       <div>
-        <h2 className="text-xl font-semibold text-text">Team & Compensation</h2>
+        <h2 className="text-xl font-bold text-text">Team & Compensation</h2>
         <p className="text-xs text-text-muted mt-0.5">
           Manage team members, commission structures, and payouts
         </p>
@@ -564,7 +564,7 @@ function AgentsView() {
   return (
     <>
       <div>
-        <h2 className="text-xl font-semibold text-text">AI Agents Workforce</h2>
+        <h2 className="text-xl font-bold text-text">AI Agents Workforce</h2>
         <p className="text-xs text-text-muted mt-0.5">
           Autonomous AI agents operating your agency pipeline
         </p>
@@ -578,7 +578,7 @@ function SystemView({ onEdit, onRequestDelete }) {
   return (
     <>
       <div>
-        <h2 className="text-xl font-semibold text-text">System Health & Automations</h2>
+        <h2 className="text-xl font-bold text-text">System Health & Automations</h2>
         <p className="text-xs text-text-muted mt-0.5">
           Monitor webhook workflows, background jobs, and API credit usage
         </p>
