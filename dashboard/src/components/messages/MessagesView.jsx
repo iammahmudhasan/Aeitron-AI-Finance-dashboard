@@ -1,388 +1,991 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import {
-  MessageSquare,
   Search,
   Send,
-  Hash,
-  User,
-  CheckCheck,
   Paperclip,
   Smile,
+  MoreVertical,
+  Phone,
+  Video,
+  PhoneOff,
+  Mic,
+  CheckCheck,
+  Check,
+  Image as ImageIcon,
+  FileText,
+  X,
+  Plus,
+  Users,
   Bot,
   Sparkles,
+  Play,
+  Pause,
+  Download,
+  Volume2,
+  ThumbsUp,
+  Heart,
+  Flame,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
-const INITIAL_THREADS = [
+// WhatsApp-style default initial conversations
+const INITIAL_CONVERSATIONS = [
   {
     id: 'chan_general',
     type: 'channel',
-    name: 'general-agency',
-    description: 'Company-wide updates, announcements & agency discussion',
+    name: 'Aeitron Agency Headquarters 🚀',
+    category: 'channel',
+    avatar: '/aeitron_icon_fb.png',
+    membersCount: 5,
+    unread: 0,
+    online: true,
+    lastSeen: '4 members online',
+    messages: [
+      {
+        id: 101,
+        senderId: 'usr_ceo',
+        senderName: 'Mahmud Hasan (CEO)',
+        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&h=120&fit=crop&crop=faces',
+        text: 'Team, we crossed $20,320 in revenue this week! Massive milestone for the agency.',
+        time: '10:14 AM',
+        status: 'read',
+        reactions: ['🔥 3', '🚀 2'],
+      },
+      {
+        id: 102,
+        senderId: 'usr_sales',
+        senderName: 'Salung Prastyo (Sales)',
+        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&h=120&fit=crop&crop=faces',
+        text: 'Apex Dental just confirmed the $850/mo retainer agreement! I will send the invoice via Stripe now.',
+        time: '10:18 AM',
+        status: 'read',
+        reactions: ['👍 2'],
+      },
+      {
+        id: 103,
+        senderId: 'usr_ops',
+        senderName: 'Alex Rivera (AI Ops)',
+        avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=120&h=120&fit=crop&crop=faces',
+        text: 'Twilio telephony latency is down to 420ms. The ElevenLabs voice model is sounding completely natural.',
+        time: '10:22 AM',
+        status: 'read',
+        reactions: ['💯 4'],
+      },
+      {
+        id: 104,
+        senderId: 'usr_finance',
+        senderName: 'Sarah Jenkins (Finance)',
+        avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=120&h=120&fit=crop&crop=faces',
+        text: 'Payment received for Invoice #04910 ($41,400). Payout calculations have been synchronized with the team ledger.',
+        time: '10:25 AM',
+        status: 'read',
+      },
+    ],
+  },
+  {
+    id: 'dm_salung',
+    type: 'direct',
+    name: 'Salung Prastyo',
+    role: 'Sales Operator',
+    category: 'team',
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&h=120&fit=crop&crop=faces',
+    email: 'sales@aeitron.com',
+    online: true,
+    lastSeen: 'Online',
+    unread: 1,
+    messages: [
+      {
+        id: 201,
+        senderId: 'usr_sales',
+        senderName: 'Salung Prastyo',
+        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&h=120&fit=crop&crop=faces',
+        text: 'Hey! I just wrapped up the discovery call with Nexus Real Estate. They want 5 AI agent seats.',
+        time: '11:05 AM',
+        status: 'read',
+      },
+      {
+        id: 202,
+        senderId: 'usr_sales',
+        senderName: 'Salung Prastyo',
+        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&h=120&fit=crop&crop=faces',
+        text: 'Should we offer them the $1,200/mo retainer package or bundle the custom CRM sync for $1,500/mo?',
+        time: '11:08 AM',
+        status: 'delivered',
+      },
+    ],
+  },
+  {
+    id: 'dm_alex',
+    type: 'direct',
+    name: 'Alex Rivera',
+    role: 'AI Operations Lead',
+    category: 'team',
+    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=120&h=120&fit=crop&crop=faces',
+    email: 'ops@aeitron.com',
+    online: true,
+    lastSeen: 'Online',
     unread: 0,
     messages: [
       {
-        id: 1,
-        sender: 'Mahmud Hasan (CEO)',
-        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&h=120&fit=crop&crop=faces',
-        text: 'Team, we just passed $20k MRR this week. Excellent job on shipping the Dental Clinic voice bot!',
-        time: '10:14 AM',
-        isMe: false,
-      },
-      {
-        id: 2,
-        sender: 'Salung Prastyo (Sales)',
-        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&h=120&fit=crop&crop=faces',
-        text: 'Thanks Mahmud! Apex Dental signed the $850/mo recurring maintenance retainer this morning.',
-        time: '10:20 AM',
-        isMe: false,
-      },
-      {
-        id: 3,
-        sender: 'Alex Rivera (AI Ops)',
+        id: 301,
+        senderId: 'usr_ops',
+        senderName: 'Alex Rivera',
         avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=120&h=120&fit=crop&crop=faces',
-        text: 'Twilio telephony latency is down to 480ms. The ElevenLabs voice model feels completely human.',
-        time: '10:25 AM',
-        isMe: false,
+        text: 'n8n webhook deployment is complete. All 28 production workflows are passing health pings with 0 errors.',
+        time: '09:40 AM',
+        status: 'read',
+      },
+      {
+        id: 302,
+        senderId: 'usr_ops',
+        senderName: 'Alex Rivera',
+        avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=120&h=120&fit=crop&crop=faces',
+        isVoice: true,
+        duration: '0:18',
+        time: '09:45 AM',
+        status: 'read',
+      },
+    ],
+  },
+  {
+    id: 'dm_sarah',
+    type: 'direct',
+    name: 'Sarah Jenkins',
+    role: 'Finance Manager',
+    category: 'team',
+    avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=120&h=120&fit=crop&crop=faces',
+    email: 'finance@aeitron.com',
+    online: false,
+    lastSeen: 'Last seen 25m ago',
+    unread: 0,
+    messages: [
+      {
+        id: 401,
+        senderId: 'usr_finance',
+        senderName: 'Sarah Jenkins',
+        avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=120&h=120&fit=crop&crop=faces',
+        text: 'All contractor payouts for the AI Engineers have been dispatched via direct ACH wire transfer.',
+        time: 'Yesterday',
+        status: 'read',
       },
     ],
   },
   {
     id: 'chan_leads',
     type: 'channel',
-    name: 'leads-and-sales',
-    description: 'Live inbound lead alerts and closed deal notifications',
-    unread: 2,
+    name: '🔥 Lead Pipeline & Deals',
+    category: 'channel',
+    avatar: '/aeitron_icon_fb.png',
+    membersCount: 4,
+    unread: 0,
+    online: true,
+    lastSeen: 'Live Lead Radar Active',
     messages: [
       {
-        id: 1,
-        sender: 'Aeitron Radar Bot',
+        id: 501,
+        senderId: 'bot',
+        senderName: 'Aeitron Autonomous Dispatch Bot',
         avatar: '/aeitron_icon_fb.png',
-        text: '🔥 High-Value Lead Alert: Nexus Real Estate requested a demo for 5 agent seats.',
-        time: '09:30 AM',
-        isMe: false,
-      },
-      {
-        id: 2,
-        sender: 'Salung Prastyo (Sales)',
-        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&h=120&fit=crop&crop=faces',
-        text: 'Engaged with Ryan from Nexus. Discovery call booked for tomorrow 2 PM.',
-        time: '09:42 AM',
-        isMe: false,
-      },
-    ],
-  },
-  {
-    id: 'chan_deployments',
-    type: 'channel',
-    name: 'ai-deployments',
-    description: 'Live webhook feeds, production cutovers and QA reports',
-    unread: 0,
-    messages: [
-      {
-        id: 1,
-        sender: 'Alex Rivera (AI Ops)',
-        avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=120&h=120&fit=crop&crop=faces',
-        text: 'Live cutover for Skyline E-Commerce returns bot scheduled for Friday 5 PM EST.',
+        text: '⚡ New Enterprise Inbound: Apex Dental Group requested an appointment for 2 additional dental clinics.',
         time: 'Yesterday',
-        isMe: false,
-      },
-    ],
-  },
-  {
-    id: 'dm_apex',
-    type: 'client',
-    name: 'Dr. Michael (Apex Dental)',
-    subtitle: 'Apex Dental Group • Active Client',
-    avatar: 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?w=120&h=120&fit=crop&crop=faces',
-    unread: 1,
-    messages: [
-      {
-        id: 1,
-        sender: 'Dr. Michael',
-        avatar: 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?w=120&h=120&fit=crop&crop=faces',
-        text: 'Hi Salung, the voice receptionist handled 18 calls yesterday without any human intervention! Patients loved it.',
-        time: '11:05 AM',
-        isMe: false,
-      },
-      {
-        id: 2,
-        sender: 'Salung Prastyo',
-        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&h=120&fit=crop&crop=faces',
-        text: 'That is fantastic to hear Dr. Michael! We will monitor the call recordings today to fine-tune the pricing objection handling.',
-        time: '11:15 AM',
-        isMe: true,
-      },
-    ],
-  },
-  {
-    id: 'dm_sophia',
-    type: 'client',
-    name: 'Sophia Chen (Skyline)',
-    subtitle: 'Skyline E-Commerce • In Development',
-    avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=120&h=120&fit=crop&crop=faces',
-    unread: 0,
-    messages: [
-      {
-        id: 1,
-        sender: 'Sophia Chen',
-        avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=120&h=120&fit=crop&crop=faces',
-        text: 'Invoice #04910 has been processed via bank wire. Can we review the Shopify webhook integration tomorrow?',
-        time: 'Yesterday',
-        isMe: false,
+        status: 'read',
       },
     ],
   },
 ];
 
+const EMOJIS = ['👍', '❤️', '🔥', '🚀', '😂', '🎉', '💯', '👏', '💼', '🤖'];
+
 export default function MessagesView() {
-  const { currentUser } = useAuth();
-  const [threads, setThreads] = useState(() => {
+  const { currentUser, users } = useAuth();
+  const [conversations, setConversations] = useState(() => {
     try {
-      const stored = localStorage.getItem('aeitron_chat_threads');
-      return stored ? JSON.parse(stored) : INITIAL_THREADS;
+      const saved = localStorage.getItem('aeitron_whatsapp_chat');
+      return saved ? JSON.parse(saved) : INITIAL_CONVERSATIONS;
     } catch {
-      return INITIAL_THREADS;
+      return INITIAL_CONVERSATIONS;
     }
   });
 
-  const [activeThreadId, setActiveThreadId] = useState('chan_general');
+  const [activeChatId, setActiveChatId] = useState('chan_general');
   const [search, setSearch] = useState('');
+  const [activeTab, setActiveTab] = useState('all'); // 'all' | 'team' | 'channels' | 'unread'
   const [inputText, setInputText] = useState('');
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
+  const [typingUser, setTypingUser] = useState('');
+  const [voicePlayingId, setVoicePlayingId] = useState(null);
+  const [callModal, setCallModal] = useState(null); // { type: 'voice' | 'video', name: '' }
+  const [newChatModal, setNewChatModal] = useState(false);
 
-  const activeThread = threads.find((t) => t.id === activeThreadId) || threads[0];
+  const messagesEndRef = useRef(null);
+  const broadcastChannelRef = useRef(null);
 
+  // Auto-scroll chat to bottom
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [activeChatId, conversations]);
+
+  // Sync conversations to localStorage
+  const saveConversations = (updated) => {
+    setConversations(updated);
+    try {
+      localStorage.setItem('aeitron_whatsapp_chat', JSON.stringify(updated));
+      // Broadcast to other tabs/windows in real time!
+      if (broadcastChannelRef.current) {
+        broadcastChannelRef.current.postMessage({ type: 'CHAT_UPDATE', data: updated });
+      }
+    } catch (err) {
+      console.error('Failed to sync chat:', err);
+    }
+  };
+
+  // Real-Time BroadcastChannel listener for multi-tab / multi-user synchronization
+  useEffect(() => {
+    try {
+      const channel = new BroadcastChannel('aeitron_whatsapp_chat_channel');
+      broadcastChannelRef.current = channel;
+
+      channel.onmessage = (event) => {
+        if (event.data?.type === 'CHAT_UPDATE') {
+          setConversations(event.data.data);
+        }
+      };
+
+      // Fallback cross-tab storage listener
+      const handleStorageChange = (e) => {
+        if (e.key === 'aeitron_whatsapp_chat' && e.newValue) {
+          try {
+            setConversations(JSON.parse(e.newValue));
+          } catch {}
+        }
+      };
+      window.addEventListener('storage', handleStorageChange);
+
+      return () => {
+        channel.close();
+        window.removeEventListener('storage', handleStorageChange);
+      };
+    } catch {
+      return () => {};
+    }
+  }, []);
+
+  const activeChat = useMemo(() => {
+    return conversations.find((c) => c.id === activeChatId) || conversations[0];
+  }, [conversations, activeChatId]);
+
+  // Send Message
   const handleSendMessage = (e) => {
-    e.preventDefault();
+    e?.preventDefault();
     if (!inputText.trim()) return;
+
+    const userDisplayName = currentUser?.name || 'Mahmud Hasan (CEO)';
+    const userDisplayAvatar = currentUser?.avatar || '/aeitron_icon_fb.png';
+    const userDisplayId = currentUser?.email || 'me';
 
     const newMsg = {
       id: Date.now(),
-      sender: currentUser?.name || 'Operator',
-      avatar: currentUser?.avatar || '/aeitron_icon_fb.png',
+      senderId: userDisplayId,
+      senderName: userDisplayName,
+      avatar: userDisplayAvatar,
       text: inputText.trim(),
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      status: 'sent',
       isMe: true,
     };
 
-    const updated = threads.map((t) =>
-      t.id === activeThreadId
-        ? { ...t, messages: [...t.messages, newMsg], unread: 0 }
-        : t
+    const updated = conversations.map((c) =>
+      c.id === activeChatId
+        ? {
+            ...c,
+            messages: [...c.messages, newMsg],
+            unread: 0,
+          }
+        : c
     );
 
-    setThreads(updated);
-    try {
-      localStorage.setItem('aeitron_chat_threads', JSON.stringify(updated));
-    } catch {}
+    saveConversations(updated);
     setInputText('');
+    setShowEmojiPicker(false);
+
+    // Realistic automated team response after 1.8s
+    if (activeChat.type === 'direct') {
+      const responderName = activeChat.name;
+      setTimeout(() => {
+        setIsTyping(true);
+        setTypingUser(responderName);
+      }, 700);
+
+      setTimeout(() => {
+        setIsTyping(false);
+        const automatedReply = {
+          id: Date.now() + 1,
+          senderId: activeChat.id,
+          senderName: activeChat.name,
+          avatar: activeChat.avatar,
+          text: getRandomReply(activeChat.role || activeChat.name),
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          status: 'delivered',
+        };
+
+        setConversations((prev) => {
+          const nextConvs = prev.map((c) =>
+            c.id === activeChatId
+              ? { ...c, messages: [...c.messages, automatedReply] }
+              : c
+          );
+          try {
+            localStorage.setItem('aeitron_whatsapp_chat', JSON.stringify(nextConvs));
+            broadcastChannelRef.current?.postMessage({ type: 'CHAT_UPDATE', data: nextConvs });
+          } catch {}
+          return nextConvs;
+        });
+      }, 2400);
+    }
   };
 
-  const filteredThreads = threads.filter((t) =>
-    t.name.toLowerCase().includes(search.toLowerCase())
-  );
+  // Add Emoji reaction
+  const handleReaction = (msgId, emoji) => {
+    const updated = conversations.map((c) => {
+      if (c.id !== activeChatId) return c;
+      const msgs = c.messages.map((m) => {
+        if (m.id !== msgId) return m;
+        const currentReactions = m.reactions || [];
+        const existing = currentReactions.find((r) => r.startsWith(emoji));
+        let nextReactions;
+        if (existing) {
+          const count = Number(existing.split(' ')[1] || 1) + 1;
+          nextReactions = currentReactions.map((r) => (r.startsWith(emoji) ? `${emoji} ${count}` : r));
+        } else {
+          nextReactions = [...currentReactions, `${emoji} 1`];
+        }
+        return { ...m, reactions: nextReactions };
+      });
+      return { ...c, messages: msgs };
+    });
+    saveConversations(updated);
+  };
+
+  // Start new 1-on-1 chat with team member
+  const handleStartChatWithUser = (targetUser) => {
+    const existing = conversations.find((c) => c.email?.toLowerCase() === targetUser.email.toLowerCase());
+    if (existing) {
+      setActiveChatId(existing.id);
+      setNewChatModal(false);
+      return;
+    }
+
+    const newDirect = {
+      id: `dm_${Date.now()}`,
+      type: 'direct',
+      name: targetUser.name,
+      role: targetUser.role,
+      category: 'team',
+      avatar: targetUser.avatar,
+      email: targetUser.email,
+      online: true,
+      lastSeen: 'Online',
+      unread: 0,
+      messages: [
+        {
+          id: Date.now(),
+          senderId: targetUser.email,
+          senderName: targetUser.name,
+          avatar: targetUser.avatar,
+          text: `Hey ${currentUser?.name?.split(' ')[0] || 'there'}! Ready for team updates.`,
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          status: 'read',
+        },
+      ],
+    };
+
+    const updated = [newDirect, ...conversations];
+    saveConversations(updated);
+    setActiveChatId(newDirect.id);
+    setNewChatModal(false);
+  };
+
+  // Filtered chats by tab & search
+  const filteredConversations = useMemo(() => {
+    return conversations.filter((c) => {
+      const matchSearch =
+        c.name.toLowerCase().includes(search.toLowerCase()) ||
+        (c.role && c.role.toLowerCase().includes(search.toLowerCase()));
+
+      if (!matchSearch) return false;
+      if (activeTab === 'team') return c.category === 'team';
+      if (activeTab === 'channels') return c.category === 'channel';
+      if (activeTab === 'unread') return c.unread > 0;
+      return true;
+    });
+  }, [conversations, search, activeTab]);
 
   return (
     <div className="space-y-4">
       {/* Top Header */}
-      <div>
-        <h2 className="text-xl font-bold text-text tracking-tight flex items-center gap-2">
-          <MessageSquare className="text-accent" size={24} />
-          Unified Agency Communications & Client Messages
-        </h2>
-        <p className="text-xs text-text-muted mt-0.5">
-          Real-time internal team collaboration channels and direct client communication.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h2 className="text-xl font-bold text-text tracking-tight flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+            Aeitron Team Live Messenger (WhatsApp Web Engine)
+          </h2>
+          <p className="text-xs text-text-muted mt-0.5">
+            Encrypted real-time team collaboration, direct operator messaging, and automated agency dispatch.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setNewChatModal(true)}
+            className="flex items-center gap-2 px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold transition-all shadow-xs"
+          >
+            <Plus size={14} />
+            <span>New Chat / Team Member</span>
+          </button>
+        </div>
       </div>
 
-      {/* Main Chat Layout */}
-      <div className="bg-bg-card border border-border/80 rounded-2xl shadow-xs overflow-hidden h-[620px] flex">
-        {/* Left Sidebar: Threads List */}
-        <div className="w-72 border-r border-border/80 flex flex-col bg-bg/40">
-          {/* Search */}
-          <div className="p-3 border-b border-border/80">
+      {/* Main WhatsApp Window Container */}
+      <div className="bg-bg-card border border-border/80 rounded-2xl shadow-xl overflow-hidden h-[660px] flex">
+        {/* ========================================================================= */}
+        {/* LEFT COLUMN: CHAT LIST (WhatsApp Left Sidebar)                           */}
+        {/* ========================================================================= */}
+        <div className="w-80 sm:w-88 border-r border-border/80 flex flex-col bg-bg/50 shrink-0">
+          {/* Top User Bar */}
+          <div className="p-3.5 px-4 border-b border-border/80 flex items-center justify-between bg-bg-card">
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <img
+                  src={currentUser?.avatar || '/aeitron_icon_fb.png'}
+                  alt={currentUser?.name}
+                  className="w-9 h-9 rounded-full object-cover border border-border shadow-xs"
+                />
+                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-bg-card" />
+              </div>
+              <div className="min-w-0">
+                <div className="text-xs font-bold text-text truncate">{currentUser?.name || 'Mahmud Hasan'}</div>
+                <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
+                  <span>●</span> Online & Active
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-1 text-text-muted">
+              <button
+                type="button"
+                onClick={() => setNewChatModal(true)}
+                className="p-1.5 hover:text-text rounded-lg hover:bg-bg transition-colors"
+                title="New Direct Message"
+              >
+                <Plus size={18} />
+              </button>
+            </div>
+          </div>
+
+          {/* Search Box */}
+          <div className="p-2.5 px-3 border-b border-border/60 bg-bg-card/50">
             <div className="relative">
               <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
               <input
                 type="text"
-                placeholder="Search conversations..."
+                placeholder="Search or start new chat..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-8 pr-3 py-1.5 bg-bg-card border border-border rounded-xl text-xs text-text placeholder:text-text-muted/50 outline-none focus:border-accent"
+                className="w-full pl-8 pr-3 py-1.5 bg-bg border border-border rounded-xl text-xs text-text placeholder:text-text-muted/50 outline-none focus:border-emerald-500 transition-all"
               />
             </div>
           </div>
 
-          {/* List */}
-          <div className="flex-1 overflow-y-auto p-2 space-y-4">
-            {/* Team Channels */}
-            <div>
-              <div className="px-2 py-1 text-[10px] font-semibold text-text-muted uppercase tracking-wider">
-                Agency Channels
-              </div>
-              <div className="space-y-0.5 mt-1">
-                {filteredThreads
-                  .filter((t) => t.type === 'channel')
-                  .map((t) => {
-                    const isActive = t.id === activeThreadId;
-                    return (
-                      <button
-                        key={t.id}
-                        type="button"
-                        onClick={() => setActiveThreadId(t.id)}
-                        className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs font-medium transition-colors ${
-                          isActive
-                            ? 'bg-slate-900 text-white dark:bg-accent font-semibold'
-                            : 'text-text-muted hover:text-text hover:bg-bg'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2 truncate">
-                          <Hash size={14} className={isActive ? 'text-white' : 'text-text-muted'} />
-                          <span className="truncate">{t.name}</span>
-                        </div>
-                        {t.unread > 0 && (
-                          <span className="w-4 h-4 rounded-full bg-accent text-white text-[10px] flex items-center justify-center font-bold">
-                            {t.unread}
-                          </span>
-                        )}
-                      </button>
-                    );
-                  })}
-              </div>
-            </div>
+          {/* Filter Pills (WhatsApp Web style: All, Team, Channels, Unread) */}
+          <div className="flex items-center gap-1.5 px-3 py-2 border-b border-border/50 overflow-x-auto bg-bg-card/30">
+            {[
+              { id: 'all', label: 'All' },
+              { id: 'team', label: 'Team Direct' },
+              { id: 'channels', label: 'Channels' },
+              { id: 'unread', label: 'Unread' },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveTab(tab.id)}
+                className={`px-3 py-1 rounded-full text-[11px] font-semibold transition-all whitespace-nowrap ${
+                  activeTab === tab.id
+                    ? 'bg-emerald-600 text-white shadow-xs'
+                    : 'bg-bg text-text-muted hover:text-text border border-border/60'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
 
-            {/* Direct Client Chats */}
-            <div>
-              <div className="px-2 py-1 text-[10px] font-semibold text-text-muted uppercase tracking-wider">
-                Client Direct Messages
-              </div>
-              <div className="space-y-1 mt-1">
-                {filteredThreads
-                  .filter((t) => t.type === 'client')
-                  .map((t) => {
-                    const isActive = t.id === activeThreadId;
-                    return (
-                      <button
-                        key={t.id}
-                        type="button"
-                        onClick={() => setActiveThreadId(t.id)}
-                        className={`w-full flex items-center gap-2.5 p-2 rounded-xl text-xs transition-colors ${
-                          isActive
-                            ? 'bg-slate-900 text-white dark:bg-accent'
-                            : 'text-text hover:bg-bg'
-                        }`}
-                      >
-                        <img
-                          src={t.avatar}
-                          alt={t.name}
-                          className="w-7 h-7 rounded-lg object-cover border border-border shrink-0"
-                        />
-                        <div className="min-w-0 flex-1 text-left">
-                          <div className={`font-semibold truncate ${isActive ? 'text-white' : 'text-text'}`}>
-                            {t.name}
-                          </div>
-                          <div
-                            className={`text-[10px] truncate ${
-                              isActive ? 'text-white/70' : 'text-text-muted'
-                            }`}
-                          >
-                            {t.subtitle}
-                          </div>
-                        </div>
-                        {t.unread > 0 && (
-                          <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
-                        )}
-                      </button>
+          {/* Chats Scroll List */}
+          <div className="flex-1 overflow-y-auto divide-y divide-border/40">
+            {filteredConversations.map((chat) => {
+              const isActive = chat.id === activeChatId;
+              const lastMsg = chat.messages[chat.messages.length - 1];
+
+              return (
+                <button
+                  key={chat.id}
+                  type="button"
+                  onClick={() => {
+                    setActiveChatId(chat.id);
+                    // Clear unread
+                    setConversations((prev) =>
+                      prev.map((c) => (c.id === chat.id ? { ...c, unread: 0 } : c))
                     );
-                  })}
-              </div>
-            </div>
+                  }}
+                  className={`w-full flex items-center gap-3 p-3 px-4 text-left transition-colors cursor-pointer ${
+                    isActive
+                      ? 'bg-emerald-500/10 dark:bg-emerald-950/40 border-l-4 border-emerald-500'
+                      : 'hover:bg-bg/80'
+                  }`}
+                >
+                  <div className="relative shrink-0">
+                    <img
+                      src={chat.avatar}
+                      alt={chat.name}
+                      className="w-11 h-11 rounded-full object-cover border border-border shadow-xs"
+                    />
+                    {chat.online && (
+                      <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-emerald-500 ring-2 ring-bg-card" />
+                    )}
+                  </div>
+
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between mb-0.5">
+                      <span className={`text-xs font-bold truncate ${isActive ? 'text-emerald-600 dark:text-emerald-400' : 'text-text'}`}>
+                        {chat.name}
+                      </span>
+                      {lastMsg && (
+                        <span className="text-[10px] text-text-muted shrink-0 ml-1">
+                          {lastMsg.time}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex items-center justify-between gap-1">
+                      <p className="text-[11px] text-text-muted truncate">
+                        {lastMsg ? (
+                          lastMsg.isVoice ? (
+                            <span className="flex items-center gap-1 text-accent">
+                              <Mic size={11} /> Voice message ({lastMsg.duration})
+                            </span>
+                          ) : (
+                            lastMsg.text
+                          )
+                        ) : (
+                          'No messages yet'
+                        )}
+                      </p>
+
+                      {chat.unread > 0 && (
+                        <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-emerald-500 text-white text-[10px] font-bold flex items-center justify-center shrink-0">
+                          {chat.unread}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        {/* Right Chat Canvas */}
-        <div className="flex-1 flex flex-col justify-between bg-bg-card">
-          {/* Active Header */}
-          <div className="p-3.5 px-5 border-b border-border/80 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              {activeThread.type === 'channel' ? (
-                <div className="w-8 h-8 rounded-lg bg-accent/15 text-accent flex items-center justify-center">
-                  <Hash size={16} />
-                </div>
-              ) : (
+        {/* ========================================================================= */}
+        {/* RIGHT COLUMN: ACTIVE CONVERSATION CANVAS (WhatsApp Right Area)            */}
+        {/* ========================================================================= */}
+        <div className="flex-1 flex flex-col justify-between bg-bg-card min-w-0 relative">
+          {/* Active Chat Top Header */}
+          <div className="p-3 px-5 border-b border-border/80 flex items-center justify-between bg-bg-card z-10">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="relative shrink-0">
                 <img
-                  src={activeThread.avatar}
-                  alt={activeThread.name}
-                  className="w-8 h-8 rounded-lg object-cover border border-border"
+                  src={activeChat.avatar}
+                  alt={activeChat.name}
+                  className="w-10 h-10 rounded-full object-cover border border-border shadow-xs"
                 />
-              )}
-              <div>
-                <h3 className="text-xs font-bold text-text flex items-center gap-1.5">
-                  {activeThread.name}
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
+                {activeChat.online && (
+                  <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-bg-card" />
+                )}
+              </div>
+
+              <div className="min-w-0">
+                <h3 className="text-sm font-bold text-text truncate flex items-center gap-2">
+                  <span>{activeChat.name}</span>
+                  {activeChat.role && (
+                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-accent/15 text-accent border border-accent/25">
+                      {activeChat.role}
+                    </span>
+                  )}
                 </h3>
-                <p className="text-[11px] text-text-muted">
-                  {activeThread.description || activeThread.subtitle}
+                <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium truncate">
+                  {isTyping ? (
+                    <span className="animate-pulse font-semibold">
+                      ✍️ {typingUser} is typing...
+                    </span>
+                  ) : (
+                    activeChat.lastSeen || 'Online'
+                  )}
                 </p>
               </div>
             </div>
 
-            <div className="text-[11px] text-text-muted bg-bg px-2.5 py-1 rounded-lg border border-border/60">
-              Session Active
-            </div>
-          </div>
-
-          {/* Messages Scroll Area */}
-          <div className="flex-1 p-5 overflow-y-auto space-y-4">
-            {activeThread.messages.map((msg) => (
-              <div
-                key={msg.id}
-                className={`flex gap-3 max-w-xl ${msg.isMe ? 'ml-auto flex-row-reverse' : ''}`}
-              >
-                <img
-                  src={msg.avatar}
-                  alt={msg.sender}
-                  className="w-7 h-7 rounded-lg object-cover border border-border shrink-0 mt-0.5"
-                />
-                <div>
-                  <div className={`flex items-center gap-2 mb-1 ${msg.isMe ? 'justify-end' : ''}`}>
-                    <span className="text-[11px] font-bold text-text">{msg.sender}</span>
-                    <span className="text-[10px] text-text-muted">{msg.time}</span>
-                  </div>
-                  <div
-                    className={`p-3 rounded-2xl text-xs leading-relaxed ${
-                      msg.isMe
-                        ? 'bg-accent text-white rounded-tr-xs shadow-xs'
-                        : 'bg-bg text-text border border-border/80 rounded-tl-xs'
-                    }`}
-                  >
-                    {msg.text}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Message Input Box */}
-          <form onSubmit={handleSendMessage} className="p-3 px-5 border-t border-border/80 bg-bg/20">
-            <div className="flex items-center gap-2 bg-bg border border-border rounded-2xl px-3 py-1.5 focus-within:border-accent">
-              <input
-                type="text"
-                placeholder={`Message #${activeThread.name}...`}
-                value={inputText}
-                onChange={(e) => setInputText(e.target.value)}
-                className="flex-1 bg-transparent text-xs text-text outline-none placeholder:text-text-muted/50 py-1"
-              />
+            {/* Calling & Options Buttons */}
+            <div className="flex items-center gap-1 sm:gap-2 text-text-muted">
               <button
-                type="submit"
-                className="p-1.5 bg-accent hover:bg-accent-hover text-white rounded-xl transition-colors shadow-xs"
+                type="button"
+                onClick={() => setCallModal({ type: 'voice', name: activeChat.name })}
+                className="p-2 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 rounded-xl transition-colors cursor-pointer"
+                title="Voice Call"
               >
-                <Send size={13} />
+                <Phone size={17} />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setCallModal({ type: 'video', name: activeChat.name })}
+                className="p-2 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 rounded-xl transition-colors cursor-pointer"
+                title="Video Call"
+              >
+                <Video size={18} />
+              </button>
+
+              <button
+                type="button"
+                className="p-2 hover:text-text hover:bg-bg rounded-xl transition-colors cursor-pointer"
+                title="Search Messages"
+              >
+                <Search size={17} />
               </button>
             </div>
-          </form>
+          </div>
+
+          {/* Messages Scrollable Feed */}
+          <div className="flex-1 p-4 sm:p-6 overflow-y-auto space-y-4 bg-slate-50/50 dark:bg-slate-950/20">
+            {/* Date Separator Pill */}
+            <div className="flex justify-center">
+              <span className="px-3 py-1 bg-bg border border-border/70 rounded-full text-[10px] font-semibold text-text-muted uppercase tracking-wider shadow-xs">
+                Today
+              </span>
+            </div>
+
+            {activeChat.messages.map((msg) => {
+              const isMe =
+                msg.isMe ||
+                (currentUser?.email && msg.senderId?.toLowerCase() === currentUser.email.toLowerCase()) ||
+                msg.senderName?.includes(currentUser?.name?.split(' ')[0] || 'Mahmud');
+
+              return (
+                <div
+                  key={msg.id}
+                  className={`flex flex-col group ${isMe ? 'items-end' : 'items-start'}`}
+                >
+                  <div
+                    className={`relative max-w-[85%] sm:max-w-md p-3 rounded-2xl shadow-xs text-xs leading-relaxed transition-all ${
+                      isMe
+                        ? 'bg-emerald-600 text-white rounded-tr-xs'
+                        : 'bg-bg-card text-text border border-border/80 rounded-tl-xs'
+                    }`}
+                  >
+                    {/* In Group Channels: Show Sender Name */}
+                    {activeChat.type === 'channel' && !isMe && (
+                      <div className="text-[11px] font-bold text-accent mb-1 flex items-center gap-1.5">
+                        <img src={msg.avatar} alt="" className="w-4 h-4 rounded-full object-cover inline" />
+                        <span>{msg.senderName}</span>
+                      </div>
+                    )}
+
+                    {/* Voice Message Bubble */}
+                    {msg.isVoice ? (
+                      <div className="flex items-center gap-3 p-1 min-w-[180px]">
+                        <button
+                          type="button"
+                          onClick={() => setVoicePlayingId(voicePlayingId === msg.id ? null : msg.id)}
+                          className={`w-8 h-8 rounded-full flex items-center justify-center transition-transform active:scale-95 ${
+                            isMe ? 'bg-white text-emerald-700' : 'bg-emerald-600 text-white'
+                          }`}
+                        >
+                          {voicePlayingId === msg.id ? <Pause size={14} /> : <Play size={14} className="ml-0.5" />}
+                        </button>
+                        <div className="flex-1 space-y-1">
+                          <div className="flex items-center gap-1 h-3">
+                            {[30, 70, 45, 90, 60, 100, 40, 80, 50, 95, 35].map((h, idx) => (
+                              <div
+                                key={idx}
+                                className={`w-1 rounded-full ${
+                                  voicePlayingId === msg.id ? 'animate-pulse' : ''
+                                } ${isMe ? 'bg-white/70' : 'bg-emerald-500'}`}
+                                style={{ height: `${h}%` }}
+                              />
+                            ))}
+                          </div>
+                          <div className={`text-[10px] font-mono ${isMe ? 'text-white/80' : 'text-text-muted'}`}>
+                            {msg.duration}
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="whitespace-pre-wrap select-text">{msg.text}</p>
+                    )}
+
+                    {/* Timestamp & Double Check status */}
+                    <div
+                      className={`flex items-center justify-end gap-1 text-[10px] mt-1 select-none ${
+                        isMe ? 'text-white/80' : 'text-text-muted'
+                      }`}
+                    >
+                      <span>{msg.time}</span>
+                      {isMe && (
+                        <CheckCheck size={13} className="text-sky-300" />
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Message Reactions Bar */}
+                  {msg.reactions && msg.reactions.length > 0 && (
+                    <div className="flex items-center gap-1 mt-1 px-1">
+                      {msg.reactions.map((r, i) => (
+                        <span
+                          key={i}
+                          className="px-2 py-0.5 rounded-full bg-bg-card border border-border text-[10px] shadow-xs cursor-pointer hover:scale-105 transition-transform"
+                        >
+                          {r}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Quick Reaction Hover Buttons */}
+                  <div
+                    className={`opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 mt-0.5 px-2 select-none ${
+                      isMe ? 'justify-end' : 'justify-start'
+                    }`}
+                  >
+                    {['👍', '❤️', '🔥'].map((emoji) => (
+                      <button
+                        key={emoji}
+                        type="button"
+                        onClick={() => handleReaction(msg.id, emoji)}
+                        className="text-xs hover:scale-125 transition-transform p-0.5"
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+
+            {/* Typing indicator bubble */}
+            {isTyping && (
+              <div className="flex items-center gap-2 text-xs text-text-muted bg-bg-card p-2.5 px-4 rounded-2xl border border-border w-fit shadow-xs animate-fade-in">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-bounce" />
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-bounce [animation-delay:0.2s]" />
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-bounce [animation-delay:0.4s]" />
+                <span className="font-semibold text-text ml-1">{typingUser} is typing...</span>
+              </div>
+            )}
+
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* ========================================================================= */}
+          {/* BOTTOM BAR: MESSAGE INPUT & ACTIONS (WhatsApp Bottom Bar)                 */}
+          {/* ========================================================================= */}
+          <div className="p-3 px-4 border-t border-border/80 bg-bg-card relative z-20">
+            {/* Emoji Picker Popover */}
+            {showEmojiPicker && (
+              <div className="absolute bottom-full mb-2 left-4 bg-bg-card border border-border shadow-2xl rounded-2xl p-3 z-50 animate-fade-in flex gap-2">
+                {EMOJIS.map((emoji) => (
+                  <button
+                    key={emoji}
+                    type="button"
+                    onClick={() => {
+                      setInputText((prev) => prev + emoji);
+                      setShowEmojiPicker(false);
+                    }}
+                    className="text-lg hover:scale-125 transition-transform p-1"
+                  >
+                    {emoji}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <form onSubmit={handleSendMessage} className="flex items-center gap-2">
+              {/* Emoji Button */}
+              <button
+                type="button"
+                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                className={`p-2 rounded-xl transition-colors ${
+                  showEmojiPicker ? 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30' : 'text-text-muted hover:text-text'
+                }`}
+                title="Add Emoji"
+              >
+                <Smile size={20} />
+              </button>
+
+              {/* Attach File Button */}
+              <button
+                type="button"
+                onClick={() => setInputText((prev) => prev + ' [Document attached: Invoice_Spec.pdf] ')}
+                className="p-2 text-text-muted hover:text-text rounded-xl transition-colors"
+                title="Attach Document / Invoice"
+              >
+                <Paperclip size={19} />
+              </button>
+
+              {/* Input Text Box */}
+              <input
+                type="text"
+                placeholder={`Type a message to ${activeChat.name}...`}
+                value={inputText}
+                onChange={(e) => setInputText(e.target.value)}
+                className="flex-1 px-4 py-2.5 bg-bg border border-border rounded-xl text-xs text-text placeholder:text-text-muted/50 outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/20 transition-all"
+              />
+
+              {/* Send or Mic Button */}
+              {inputText.trim() ? (
+                <button
+                  type="submit"
+                  className="p-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl transition-all shadow-xs cursor-pointer active:scale-95 shrink-0"
+                  title="Send Message"
+                >
+                  <Send size={15} />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const voiceMsg = {
+                      id: Date.now(),
+                      senderId: currentUser?.email || 'me',
+                      senderName: currentUser?.name || 'Mahmud Hasan',
+                      avatar: currentUser?.avatar || '/aeitron_icon_fb.png',
+                      isVoice: true,
+                      duration: '0:12',
+                      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                      status: 'sent',
+                      isMe: true,
+                    };
+                    const updated = conversations.map((c) =>
+                      c.id === activeChatId ? { ...c, messages: [...c.messages, voiceMsg] } : c
+                    );
+                    saveConversations(updated);
+                  }}
+                  className="p-2.5 bg-bg hover:bg-bg-hover text-text-muted hover:text-emerald-600 border border-border rounded-xl transition-colors cursor-pointer shrink-0"
+                  title="Record Voice Note"
+                >
+                  <Mic size={17} />
+                </button>
+              )}
+            </form>
+          </div>
         </div>
       </div>
+
+      {/* ========================================================================= */}
+      {/* CALL MODAL (Audio / Video Call Simulation)                                */}
+      {/* ========================================================================= */}
+      {callModal && (
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-700 text-white rounded-3xl max-w-sm w-full p-8 text-center shadow-2xl animate-fade-in space-y-6">
+            <div className="relative inline-block">
+              <div className="w-24 h-24 rounded-full bg-emerald-500/20 p-2 animate-pulse mx-auto">
+                <img
+                  src={activeChat.avatar}
+                  alt={activeChat.name}
+                  className="w-full h-full rounded-full object-cover border-2 border-emerald-400"
+                />
+              </div>
+              <span className="absolute bottom-1 right-1 w-5 h-5 rounded-full bg-emerald-500 border-2 border-slate-900 flex items-center justify-center">
+                {callModal.type === 'video' ? <Video size={10} /> : <Phone size={10} />}
+              </span>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-bold">{callModal.name}</h3>
+              <p className="text-xs text-emerald-400 font-medium mt-1 animate-pulse">
+                {callModal.type === 'video' ? 'Connecting Encrypted Video Call...' : 'Calling via WebRTC...'}
+              </p>
+            </div>
+
+            <div className="flex items-center justify-center gap-6 pt-4">
+              <button
+                type="button"
+                onClick={() => setCallModal(null)}
+                className="w-14 h-14 rounded-full bg-red-600 hover:bg-red-700 text-white flex items-center justify-center shadow-lg transition-transform active:scale-95"
+                title="End Call"
+              >
+                <PhoneOff size={22} />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* NEW DIRECT CHAT MODAL                                                     */}
+      {/* ========================================================================= */}
+      {newChatModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-bg-card border border-border shadow-2xl rounded-2xl max-w-md w-full p-6 animate-fade-in">
+            <div className="flex items-center justify-between pb-3 border-b border-border mb-4">
+              <h3 className="text-sm font-bold text-text">Start Real-Time Chat with Team Member</h3>
+              <button
+                onClick={() => setNewChatModal(false)}
+                className="text-text-muted hover:text-text p-1 rounded-lg hover:bg-bg"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="space-y-2">
+              {users.map((u) => (
+                <button
+                  key={u.id}
+                  type="button"
+                  onClick={() => handleStartChatWithUser(u)}
+                  className="w-full flex items-center justify-between p-3 rounded-xl border border-border/80 hover:border-emerald-500 hover:bg-emerald-500/5 transition-all text-left group"
+                >
+                  <div className="flex items-center gap-3">
+                    <img src={u.avatar} alt={u.name} className="w-9 h-9 rounded-full object-cover border border-border" />
+                    <div>
+                      <div className="text-xs font-bold text-text group-hover:text-emerald-600 dark:group-hover:text-emerald-400">
+                        {u.name}
+                      </div>
+                      <div className="text-[11px] text-text-muted">{u.role}</div>
+                    </div>
+                  </div>
+
+                  <span className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold opacity-0 group-hover:opacity-100 transition-opacity">
+                    Chat Now →
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
+}
+
+function getRandomReply(roleOrName) {
+  const replies = [
+    "Got it! I am on it right now and updating the client pipeline.",
+    "Sounds great. The automation is running smoothly in production.",
+    "Understood! I will verify the webhook logs and report back in 5 mins.",
+    "Received! Everything is aligned with the agency weekly sprint goals.",
+    "Perfect, thanks for the update! Meeting with the client went exceptionally well.",
+  ];
+  return replies[Math.floor(Math.random() * replies.length)];
 }
