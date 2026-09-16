@@ -65,7 +65,7 @@ const NAV_GROUPS = [
 ];
 
 export default function Sidebar({ open, onClose, activeView, onNavigate }) {
-  const { currentUser, users, switchUser, logout } = useAuth();
+  const { currentUser, logout } = useAuth();
   const [collapsed, setCollapsed] = useState(() => {
     try {
       return localStorage.getItem('aeitron_sidebar_collapsed') === 'true';
@@ -326,37 +326,7 @@ export default function Sidebar({ open, onClose, activeView, onNavigate }) {
                 </div>
               </div>
 
-              {/* Role Switcher in dropdown */}
-              <div className="px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-text-muted">
-                Switch Role Profile
-              </div>
-              <div className="space-y-1 mb-2">
-                {users.map((u) => {
-                  const isCurrent = u.email.toLowerCase() === currentUser?.email.toLowerCase();
-                  return (
-                    <button
-                      key={u.id}
-                      onClick={() => {
-                        switchUser(u.email);
-                        setProfileMenuOpen(false);
-                      }}
-                      className={`
-                        w-full flex items-center justify-between p-1.5 rounded-lg text-xs transition-colors
-                        ${isCurrent ? 'bg-accent/15 text-accent font-semibold' : 'hover:bg-bg-hover text-text'}
-                      `}
-                    >
-                      <div className="flex items-center gap-2 truncate">
-                        <img src={u.avatar} alt={u.name} className="w-5 h-5 rounded-md object-cover" />
-                        <span className="truncate">{u.name}</span>
-                        <span className="text-[10px] text-text-muted">({u.role.split(' ')[0]})</span>
-                      </div>
-                      {isCurrent && <Check size={13} className="shrink-0 text-accent" />}
-                    </button>
-                  );
-                })}
-              </div>
-
-              <div className="border-t border-border/70 pt-1 space-y-0.5">
+              <div className="space-y-0.5 pt-0.5">
                 <button
                   onClick={() => {
                     onNavigate('roles');

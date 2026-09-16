@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { DEFAULT_EMAIL, DEFAULT_PASSWORD, DEFAULT_USERS } from '../utils/auth';
+import { DEFAULT_EMAIL, DEFAULT_PASSWORD } from '../utils/auth';
 import {
   Eye,
   EyeOff,
@@ -22,9 +22,9 @@ export default function LoginPage() {
   // Mode: 'login' | 'reset'
   const [mode, setMode] = useState('login');
 
-  // Login form state - defaults to Salung Prastyo (Sales Operator) or CEO
-  const [email, setEmail] = useState('sales@aeitron.com');
-  const [password, setPassword] = useState('admin');
+  // Login form state - team members log in with their own email and password
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
 
@@ -60,13 +60,6 @@ export default function LoginPage() {
     }, 1000);
     return () => clearInterval(timer);
   }, [lockoutSeconds]);
-
-  // One-click quick role selection
-  const handleSelectRole = (user) => {
-    setEmail(user.email);
-    setPassword('admin');
-    setError('');
-  };
 
   // Submit Login
   const handleLoginSubmit = async (e) => {
@@ -204,42 +197,6 @@ export default function LoginPage() {
             )}
           </div>
 
-          {/* Quick Role Selectors */}
-          {mode === 'login' && (
-            <div className="mb-5">
-              <label className="block text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-2">
-                Fast Role Switcher
-              </label>
-              <div className="grid grid-cols-2 gap-2">
-                {DEFAULT_USERS.map((u) => {
-                  const isSelected = email.toLowerCase() === u.email.toLowerCase();
-                  return (
-                    <button
-                      key={u.id}
-                      type="button"
-                      onClick={() => handleSelectRole(u)}
-                      className={`flex items-center gap-2 p-2 rounded-xl border text-left transition-all ${
-                        isSelected
-                          ? 'border-accent bg-accent/10 shadow-sm ring-1 ring-accent/30'
-                          : 'border-border bg-bg/50 hover:bg-bg hover:border-text-muted/30'
-                      }`}
-                    >
-                      <img
-                        src={u.avatar}
-                        alt={u.name}
-                        className="w-7 h-7 rounded-lg object-cover border border-border shrink-0"
-                      />
-                      <div className="min-w-0 flex-1">
-                        <div className="text-xs font-semibold text-text truncate">{u.name.split(' ')[0]}</div>
-                        <div className="text-[10px] text-text-muted truncate">{u.role}</div>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
           {/* Error Message */}
           {error && (
             <div className="flex items-start gap-2.5 text-xs text-danger bg-danger/10 border border-danger/25 rounded-xl p-3 mb-4 animate-fade-in">
@@ -281,7 +238,7 @@ export default function LoginPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     autoComplete="email"
-                    placeholder="sales@aeitron.com"
+                    placeholder="name@aeitron.com"
                     className="w-full pl-10 pr-4 py-2 bg-bg border border-border rounded-xl text-text text-sm placeholder:text-text-muted/40 outline-none transition-all duration-200 focus:border-accent focus:ring-2 focus:ring-accent/20"
                   />
                 </div>

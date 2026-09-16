@@ -15,7 +15,7 @@ import {
 import { useAuth } from '../../context/AuthContext';
 
 export default function RolesManagementView() {
-  const { currentUser, users, switchUser, addUser, deleteUser } = useAuth();
+  const { currentUser, users, addUser, deleteUser } = useAuth();
   const [modalOpen, setModalOpen] = useState(false);
 
   // Form State
@@ -131,19 +131,14 @@ export default function RolesManagementView() {
                 </div>
 
                 <div>
-                  {!isCurrent ? (
-                    <button
-                      type="button"
-                      onClick={() => switchUser(u.email)}
-                      className="px-3 py-1.5 bg-bg hover:bg-bg-hover text-text border border-border rounded-xl text-xs font-semibold transition-colors flex items-center gap-1.5"
-                    >
-                      <span>Switch</span>
-                      <ArrowRight size={12} />
-                    </button>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 text-xs text-success font-semibold">
+                  {isCurrent ? (
+                    <span className="inline-flex items-center gap-1.5 text-xs text-success font-semibold px-2.5 py-1 rounded-lg bg-success/10 border border-success/20">
                       <CheckCircle2 size={13} />
-                      Current
+                      Current Session
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 text-xs text-text-muted px-2.5 py-1 rounded-lg bg-bg border border-border">
+                      Registered Member
                     </span>
                   )}
                 </div>
