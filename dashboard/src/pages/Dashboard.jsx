@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   Calendar,
   ChevronDown,
   Download,
   TrendingUp,
+  Lock,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import DashboardLayout from '../components/layout/DashboardLayout';
@@ -59,7 +60,7 @@ import AICopilot from '../components/copilot/AICopilot';
 import useNotificationGenerator from '../hooks/useNotificationGenerator';
 
 export default function Dashboard() {
-  const { currentUser } = useAuth();
+  const { currentUser, isCEO, hasPermission } = useAuth();
   const [activeView, setActiveView] = useState('dashboard');
   const [formOpen, setFormOpen] = useState(false);
   const [editClient, setEditClient] = useState(null);
@@ -80,6 +81,18 @@ export default function Dashboard() {
 
   // Auto-generate notifications based on data changes
   useNotificationGenerator();
+
+  // Auto-redirect if active view is not permitted for current user
+  useEffect(() => {
+    if (!hasPermission(activeView)) {
+      const firstAllowed = Array.isArray(currentUser?.permissions) && currentUser.permissions.length > 0
+        ? currentUser.permissions[0]
+        : 'messages';
+      if (firstAllowed && firstAllowed !== activeView) {
+        setActiveView(firstAllowed);
+      }
+    }
+  }, [currentUser, activeView, hasPermission]);
 
   function handleAdd() {
     if (activeView === 'expenses') {
@@ -154,10 +167,22 @@ export default function Dashboard() {
           transition={{ duration: 0.18, ease: 'easeOut' }}
           className="space-y-6"
         >
-          {/* Main Dashboard Overview */}
-          {activeView === 'dashboard' && (
-            <DashboardView currentUser={currentUser} searchQuery={searchQuery} />
-          )}
+          {/* Permission Guard */}
+          {!hasPermission(activeView) ? (
+            <AccessRestrictedView
+              onReturnAllowed={() => {
+                const firstAllowed = Array.isArray(currentUser?.permissions) && currentUser.permissions.length > 0
+                  ? currentUser.permissions[0]
+                  : 'messages';
+                setActiveView(firstAllowed);
+              }}
+            />
+          ) : (
+            <>
+              {/* Main Dashboard Overview */}
+              {activeView === 'dashboard' && (
+                <DashboardView currentUser={currentUser} searchQuery={searchQuery} />
+              )}
 
           {/* AI Products & Solutions Catalog */}
           {activeView === 'products' && <ProductsCatalogView />}
@@ -273,6 +298,8 @@ export default function Dashboard() {
               onEdit={handleEditAutomation}
               onRequestDelete={handleRequestDelete}
             />
+          )}
+            </>
           )}
         </motion.div>
       </AnimatePresence>
@@ -553,5 +580,28 @@ function SystemView({ onEdit, onRequestDelete }) {
         </div>
       </div>
     </>
+  );
+}
+
+function AccessRestrictedView({ onReturnAllowed }) {
+  return (
+    <div className="min-h-[50vh] flex flex-col items-center justify-center text-center p-8 bg-bg-card border border-border rounded-2xl shadow-xs animate-fade-in max-w-lg mx-auto my-8">
+      <div className="w-14 h-14 rounded-2xl bg-danger/10 text-danger flex items-center justify-center mb-4 border border-danger/20">
+        <Lock size={28} />
+      </div>
+      <h2 className="text-base font-bold text-text mb-1.5">
+        Access Restricted: Module Not Assigned
+      </h2>
+      <p className="text-xs text-text-muted leading-relaxed max-w-sm mb-6">
+        Your account permissions configured by CEO Mahmud Hasan do not include access to this dashboard section. Please contact your CEO if you require access.
+      </p>
+      <button
+        type="button"
+        onClick={onReturnAllowed}
+        className="px-5 py-2.5 bg-accent hover:bg-accent-hover text-white text-xs font-semibold rounded-xl transition-all shadow-sm cursor-pointer active:scale-95"
+      >
+        Return to Allowed Workspace
+      </button>
+    </div>
   );
 }

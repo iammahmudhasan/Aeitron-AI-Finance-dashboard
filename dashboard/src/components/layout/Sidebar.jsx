@@ -66,7 +66,7 @@ const NAV_GROUPS = [
 ];
 
 export default function Sidebar({ open, onClose, activeView, onNavigate }) {
-  const { currentUser, logout } = useAuth();
+  const { currentUser, logout, isCEO, hasPermission } = useAuth();
   const [collapsed, setCollapsed] = useState(() => {
     try {
       return localStorage.getItem('aeitron_sidebar_collapsed') === 'true';
@@ -253,53 +253,64 @@ export default function Sidebar({ open, onClose, activeView, onNavigate }) {
           </button>
         </div>
 
-        {/* Navigation items list */}
+        {/* Navigation items list filtered by CEO-assigned permissions */}
         <nav className="flex-1 px-3 py-2 space-y-4 overflow-y-auto custom-scrollbar">
-          {NAV_GROUPS.map((group) => (
-            <div key={group.label} className="space-y-1">
-              {!collapsed && (
-                <div className="px-3 py-1 text-[11px] font-semibold text-sidebar-text/50 uppercase tracking-wider">
-                  {group.label}
-                </div>
-              )}
-              <div className="space-y-0.5">
-                {group.items.map((item) => {
-                  const isActive = activeView === item.view;
-                  const Icon = item.icon;
-                  const itemBadge = item.view === 'messages'
-                    ? (activeView === 'messages' || unreadMessages <= 0 ? null : unreadMessages)
-                    : item.badge;
+          {NAV_GROUPS.map((group) => {
+            // Filter items based on user's granted permissions
+            const visibleItems = group.items.filter((item) => {
+              if (item.view === 'roles') return isCEO;
+              return hasPermission(item.view);
+            });
 
-                  return (
-                    <button
-                      key={item.label}
-                      onClick={() => handleNav(item.view)}
-                      title={collapsed ? item.label : undefined}
-                      className={`
-                        w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium
-                        transition-all duration-150 cursor-pointer
-                        ${collapsed ? 'justify-center px-2 py-2.5' : ''}
-                        ${isActive
-                          ? 'bg-slate-900 text-white shadow-sm dark:bg-accent dark:text-white font-semibold'
-                          : 'text-sidebar-text hover:text-sidebar-text-active hover:bg-sidebar-hover'
-                        }
-                      `}
-                    >
-                      <Icon size={17} className={isActive ? 'text-white' : 'text-sidebar-text/70'} />
-                      {!collapsed && (
-                        <span className="truncate flex-1 text-left">{item.label}</span>
-                      )}
-                      {!collapsed && itemBadge && (
-                        <span className="px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-accent/20 text-accent dark:bg-accent-light dark:text-accent">
-                          {itemBadge}
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
+            // If no items in this group are permitted for this user, do not render this group
+            if (visibleItems.length === 0) return null;
+
+            return (
+              <div key={group.label} className="space-y-1">
+                {!collapsed && (
+                  <div className="px-3 py-1 text-[11px] font-semibold text-sidebar-text/50 uppercase tracking-wider">
+                    {group.label}
+                  </div>
+                )}
+                <div className="space-y-0.5">
+                  {visibleItems.map((item) => {
+                    const isActive = activeView === item.view;
+                    const Icon = item.icon;
+                    const itemBadge = item.view === 'messages'
+                      ? (activeView === 'messages' || unreadMessages <= 0 ? null : unreadMessages)
+                      : item.badge;
+
+                    return (
+                      <button
+                        key={item.label}
+                        onClick={() => handleNav(item.view)}
+                        title={collapsed ? item.label : undefined}
+                        className={`
+                          w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium
+                          transition-all duration-150 cursor-pointer
+                          ${collapsed ? 'justify-center px-2 py-2.5' : ''}
+                          ${isActive
+                            ? 'bg-slate-900 text-white shadow-sm dark:bg-accent dark:text-white font-semibold'
+                            : 'text-sidebar-text hover:text-sidebar-text-active hover:bg-sidebar-hover'
+                          }
+                        `}
+                      >
+                        <Icon size={17} className={isActive ? 'text-white' : 'text-sidebar-text/70'} />
+                        {!collapsed && (
+                          <span className="truncate flex-1 text-left">{item.label}</span>
+                        )}
+                        {!collapsed && itemBadge && (
+                          <span className="px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-accent/20 text-accent dark:bg-accent-light dark:text-accent">
+                            {itemBadge}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </nav>
 
         {/* Bottom Profile Widget & Menu */}
@@ -340,17 +351,19 @@ export default function Sidebar({ open, onClose, activeView, onNavigate }) {
                   <Settings size={14} className="text-text-muted" />
                   <span>Settings</span>
                 </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    onNavigate('roles');
-                    setProfileMenuOpen(false);
-                  }}
-                  className="w-full flex items-center gap-2 px-2.5 py-1.5 text-xs text-text hover:bg-bg-hover rounded-lg transition-colors cursor-pointer"
-                >
-                  <ShieldCheck size={14} className="text-text-muted" />
-                  <span>Roles & Permissions</span>
-                </button>
+                {isCEO && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onNavigate('roles');
+                      setProfileMenuOpen(false);
+                    }}
+                    className="w-full flex items-center gap-2 px-2.5 py-1.5 text-xs text-text hover:bg-bg-hover rounded-lg transition-colors cursor-pointer"
+                  >
+                    <ShieldCheck size={14} className="text-text-muted" />
+                    <span>Roles & Permissions</span>
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => {

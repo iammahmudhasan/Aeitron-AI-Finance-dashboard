@@ -12,6 +12,11 @@ import {
   saveUser as authSaveUser,
   deleteUser as authDeleteUser,
   getUserByEmail,
+  setUserPassword as authSetUserPassword,
+  getUserPassword as authGetUserPassword,
+  isUserCEO,
+  hasPermission as authHasPermission,
+  AVAILABLE_MODULES,
 } from '../utils/auth';
 
 const AuthContext = createContext(null);
@@ -97,12 +102,31 @@ export function AuthProvider({ children }) {
     return await authResetPassword(email, newPassword);
   }, []);
 
+  const setUserPassword = useCallback(async (email, newPassword) => {
+    const ok = await authSetUserPassword(email, newPassword);
+    if (ok) refreshUsers();
+    return ok;
+  }, [refreshUsers]);
+
+  const getUserPassword = useCallback((email) => {
+    return authGetUserPassword(email);
+  }, []);
+
+  const isCEO = isUserCEO(currentUser);
+
+  const hasPermission = useCallback((viewId) => {
+    return authHasPermission(currentUser, viewId);
+  }, [currentUser]);
+
   return (
     <AuthContext.Provider
       value={{
         isAuthenticated,
         currentUser,
         users,
+        isCEO,
+        hasPermission,
+        availableModules: AVAILABLE_MODULES,
         login,
         logout,
         switchUser,
@@ -110,6 +134,8 @@ export function AuthProvider({ children }) {
         updateUser,
         deleteUser,
         resetPassword,
+        setUserPassword,
+        getUserPassword,
         getLockoutState,
         refreshUsers,
       }}

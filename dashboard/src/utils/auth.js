@@ -15,7 +15,36 @@ export const STORAGE_USERS_LIST = 'aeitron_users_list';
 export const STORAGE_ACTIVE_USER = 'aeitron_active_user';
 
 /**
+ * Granular Dashboard Modules available for CEO Role-Based Control.
+ */
+export const AVAILABLE_MODULES = [
+  { id: 'dashboard', name: 'Dashboard Overview', category: 'Main Menu', description: 'Executive KPI cards, revenue metrics, goal tracking' },
+  { id: 'products', name: 'Products & Solutions', category: 'Main Menu', description: 'AI products catalog, pricing tiers, and packages' },
+  { id: 'transactions', name: 'Transactions Ledger', category: 'Main Menu', description: 'Live settlement audit records and transaction history' },
+  { id: 'reports', name: 'Reports & Analytics', category: 'Main Menu', description: 'Financial analytics, revenue charts, and margin breakdown' },
+  { id: 'messages', name: 'Internal Team Chat', category: 'Main Menu', description: 'Agency communication channels and direct team messages' },
+  { id: 'team', name: 'Team Performance', category: 'Main Menu', description: 'Staff quota metrics, performance KPIs, and payout calculator' },
+  { id: 'campaigns', name: 'Campaigns', category: 'Main Menu', description: 'Outbound sales campaigns and conversion analytics' },
+
+  { id: 'clients', name: 'Customer Portfolio', category: 'Customers & CRM', description: 'Enterprise client CRM records and contract values' },
+  { id: 'channels', name: 'Channels', category: 'Customers & CRM', description: 'Client acquisition channels and pipeline tracking' },
+  { id: 'orders', name: 'Order Management', category: 'Customers & CRM', description: 'Client project deliverables and fulfillment status' },
+  { id: 'leads', name: 'Leads Pipeline', category: 'Customers & CRM', description: 'Sales prospect pipeline and Kanban deal board' },
+
+  { id: 'expenses', name: 'Expense Tracker', category: 'Finance & Operations', description: 'Operational agency expenditures and category burn rates' },
+  { id: 'invoices', name: 'Invoices & Billing', category: 'Finance & Operations', description: 'Client invoicing, draft settlements, and paid receipts' },
+  { id: 'billing', name: 'Billing & Subscriptions', category: 'Finance & Operations', description: 'Agency software retainers and subscription plans' },
+  { id: 'integrations', name: 'Integrations Hub', category: 'Finance & Operations', description: 'API endpoints, telephony webhooks, and automation tools' },
+
+  { id: 'support', name: 'Customer Support', category: 'Support & System', description: 'Client support tickets, SLA tracking, and responses' },
+  { id: 'help', name: 'Help Center & SOPs', category: 'Support & System', description: 'Agency standard operating procedures and documentation' },
+  { id: 'system', name: 'System Settings', category: 'Support & System', description: 'Automations, telephony triggers, and system configuration' },
+];
+
+/**
  * Built-in business team accounts for multi-role operations.
+ * CEO retains 'admin' default password and master access.
+ * Non-CEO accounts have individual dedicated passwords and role-based permissions.
  */
 export const DEFAULT_USERS = [
   {
@@ -28,6 +57,7 @@ export const DEFAULT_USERS = [
     department: 'Executive',
     badge: '👑 Master Access',
     permissions: ['all'],
+    defaultPassword: 'admin',
   },
   {
     id: 'usr_sales',
@@ -38,7 +68,8 @@ export const DEFAULT_USERS = [
     avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&h=120&fit=crop&crop=faces',
     department: 'Sales & Growth',
     badge: '💼 Commercial Lead',
-    permissions: ['dashboard', 'products', 'transactions', 'clients', 'orders', 'campaigns', 'invoices', 'reports'],
+    permissions: ['dashboard', 'products', 'transactions', 'clients', 'orders', 'campaigns', 'messages', 'leads'],
+    defaultPassword: 'sales@2026',
   },
   {
     id: 'usr_finance',
@@ -49,7 +80,8 @@ export const DEFAULT_USERS = [
     avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=120&h=120&fit=crop&crop=faces',
     department: 'Treasury & Accounts',
     badge: '📊 Financial Controller',
-    permissions: ['dashboard', 'expenses', 'invoices', 'transactions', 'billing', 'reports', 'team'],
+    permissions: ['dashboard', 'expenses', 'invoices', 'transactions', 'billing', 'reports', 'messages'],
+    defaultPassword: 'finance@2026',
   },
   {
     id: 'usr_ops',
@@ -60,7 +92,8 @@ export const DEFAULT_USERS = [
     avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=120&h=120&fit=crop&crop=faces',
     department: 'AI & Automations',
     badge: '🤖 Systems Architect',
-    permissions: ['dashboard', 'agents', 'system', 'discovery', 'integrations'],
+    permissions: ['dashboard', 'integrations', 'system', 'support', 'messages', 'channels'],
+    defaultPassword: 'ops@2026',
   },
 ];
 
@@ -87,6 +120,7 @@ export function isValidEmail(email) {
 
 /**
  * Retrieves all registered users from storage or defaults.
+ * Automatically upgrades existing storage so non-CEO accounts receive dedicated default passwords.
  */
 export function getAllUsers() {
   try {
@@ -94,7 +128,30 @@ export function getAllUsers() {
     if (raw) {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed;
+        let changed = false;
+        const upgraded = parsed.map((u) => {
+          const def = DEFAULT_USERS.find((d) => d.email.toLowerCase() === u.email?.toLowerCase());
+          // Ensure non-CEO users do not inherit 'admin' as default password
+          if (def) {
+            const isNonCeo = u.email.toLowerCase() !== DEFAULT_EMAIL.toLowerCase();
+            const needsPass = !u.defaultPassword || (isNonCeo && u.defaultPassword === 'admin');
+            const needsPerms = !Array.isArray(u.permissions) || u.permissions.length === 0;
+            if (needsPass || needsPerms) {
+              changed = true;
+              return {
+                ...u,
+                defaultPassword: needsPass ? def.defaultPassword : u.defaultPassword,
+                permissions: needsPerms ? def.permissions : u.permissions,
+              };
+            }
+          }
+          return u;
+        });
+
+        if (changed) {
+          localStorage.setItem(STORAGE_USERS_LIST, JSON.stringify(upgraded));
+        }
+        return upgraded;
       }
     }
   } catch (err) {
@@ -118,11 +175,86 @@ export function getUserByEmail(email) {
 }
 
 /**
+ * Check if a user is the CEO (Mahmud Hasan).
+ */
+export function isUserCEO(user) {
+  if (!user) return false;
+  const emailMatch = user.email?.trim().toLowerCase() === DEFAULT_EMAIL.toLowerCase();
+  const roleMatch = user.role === 'CEO & Founder' || user.roleKey === 'ceo';
+  const hasAll = Array.isArray(user.permissions) && user.permissions.includes('all');
+  return emailMatch || roleMatch || hasAll;
+}
+
+/**
+ * Checks whether a user has permission to view a given dashboard module.
+ */
+export function hasPermission(user, viewId) {
+  if (!user || !viewId) return false;
+  // CEO has unconditional master access to all modules
+  if (isUserCEO(user)) return true;
+  // 'roles' (Roles & Permissions) is strictly CEO-exclusive
+  if (viewId === 'roles') return false;
+  if (Array.isArray(user.permissions)) {
+    return user.permissions.includes(viewId) || user.permissions.includes('all');
+  }
+  return false;
+}
+
+/**
+ * Get current plain password for user (for CEO view & credentials management).
+ */
+export function getUserPassword(email) {
+  if (!email) return '';
+  const normalized = email.trim().toLowerCase();
+  try {
+    const raw = localStorage.getItem(`${STORAGE_CUSTOM_AUTH}_${normalized}`);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed?.plainPassword) return parsed.plainPassword;
+    }
+  } catch {}
+  const u = getUserByEmail(normalized);
+  if (u?.defaultPassword) return u.defaultPassword;
+  return normalized === DEFAULT_EMAIL.toLowerCase() ? DEFAULT_PASSWORD : 'user@2026';
+}
+
+/**
+ * Allows the CEO to update a team member's password directly.
+ */
+export async function setUserPassword(email, newPassword) {
+  if (!email || !newPassword) return false;
+  const normalized = email.trim().toLowerCase();
+  try {
+    const passwordHash = await hashPassword(newPassword);
+    const data = {
+      email: normalized,
+      passwordHash,
+      plainPassword: newPassword,
+      updatedAt: Date.now(),
+    };
+    localStorage.setItem(`${STORAGE_CUSTOM_AUTH}_${normalized}`, JSON.stringify(data));
+
+    // Also update defaultPassword in users list
+    const users = getAllUsers();
+    const idx = users.findIndex((u) => u.email.toLowerCase() === normalized);
+    if (idx >= 0) {
+      users[idx] = { ...users[idx], defaultPassword: newPassword };
+      localStorage.setItem(STORAGE_USERS_LIST, JSON.stringify(users));
+    }
+    return true;
+  } catch (err) {
+    console.error('[Auth] Failed to set user password:', err);
+    return false;
+  }
+}
+
+/**
  * Retrieves stored custom password credentials per user email.
  */
-export function getStoredPasswordHash(email) {
+export async function getStoredPasswordHash(email) {
+  const normalized = (email || '').trim().toLowerCase();
   try {
-    const raw = localStorage.getItem(`${STORAGE_CUSTOM_AUTH}_${email.trim().toLowerCase()}`);
+    const raw = localStorage.getItem(`${STORAGE_CUSTOM_AUTH}_${normalized}`);
     if (raw) {
       const parsed = JSON.parse(raw);
       if (parsed?.passwordHash) return parsed.passwordHash;
@@ -130,7 +262,20 @@ export function getStoredPasswordHash(email) {
   } catch (err) {
     console.error('[Auth] Error reading user password hash:', err);
   }
-  return DEFAULT_PASSWORD_HASH;
+
+  // Check user record for dedicated defaultPassword
+  const user = getUserByEmail(normalized);
+  if (user?.defaultPassword) {
+    return await hashPassword(user.defaultPassword);
+  }
+
+  // Only CEO falls back to DEFAULT_PASSWORD_HASH ('admin')
+  if (normalized === DEFAULT_EMAIL.toLowerCase()) {
+    return DEFAULT_PASSWORD_HASH;
+  }
+
+  // Non-CEO with no set password defaults to 'user@2026'
+  return await hashPassword('user@2026');
 }
 
 /**
@@ -251,12 +396,20 @@ export async function validateCredentials(email, password) {
   }
 
   const inputHash = await hashPassword(password);
-  const expectedHash = getStoredPasswordHash(normalizedEmail);
+  const expectedHash = await getStoredPasswordHash(normalizedEmail);
+  const isCEO = normalizedEmail === DEFAULT_EMAIL.toLowerCase();
 
-  // Accept password if matching stored hash or default password hash
-  if (inputHash === expectedHash || (password === 'admin' && inputHash === DEFAULT_PASSWORD_HASH)) {
+  // For CEO (Mahmud Hasan): accept either custom stored hash or default password 'admin'
+  if (isCEO && (inputHash === expectedHash || (password === DEFAULT_PASSWORD && inputHash === DEFAULT_PASSWORD_HASH))) {
     resetFailedAttempts();
-    console.info(`[Auth] Successful login at ${new Date().toISOString()} for ${normalizedEmail} (${user.role})`);
+    console.info(`[Auth] Successful login for CEO Mahmud Hasan`);
+    return { success: true, user };
+  }
+
+  // For all other team members: strictly require their assigned password (never accept 'admin' unless assigned)
+  if (!isCEO && inputHash === expectedHash) {
+    resetFailedAttempts();
+    console.info(`[Auth] Successful login for ${normalizedEmail} (${user.role})`);
     return { success: true, user };
   }
 
@@ -337,11 +490,16 @@ export function saveUser(user) {
         avatar: user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || 'User')}&background=6366f1&color=fff`,
         department: user.department || 'Operations',
         badge: user.badge || 'Team Member',
-        permissions: user.permissions || ['dashboard'],
+        permissions: user.permissions || ['dashboard', 'messages'],
+        defaultPassword: user.defaultPassword || 'member@2026',
       };
       updatedUsers = [...users, newUser];
     }
     localStorage.setItem(STORAGE_USERS_LIST, JSON.stringify(updatedUsers));
+
+    if (user.defaultPassword) {
+      setUserPassword(user.email, user.defaultPassword);
+    }
     return true;
   } catch (err) {
     console.error('[Auth] Failed to save user:', err);
