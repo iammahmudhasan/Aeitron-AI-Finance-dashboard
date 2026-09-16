@@ -25,7 +25,7 @@ export default function SalesTrendChart() {
   const totalBlocks = 12; // 12 discrete block levels
 
   return (
-    <div className="bg-bg-card border border-border/80 rounded-2xl p-6 shadow-xs flex flex-col justify-between relative overflow-hidden">
+    <div className="bg-bg-card border border-border/80 rounded-2xl p-6 shadow-xs flex flex-col justify-between relative">
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border/50">
         <div>
@@ -81,7 +81,7 @@ export default function SalesTrendChart() {
       </div>
 
       {/* Chart Canvas Area */}
-      <div className="relative pt-6 pb-2">
+      <div className="relative pt-8 pb-2">
         <div className="flex">
           {/* Y Axis Labels */}
           <div className="flex flex-col justify-between pr-3 text-[11px] font-mono text-text-muted/70 h-52 select-none">
@@ -109,6 +109,14 @@ export default function SalesTrendChart() {
               const newBlocks = Math.max(0, totalActiveBlocks - existingBlocks);
               const isHovered = hoveredIndex === idx;
 
+              // Smart alignment so tooltips never clip outside container bounds
+              const tooltipAlignClass =
+                idx >= 9
+                  ? 'right-0'
+                  : idx <= 1
+                  ? 'left-0'
+                  : 'left-1/2 -translate-x-1/2';
+
               return (
                 <div
                   key={item.month}
@@ -122,23 +130,25 @@ export default function SalesTrendChart() {
 
                   {/* Floating Tooltip Card */}
                   {isHovered && (
-                    <div className="absolute -top-14 left-1/2 -translate-x-1/2 bg-bg-card border border-border shadow-xl rounded-xl p-2.5 z-30 pointer-events-none whitespace-nowrap animate-fade-in text-xs min-w-[130px]">
+                    <div
+                      className={`absolute -top-16 ${tooltipAlignClass} bg-bg-card border border-border shadow-xl rounded-xl p-2.5 z-40 pointer-events-none whitespace-nowrap animate-fade-in text-xs min-w-[140px]`}
+                    >
                       <div className="font-semibold text-text mb-1 border-b border-border/50 pb-1 text-[11px]">
                         {item.month} 2025
                       </div>
-                      <div className="flex items-center justify-between gap-3 text-[11px] text-text-muted">
+                      <div className="flex items-center justify-between gap-4 text-[11px] text-text-muted">
                         <span className="flex items-center gap-1.5">
                           <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
                           New User
                         </span>
-                        <span className="font-semibold text-text">{item.newUsers}k</span>
+                        <span className="font-bold text-text font-mono">{item.newUsers}k</span>
                       </div>
-                      <div className="flex items-center justify-between gap-3 text-[11px] text-text-muted">
+                      <div className="flex items-center justify-between gap-4 text-[11px] text-text-muted mt-0.5">
                         <span className="flex items-center gap-1.5">
                           <span className="w-1.5 h-1.5 rounded-full bg-slate-900 dark:bg-white" />
                           Existing User
                         </span>
-                        <span className="font-semibold text-text">{item.existingUsers}k</span>
+                        <span className="font-bold text-text font-mono">{item.existingUsers}k</span>
                       </div>
                     </div>
                   )}
