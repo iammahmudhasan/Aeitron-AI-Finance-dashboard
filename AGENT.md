@@ -1,295 +1,176 @@
-# Agent Instructions
+# AGENT.md — Aeitron AI Engineering Standards
 
-You are working inside the **WAT framework** (Workflows, Agents, Tools) for the **Aeitron AI Automation Agency OS**. This architecture separates concerns so that probabilistic AI handles reasoning and coordination while deterministic code handles execution. That separation is what ensures the system remains robust, predictable, and scalable.
+This file defines the non-negotiable engineering standards for all code written in this repository. Every agent, contributor, or automated tool working on this codebase must follow these rules without exception unless explicitly told otherwise by the project owner.
+
+## Mandatory Git Workflow: Immediate Commit & Push
+- **Every change must be committed and pushed immediately:** Whenever any code, script, documentation, or configuration is added or modified, verify it, stage it, create a descriptive git commit, and push it directly to GitHub (`git push origin master`).
+- Never leave uncommitted or unpushed work behind at the end of any interaction or task.
 
 ---
 
-## 🚨 MANDATORY CARDINAL RULES
+## Core Principle
 
-### Rule 1: Immediate Git Commit & Push After Every Change
-Every single time you make or modify code, scripts, configurations, or workflows:
-1. **Verify & Validate:** Test that the changes compile/run without regressions.
-2. **Stage & Commit:** Stage all modified/new files with a clear, descriptive conventional commit message (`feat:`, `fix:`, `refactor:`, `docs:`).
-3. **Push to GitHub Immediately:** Push to `origin <branch>` right away. Never leave uncommitted or unpushed work behind at the end of a turn.
+No prototypes, no placeholders, no pseudocode, no "TODO: fix later" — unless explicitly requested. Every piece of code written here is assumed to run in production, in front of real customers, handling real automation workflows. Treat every function as if it will be called under load, with malformed input, during a network partition, at 3 AM with no one watching.
 
-```bash
-git add <files>
-git commit -m "feat(module): descriptive explanation of change"
-git push origin <branch>
+Before writing any code, ask: **what breaks this, and have I handled it?** If you can't answer that, the code isn't done.
+
+---
+
+## 1. Error Handling
+
+- Every external call (DB query, HTTP request, file I/O, third-party API, queue operation) MUST be wrapped in explicit error handling. Never assume a call succeeds.
+- No empty `catch` blocks. No swallowed errors. Every catch either recovers, retries with backoff, or re-throws with added context.
+- Distinguish between **retryable** errors (network timeout, 503, rate limit) and **non-retryable** errors (validation failure, 401, malformed payload). Don't retry things that will never succeed.
+- Use typed/custom error classes (`ValidationError`, `ExternalServiceError`, `AuthError`, etc.) instead of throwing generic `Error` or raw strings.
+- Every async function that can fail must have a defined failure contract — what does the caller get back on failure? Don't let errors bubble up unhandled to the top of the stack.
+
+```typescript
+// Not acceptable
+async function fetchClient(id: string) {
+  const res = await api.get(`/clients/${id}`);
+  return res.data;
+}
+
+// Acceptable
+async function fetchClient(id: string): Promise<Result<Client, ExternalServiceError>> {
+  try {
+    const res = await api.get(`/clients/${id}`, { timeout: 5000 });
+    return { ok: true, value: res.data };
+  } catch (err) {
+    if (isAxiosError(err) && err.response?.status === 404) {
+      return { ok: false, error: new NotFoundError(`Client ${id} not found`) };
+    }
+    logger.error("fetchClient failed", { clientId: id, err });
+    return { ok: false, error: new ExternalServiceError("Client service unreachable", { cause: err }) };
+  }
+}
 ```
 
 ---
 
-### Rule 2: Always Write Production-Level Code (Senior Engineering Mindset)
+## 2. Input Validation
 
-#### What "Production-Level Code" Actually Means
-A piece of code is only truly production-ready when it does not just work on the "happy path," but explicitly handles what happens when things **fail**.
+- Never trust external input — API payloads, query params, webhook bodies, env vars, file uploads. Validate at the boundary, before the data enters business logic.
+- Use a schema validator (Zod is the standard here) for every API route, every webhook handler, every job payload.
+- Reject early. Don't let invalid data travel deep into the call stack before failing.
+- Sanitize anything that touches a DB query, shell command, or HTML output.
 
-> **The difference between Junior and Senior Engineers:**  
-> A junior engineer's code works when everything goes right. A senior engineer's code is engineered for when things go wrong.
+```typescript
+const createAutomationSchema = z.object({
+  name: z.string().min(1).max(120),
+  trigger: z.enum(["webhook", "schedule", "manual"]),
+  clientId: z.string().uuid(),
+  config: z.record(z.unknown()).refine(isValidConfigShape, "Invalid config shape"),
+});
 
-Every single decision, check, and line of code must answer one fundamental question:  
-**"If this check or line is not here, what breaks in the real world under failure or load?"**
-
----
-
-## 🏛️ The 8 Pillars of Production-Level Code
-
-### 1. Error Handling Everywhere
-* Every external interaction (Database query, external API call, file system I/O, network socket) can and will eventually fail.
-* **Core Mindset:** *"Assume the network is inherently unreliable."*
-* Never just wrap code in a generic try/catch. Explicitly distinguish between:
-  - **Retry:** Transient network hiccups, rate limits with backoff (`exponential backoff with jitter`).
-  - **Fail-Fast:** Invalid client parameters, missing required credentials, unrecoverable states.
-  - **Fallback:** Graceful degradation (e.g., serving cached data, returning a default safe response, queuing for background processing).
-
-### 2. Input Validation & Boundary Checks
-* **Core Mindset:** *"Never trust external input."*
-* Every user input, webhook payload, query param, and even environment variable must be validated.
-* Always handle:
-  - `null`, `undefined`, empty strings, and missing keys.
-  - Negative numbers, zero, oversized arrays, or out-of-range numerical bounds.
-  - Unexpected data types or malformed payloads.
-
-### 3. Structured Logging & Observability
-* In a production environment, you **cannot** attach an interactive debugger. When an issue occurs, your logs are your only lifeline.
-* Use structured logging (JSON or tagged context) with:
-  - Timestamp (ISO 8601 UTC)
-  - Log level (`DEBUG`, `INFO`, `WARN`, `ERROR`)
-  - Request ID / Correlation ID
-  - Contextual metadata (User ID, action name, resource ID) — **NEVER** log passwords, tokens, or raw PII.
-
-### 4. Externalized Configuration & Secret Hygiene
-* Zero hardcoded credentials, API keys, database connection strings, URLs, or magic numbers in the codebase.
-* All configuration must be externalized via `.env` files or environment variables.
-* Guard against missing configs at application boot time (validate that required environment variables exist before running).
-
-### 5. Comprehensive Testing Coverage
-* Do not just test that the happy path returns `200 OK`.
-* Write tests for:
-  - Boundary conditions and invalid inputs.
-  - Failure cases (simulated network outage, 500 error from 3rd party APIs).
-  - Concurrency, race conditions, and idempotency.
-
-### 6. Performance & Scalability Considerations
-* Code that runs fine for 10 users in development can crash under 100,000 users in production.
-* Watch out for:
-  - **N+1 query problems:** Batch database lookups or use joins.
-  - **Memory leaks:** Unclosed connections, unbounded in-memory caches, retaining event listeners.
-  - **Unbounded loops/queries:** Always paginate database and API queries with strict limits.
-  - **Non-blocking async:** Never execute CPU-heavy or blocking synchronous calls inside an async event loop.
-
-### 7. Security by Default
-* Security is not an afterthought or a patch; it must be built into the first draft:
-  - **SQL Injection:** Always use parameterized queries or trusted ORMs. Never concatenate strings into SQL queries.
-  - **XSS & Injection:** Sanitize and escape all HTML and external outputs.
-  - **Auth & Access Control:** Verify authentication and authorization boundaries on every protected operation.
-  - **Data Exposure:** Never return sensitive fields (password hashes, secret keys, internal IDs) in API responses.
-
-### 8. Documentation & Readability
-* Production code must be maintainable. Code is read far more often than it is written.
-* Maintain clean variable and function naming that explains *intent*.
-* Preserve clear docstrings and comments explaining the *why* (business logic, architectural trade-offs, bug workarounds) rather than restating the syntax.
-
----
-
-## 🚫 Absolute Anti-Patterns: What You Must NEVER Do
-
-| Anti-Pattern | Why It Is Dangerous |
-| :--- | :--- |
-| **Silent Failures / Swallowing Errors** | Leaving an empty `catch` or `except: pass` hides critical bugs and leaves the system in an unknown corrupted state. |
-| **Hardcoded Secrets or Credentials** | Pushing API keys, passwords, or tokens to version control creates immediate security vulnerabilities. |
-| **"TODO: fix later" on Critical Logic** | Shipping code with deferred error handling, incomplete auth, or missing validations invites production disasters. |
-| **Assuming Edge Cases "Won't Happen"** | If an edge case is mathematically or physically possible, it *will* happen in production under real user traffic. |
-| **Copy-Paste Duplication** | Repeating code across multiple files makes bug fixes fragile and maintenance expensive. |
-| **Blocking Operations in Async Loops** | Calling blocking synchronous I/O blocks the entire thread pool or event loop, choking throughput for all users. |
-
----
-
-## 🧠 Thinking from First Principles: An Example
-
-First principles means not blindly copying a design because *"that's how everyone does it."* Instead, break down the problem and ask:
-- What are the actual failure modes?
-- What will happen under heavy traffic or network failure?
-- How sensitive is this data?
-
-### Case Study: A User Authentication Function
-
-#### ❌ Prototype-Level (Not Production-Ready)
-```python
-def login(username, password):
-    # DANGEROUS: SQL injection vulnerability, plaintext password comparison,
-    # no rate limiting, no error handling, no audit trail.
-    user = db.query(f"SELECT * FROM users WHERE username='{username}'")
-    if user.password == password:
-        return "success"
-    return "fail"
+router.post("/automations", async (req, res) => {
+  const parsed = createAutomationSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: "Invalid payload", details: parsed.error.flatten() });
+  }
+  // proceed only with validated data
+});
 ```
 
-#### ✅ Production-Level (First Principles Applied)
-```python
-import bcrypt
-import logging
-from datetime import datetime, timedelta
-from typing import Optional
+---
 
-logger = logging.getLogger(__name__)
+## 3. Logging & Observability
 
-MAX_ATTEMPTS = 5
-LOCKOUT_DURATION = timedelta(minutes=15)
+- Use structured logging (JSON, not `console.log` strings) with a proper logger (pino/winston). Every log line should carry context: `requestId`, `userId`/`clientId`, `route`, timestamp.
+- Log at the right level: `error` for actual failures, `warn` for degraded-but-recovered situations, `info` for significant business events (automation triggered, workflow completed), `debug` for local dev only.
+- Never log secrets, tokens, passwords, or full request bodies containing PII.
+- Every request should be traceable end-to-end through a `requestId`/`correlationId` propagated across service calls and background jobs.
+- Add metrics for anything that matters to the business: automation success/failure rate, job queue depth, API latency per route.
 
-class LoginResult:
-    def __init__(self, success: bool, user_id: Optional[int] = None, error: Optional[str] = None):
-        self.success = success
-        self.user_id = user_id
-        self.error = error
+---
 
-def login(username: str, password: str) -> LoginResult:
-    # 1. Boundary & Input Validation
-    if not username or not password or len(username) > 100 or len(password) > 256:
-        return LoginResult(success=False, error="Invalid credentials format")
+## 4. Configuration & Secrets
 
-    try:
-        # 2. Rate Limiting & Brute-Force Protection
-        if is_locked_out(username):
-            logger.warning("Login blocked due to lockout", extra={"username": username})
-            return LoginResult(success=False, error="Account temporarily locked. Please try again later.")
+- Zero hardcoded credentials, API keys, DB URLs, or webhook secrets in source code — no exceptions, not even in test files or comments.
+- All config loaded from environment variables, validated at startup (fail fast if a required var is missing — don't let the app boot into a broken state).
+- Use `.env.example` to document required vars without exposing real values.
+- Secrets belong in a secrets manager or platform-level env injection, never committed to git.
 
-        # 3. Secure Parameterized Query (No SQL Injection)
-        user = db.query_one(
-            "SELECT id, password_hash, is_active FROM users WHERE username = %s",
-            (username,)
-        )
+```typescript
+const envSchema = z.object({
+  DATABASE_URL: z.string().url(),
+  STRIPE_SECRET_KEY: z.string().min(1),
+  JWT_SECRET: z.string().min(32),
+  NODE_ENV: z.enum(["development", "staging", "production"]),
+});
 
-        # 4. Timing-safe password verification
-        if not user or not user.is_active or not bcrypt.checkpw(password.encode("utf-8"), user.password_hash.encode("utf-8")):
-            record_failed_attempt(username)
-            logger.info("Failed login attempt", extra={"username": username})
-            return LoginResult(success=False, error="Invalid username or password")
-
-        # 5. Success Audit & State Reset
-        reset_failed_attempts(username)
-        logger.info("Successful login", extra={"user_id": user.id, "username": username})
-        return LoginResult(success=True, user_id=user.id)
-
-    except DatabaseConnectionError as e:
-        # 6. Graceful Service Degradation & Structured Error Logging
-        logger.error("Database connection failure during login", extra={"error": str(e)}, exc_info=True)
-        return LoginResult(success=False, error="Authentication service is temporarily unavailable")
-    except Exception as e:
-        # 7. Fail-safe Catch-all
-        logger.critical("Unexpected error during login execution", extra={"error": str(e)}, exc_info=True)
-        return LoginResult(success=False, error="An unexpected error occurred")
+export const env = envSchema.parse(process.env); // crashes on boot if misconfigured, which is correct
 ```
 
-**Key Takeaway:** The production implementation is longer not for the sake of verbosity, but because every single additional line answers a real-world failure mode or security requirement.
+---
+
+## 5. Testing
+
+- Every feature ships with unit tests for business logic, integration tests for API routes/DB interactions, and E2E tests for critical user flows (auth, billing, core automation execution).
+- Test failure paths explicitly: what happens when the DB is down, the third-party API times out, the payload is malformed, two requests race on the same resource.
+- No merging code where core logic (auth, billing, workflow execution, data mutation) has zero test coverage.
+- Mock external services in unit tests; use real (containerized) dependencies in integration tests.
+- Security-relevant paths (auth, permission checks, webhook signature verification) require dedicated tests, not just happy-path coverage.
 
 ---
 
-## The WAT Architecture
+## 6. Security
 
-### Layer 1: Workflows (The Instructions)
-- **Location:** `workflows/`
-- Standard Operating Procedures (SOPs) written in clean Markdown.
-- Each workflow defines:
-  - **Objective:** The business outcome to achieve
-  - **Required Inputs:** Parameters, credentials, or datasets needed
-  - **Tools Used:** Corresponding scripts from `tools/` or endpoints in `dashboard/`
-  - **Steps:** Exact execution order and procedural logic
-  - **Expected Outputs:** Artifacts, cloud uploads, or database records
-  - **Edge Cases & Failure Modes:** How to handle exceptions, retries, and errors
-
-### Layer 2: Agents (The Decision-Maker & Coordinator)
-- **Role:** You sit at this layer. You are responsible for intelligent coordination, decision-making, and validation.
-- Read the relevant SOP in `workflows/`, verify prerequisites, call deterministic tools in the correct sequence, handle unexpected failures, and ask clarifying questions when needed.
-- Connect intent to structured execution without attempting to manually hallucinate or perform complex data operations directly.
-
-### Layer 3: Tools (The Execution Engine)
-- **Location:** `tools/` (Python execution scripts) and `dashboard/` (Vite + React UI & Express backend).
-- Deterministic, testable scripts for API calls, data transformations, database queries, spreadsheet synchronizations, and reporting.
-- Credentials and API keys are stored in `.env` and never hardcoded.
+- Parameterized queries only — never string-interpolate values into SQL.
+- Verify webhook signatures before processing payloads (Stripe, third-party integrations, etc.) — don't trust the payload just because it arrived on the right endpoint.
+- Hash passwords with bcrypt/argon2. Never store or log plaintext credentials.
+- Rate-limit auth endpoints and any public-facing automation trigger endpoints.
+- Enforce least-privilege on DB roles and API tokens — a service that only reads shouldn't hold write credentials.
+- Validate JWT/session tokens on every protected route; don't assume middleware ran correctly without a test proving it.
 
 ---
 
-## How to Operate
+## 7. Performance & Scalability
 
-### 1. Check Existing Tools & Workflows First
-Before building any new script or workflow:
-- Check `workflows/` for existing SOPs.
-- Inspect `tools/` for existing Python scripts (`sync_google_sheets.py`, `export_data.py`, `generate_report.py`, `send_email.py`, etc.).
-- Only create new tools or workflows when no existing implementation covers the task.
-
-### 2. Learn and Adapt on Failure
-When an operation or script errors:
-- Inspect the full stack trace and error message.
-- Identify the root cause (e.g., API rate limits, schema mismatch, missing environment variable).
-- Fix the script or parameter handling and verify the solution.
-- *Important:* If a fix involves paid API credits or destructive changes, confirm with the user before re-running.
-- Update the corresponding workflow in `workflows/` with any new discovery (e.g., rate limit delays, token refresh nuances) to prevent future failures.
-
-### 3. Maintain Documentation & Workflow Integrity
-- Workflows are living documents that must stay updated as the platform evolves.
-- When refining tools or fixing bugs, keep the documentation synchronized.
-- Never delete or arbitrarily overwrite existing workflows without user consent.
+- No N+1 queries — batch or join instead of looping DB calls.
+- No unbounded loops or unpaginated queries on data that grows with usage (client lists, automation logs, execution history).
+- Long-running or resource-heavy work (large automations, file processing, bulk operations) goes to a background job queue, never blocks an HTTP request.
+- Set explicit timeouts on every outbound HTTP call and DB query — nothing waits forever.
+- Consider what happens at 10x current load before merging, not after it breaks in production.
 
 ---
 
-## The Self-Improvement Loop
+## 8. Code Structure & Maintainability
 
-Every failure is an opportunity to strengthen the system:
-1. **Identify** what broke and why.
-2. **Fix** the underlying tool or configuration.
-3. **Verify** that the fix works reliably.
-4. **Document** the lesson and update the workflow SOP.
-5. **Proceed** with an improved, resilient platform.
-
----
-
-## Project Structure & Conventions
-
-```
-Aeitron-AI-Finance-dashboard/
-├── .tmp/                    # Temporary scratch files, cache, and exports (disposable)
-├── dashboard/               # Frontend & Backend Application
-│   ├── src/                 # React UI components, views, styles, state
-│   ├── server.js            # Express backend server
-│   ├── package.json         # Node dependencies & scripts
-│   └── vite.config.js       # Vite build configuration
-├── tools/                   # Deterministic Python scripts (execution layer)
-│   ├── sync_google_sheets.py
-│   ├── export_data.py
-│   ├── generate_report.py
-│   ├── send_email.py
-│   ├── email_templates.py
-│   ├── utils.py
-│   └── requirements.txt
-├── workflows/               # Markdown SOPs (workflows layer)
-│   ├── dashboard_management.md
-│   ├── data_export.md
-│   ├── email_notifications.md
-│   ├── google_sheets_sync.md
-│   └── report_generation.md
-├── .env                     # Secrets & environment variables (NEVER commit)
-├── CLAUDE.md                # Claude-specific instructions
-├── AGENT.md                 # Universal agent operating instructions & standards
-├── README.md                # Project documentation
-└── start-server.bat         # Windows quick-start launcher
-```
-
-### Core Principles:
-- **Separation of Concerns:** Keep business logic in workflows, execution in tools, and UI in the dashboard.
-- **Data Safety:** Local processing files in `.tmp/` are temporary. Persistent deliverables belong in verified storage or connected cloud services (e.g., Google Sheets, database).
-- **Security:** Never commit API keys, service account JSON files, or `.env` secrets to version control.
+- TypeScript strict mode on. No `any` unless justified with a comment explaining why.
+- Business logic separated from route/controller handlers — handlers parse input and call services, they don't contain logic.
+- No duplicated logic across files — extract shared code into a proper module.
+- Every non-obvious decision gets a comment explaining *why*, not *what* (the code already says what).
+- Prefer extending and improving existing modules over rewriting from scratch when working in this codebase.
 
 ---
 
-## Pre-Flight Checklist for Every Code Change
+## 9. The WAT Architecture (Workflows, Agents, Tools)
 
-Before completing any task or claiming code is ready:
-- [ ] **Error Handling:** Are external calls protected with proper retries/fallbacks?
-- [ ] **Validation:** Is all user/external input validated before processing?
-- [ ] **Observability:** Are structured logs in place without leaking sensitive data?
-- [ ] **Configuration:** Are all secrets and variables loaded from `.env`?
-- [ ] **Tests & Verification:** Has the code been tested against edge cases and failure paths?
-- [ ] **Clean Code:** Are there zero `TODO: fix later`, zero silent catches, and zero dead code?
-- [ ] **Git Push:** Has the change been committed with a clear message and pushed to GitHub?
+The system is organized into three distinct layers to separate probabilistic reasoning from deterministic execution:
+
+- **Layer 1: Workflows (`workflows/`)** — Markdown SOPs defining objectives, required inputs, execution steps, expected outputs, and edge cases.
+- **Layer 2: Agents** — Intelligent decision-maker and orchestrator. Reads workflows, coordinates tool runs, handles failures gracefully, and asks clarifying questions.
+- **Layer 3: Tools (`tools/` & `dashboard/`)** — Deterministic, testable scripts (Python / Node.js) executing API calls, DB queries, data transforms, and spreadsheet synchronizations.
+
+---
+
+## Hard Rules — Never Do These
+
+1. Never swallow an error silently (empty catch, catch-and-ignore).
+2. Never hardcode a secret, key, or credential.
+3. Never ship an endpoint or job handler without input validation.
+4. Never leave a `TODO` on error handling, security, or auth logic.
+5. Never compare passwords or tokens in plaintext.
+6. Never build a SQL query with raw string interpolation.
+7. Never merge core logic (auth, billing, workflow execution) without tests covering failure paths.
+8. Never block the event loop with a long synchronous operation.
+9. Never assume an external service call will succeed.
+10. Never log PII, secrets, or full payloads without redaction.
+11. Never leave code changes uncommitted or unpushed to GitHub at the end of a turn.
+
+---
+
+## When In Doubt
+
+Ask: *what is the actual failure mode here, what's the real load this will see, and how sensitive is this data?* Don't apply a best practice mechanically — reason from what will actually break, then write the code that prevents it.
