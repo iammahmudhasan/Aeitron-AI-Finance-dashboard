@@ -89,6 +89,25 @@
   scrollbar-color: var(--color-border) transparent;
 }
 
+/* Hide scrollbar completely while maintaining full scroll functionality */
+.no-scrollbar::-webkit-scrollbar,
+.custom-scrollbar::-webkit-scrollbar,
+.hide-scrollbar::-webkit-scrollbar,
+aside nav::-webkit-scrollbar {
+  display: none !important;
+  width: 0px !important;
+  height: 0px !important;
+  background: transparent !important;
+}
+
+.no-scrollbar,
+.custom-scrollbar,
+.hide-scrollbar,
+aside nav {
+  -ms-overflow-style: none !important;  /* IE and Edge */
+  scrollbar-width: none !important;  /* Firefox and modern Chrome/Safari */
+}
+
 body {
   margin: 0;
   font-family: var(--font-sans);

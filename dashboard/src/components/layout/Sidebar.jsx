@@ -254,7 +254,10 @@ export default function Sidebar({ open, onClose, activeView, onNavigate }) {
         </div>
 
         {/* Navigation items list filtered by CEO-assigned permissions */}
-        <nav className="flex-1 px-3 py-2 space-y-4 overflow-y-auto custom-scrollbar">
+        <nav
+          className="flex-1 px-3 py-2 space-y-4 overflow-y-auto no-scrollbar custom-scrollbar"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        >
           {NAV_GROUPS.map((group) => {
             // Filter items based on user's granted permissions
             const visibleItems = group.items.filter((item) => {
