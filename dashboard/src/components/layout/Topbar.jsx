@@ -29,12 +29,37 @@ const VIEW_TITLES = {
   discovery: 'Lead Discovery',
 };
 
+const VIEW_ACTIONS = {
+  dashboard: 'New Transaction',
+  invoices: 'New Invoice',
+  transactions: 'New Transaction',
+  clients: 'New Client',
+  expenses: 'New Expense',
+  leads: 'New Lead',
+  team: 'Add Member',
+  orders: 'New Order',
+  campaigns: 'New Campaign',
+  products: 'Add Product',
+  system: 'New Automation',
+  reports: 'Export Report',
+  channels: 'New Channel',
+  roles: 'Add Role',
+  billing: 'New Subscription',
+  integrations: 'New Integration',
+  support: 'New Ticket',
+  help: 'New Ticket',
+  agents: 'Deploy Agent',
+  discovery: 'Find Leads',
+  messages: 'New Chat',
+};
+
 export default function Topbar({ onMenuClick, onAddClient, activeView, searchQuery = '', onSearchChange }) {
   const currentViewTitle = VIEW_TITLES[activeView] || 'Overview';
   const { unreadCount } = useNotifications();
   const { theme, toggleTheme } = useTheme();
   const { currentUser } = useAuth();
   const [notifOpen, setNotifOpen] = useState(false);
+  const actionLabel = VIEW_ACTIONS[activeView] || 'New Action';
 
   return (
     <header className="sticky top-0 z-30 h-16 bg-bg/90 backdrop-blur-md border-b border-border flex items-center justify-between px-6">
@@ -72,17 +97,16 @@ export default function Topbar({ onMenuClick, onAddClient, activeView, searchQue
           </kbd>
         </div>
 
-        {/* Contextual Action Button */}
-        {activeView === 'invoices' && (
-          <button
-            type="button"
-            onClick={onAddClient}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-accent hover:bg-accent-hover text-white text-xs font-semibold rounded-xl transition-all shadow-xs cursor-pointer active:scale-95"
-          >
-            <Plus size={14} />
-            <span className="hidden sm:inline">New Invoice</span>
-          </button>
-        )}
+        {/* Contextual Action Button - Identical size and presence matching Invoices Topbar */}
+        <button
+          type="button"
+          onClick={onAddClient}
+          className="flex items-center gap-1.5 px-3 py-1.5 bg-accent hover:bg-accent-hover text-white text-xs font-semibold rounded-xl transition-all shadow-xs cursor-pointer active:scale-95 shrink-0"
+          title={actionLabel}
+        >
+          <Plus size={14} />
+          <span className="hidden sm:inline">{actionLabel}</span>
+        </button>
 
         {/* Download Report */}
         <DownloadReportButton />

@@ -123,6 +123,14 @@ export default function TransactionsTable({ globalSearch = '' }) {
     };
   }, [headerMenuOpen, activeMenuId]);
 
+  useEffect(() => {
+    function handleOpenAdd() {
+      setModalOpen(true);
+    }
+    window.addEventListener('open-add-transaction', handleOpenAdd);
+    return () => window.removeEventListener('open-add-transaction', handleOpenAdd);
+  }, []);
+
   const handleExportAllCsv = () => {
     const rows = [
       ['ID', 'Customer', 'Product', 'Status', 'Qty', 'Unit Price ($)', 'Total Revenue ($)', 'Date'],

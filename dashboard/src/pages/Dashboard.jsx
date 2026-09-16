@@ -112,6 +112,8 @@ export default function Dashboard() {
     } else if (activeView === 'team') {
       setEditMember(null);
       setTeamFormOpen(true);
+    } else if (activeView === 'dashboard' || activeView === 'transactions') {
+      window.dispatchEvent(new CustomEvent('open-add-transaction'));
     } else {
       setEditClient(null);
       setFormOpen(true);
