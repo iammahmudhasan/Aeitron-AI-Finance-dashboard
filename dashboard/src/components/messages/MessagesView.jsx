@@ -25,29 +25,31 @@ import {
   ThumbsUp,
   Heart,
   Flame,
+  ShieldCheck,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
-// WhatsApp-style default initial conversations
-const INITIAL_CONVERSATIONS = [
+// 100% Pure Internal Team Channels & Direct Messages (NO CLIENTS)
+const INITIAL_TEAM_CHANNELS = [
   {
     id: 'chan_general',
     type: 'channel',
-    name: 'Aeitron Agency Headquarters 🚀',
+    name: '🚀 #agency-general',
     category: 'channel',
+    role: 'All Team Members',
     avatar: '/aeitron_icon_fb.png',
-    membersCount: 5,
-    unread: 0,
+    membersCount: 4,
     online: true,
-    lastSeen: '4 members online',
+    lastSeen: '4 team members online',
+    unread: 0,
     messages: [
       {
         id: 101,
         senderId: 'usr_ceo',
         senderName: 'Mahmud Hasan (CEO)',
         avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&h=120&fit=crop&crop=faces',
-        text: 'Team, we crossed $20,320 in revenue this week! Massive milestone for the agency.',
-        time: '10:14 AM',
+        text: 'Morning team! We officially hit $20,320 in revenue this week. Outstanding work across both sales and operations.',
+        time: '09:30 AM',
         status: 'read',
         reactions: ['🔥 3', '🚀 2'],
       },
@@ -56,8 +58,8 @@ const INITIAL_CONVERSATIONS = [
         senderId: 'usr_sales',
         senderName: 'Salung Prastyo (Sales)',
         avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&h=120&fit=crop&crop=faces',
-        text: 'Apex Dental just confirmed the $850/mo retainer agreement! I will send the invoice via Stripe now.',
-        time: '10:18 AM',
+        text: 'Thanks Mahmud! Closed the recurring $850/mo retainer contract earlier today.',
+        time: '09:35 AM',
         status: 'read',
         reactions: ['👍 2'],
       },
@@ -66,8 +68,8 @@ const INITIAL_CONVERSATIONS = [
         senderId: 'usr_ops',
         senderName: 'Alex Rivera (AI Ops)',
         avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=120&h=120&fit=crop&crop=faces',
-        text: 'Twilio telephony latency is down to 420ms. The ElevenLabs voice model is sounding completely natural.',
-        time: '10:22 AM',
+        text: 'All 28 n8n automated workflows and Twilio voice SIP lines are running with 99.98% uptime.',
+        time: '09:40 AM',
         status: 'read',
         reactions: ['💯 4'],
       },
@@ -76,117 +78,76 @@ const INITIAL_CONVERSATIONS = [
         senderId: 'usr_finance',
         senderName: 'Sarah Jenkins (Finance)',
         avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=120&h=120&fit=crop&crop=faces',
-        text: 'Payment received for Invoice #04910 ($41,400). Payout calculations have been synchronized with the team ledger.',
-        time: '10:25 AM',
-        status: 'read',
-      },
-    ],
-  },
-  {
-    id: 'dm_salung',
-    type: 'direct',
-    name: 'Salung Prastyo',
-    role: 'Sales Operator',
-    category: 'team',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&h=120&fit=crop&crop=faces',
-    email: 'sales@aeitron.com',
-    online: true,
-    lastSeen: 'Online',
-    unread: 1,
-    messages: [
-      {
-        id: 201,
-        senderId: 'usr_sales',
-        senderName: 'Salung Prastyo',
-        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&h=120&fit=crop&crop=faces',
-        text: 'Hey! I just wrapped up the discovery call with Nexus Real Estate. They want 5 AI agent seats.',
-        time: '11:05 AM',
-        status: 'read',
-      },
-      {
-        id: 202,
-        senderId: 'usr_sales',
-        senderName: 'Salung Prastyo',
-        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&h=120&fit=crop&crop=faces',
-        text: 'Should we offer them the $1,200/mo retainer package or bundle the custom CRM sync for $1,500/mo?',
-        time: '11:08 AM',
-        status: 'delivered',
-      },
-    ],
-  },
-  {
-    id: 'dm_alex',
-    type: 'direct',
-    name: 'Alex Rivera',
-    role: 'AI Operations Lead',
-    category: 'team',
-    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=120&h=120&fit=crop&crop=faces',
-    email: 'ops@aeitron.com',
-    online: true,
-    lastSeen: 'Online',
-    unread: 0,
-    messages: [
-      {
-        id: 301,
-        senderId: 'usr_ops',
-        senderName: 'Alex Rivera',
-        avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=120&h=120&fit=crop&crop=faces',
-        text: 'n8n webhook deployment is complete. All 28 production workflows are passing health pings with 0 errors.',
-        time: '09:40 AM',
-        status: 'read',
-      },
-      {
-        id: 302,
-        senderId: 'usr_ops',
-        senderName: 'Alex Rivera',
-        avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=120&h=120&fit=crop&crop=faces',
-        isVoice: true,
-        duration: '0:18',
+        text: 'All contractor payouts and commission bonuses have been calculated in the treasury ledger.',
         time: '09:45 AM',
         status: 'read',
       },
     ],
   },
   {
-    id: 'dm_sarah',
-    type: 'direct',
-    name: 'Sarah Jenkins',
-    role: 'Finance Manager',
-    category: 'team',
-    avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=120&h=120&fit=crop&crop=faces',
-    email: 'finance@aeitron.com',
-    online: false,
-    lastSeen: 'Last seen 25m ago',
+    id: 'chan_sales',
+    type: 'channel',
+    name: '💼 #sales-and-deals',
+    category: 'channel',
+    role: 'Commercial Team',
+    avatar: '/aeitron_icon_fb.png',
+    membersCount: 2,
+    online: true,
+    lastSeen: 'Active Sales Sprint',
+    unread: 1,
+    messages: [
+      {
+        id: 201,
+        senderId: 'usr_sales',
+        senderName: 'Salung Prastyo (Sales)',
+        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&h=120&fit=crop&crop=faces',
+        text: 'Nexus Real Estate wants to add 5 voice agent seats. Sending proposal for $1,200/mo retainer.',
+        time: '10:15 AM',
+        status: 'delivered',
+      },
+    ],
+  },
+  {
+    id: 'chan_ai_ops',
+    type: 'channel',
+    name: '🤖 #ai-engineering-ops',
+    category: 'channel',
+    role: 'Engineering Team',
+    avatar: '/aeitron_icon_fb.png',
+    membersCount: 3,
+    online: true,
+    lastSeen: 'Telephony & Webhooks',
     unread: 0,
     messages: [
       {
-        id: 401,
-        senderId: 'usr_finance',
-        senderName: 'Sarah Jenkins',
-        avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=120&h=120&fit=crop&crop=faces',
-        text: 'All contractor payouts for the AI Engineers have been dispatched via direct ACH wire transfer.',
-        time: 'Yesterday',
+        id: 301,
+        senderId: 'usr_ops',
+        senderName: 'Alex Rivera (AI Ops)',
+        avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=120&h=120&fit=crop&crop=faces',
+        text: 'Twilio telephony latency is down to 420ms. The ElevenLabs voice model feels completely human.',
+        time: '10:25 AM',
         status: 'read',
       },
     ],
   },
   {
-    id: 'chan_leads',
+    id: 'chan_finance',
     type: 'channel',
-    name: '🔥 Lead Pipeline & Deals',
+    name: '📊 #finance-and-payouts',
     category: 'channel',
+    role: 'Treasury Team',
     avatar: '/aeitron_icon_fb.png',
-    membersCount: 4,
-    unread: 0,
+    membersCount: 2,
     online: true,
-    lastSeen: 'Live Lead Radar Active',
+    lastSeen: 'Financial Controller',
+    unread: 0,
     messages: [
       {
-        id: 501,
-        senderId: 'bot',
-        senderName: 'Aeitron Autonomous Dispatch Bot',
-        avatar: '/aeitron_icon_fb.png',
-        text: '⚡ New Enterprise Inbound: Apex Dental Group requested an appointment for 2 additional dental clinics.',
+        id: 401,
+        senderId: 'usr_finance',
+        senderName: 'Sarah Jenkins (Finance)',
+        avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=120&h=120&fit=crop&crop=faces',
+        text: 'Invoice #04910 ($41,400) wire cleared in the primary business checking account.',
         time: 'Yesterday',
         status: 'read',
       },
@@ -198,18 +159,53 @@ const EMOJIS = ['👍', '❤️', '🔥', '🚀', '😂', '🎉', '💯', '👏'
 
 export default function MessagesView() {
   const { currentUser, users } = useAuth();
+  const STORAGE_KEY = 'aeitron_team_messenger_internal_v3';
+
+  // Build team direct conversations dynamically from registered users in AuthContext
+  const initialDirects = useMemo(() => {
+    return users.map((u) => ({
+      id: `dm_${u.email.replace(/[@.]/g, '_')}`,
+      type: 'direct',
+      name: u.name,
+      role: u.role,
+      category: 'team',
+      avatar: u.avatar,
+      email: u.email,
+      online: true,
+      lastSeen: 'Online',
+      unread: 0,
+      messages: [
+        {
+          id: Date.now() + Math.random(),
+          senderId: u.email,
+          senderName: u.name,
+          avatar: u.avatar,
+          text: `Hey ${currentUser?.name?.split(' ')[0] || 'there'}! Ready for internal team updates and sprint review.`,
+          time: '09:00 AM',
+          status: 'read',
+        },
+      ],
+    }));
+  }, [users, currentUser]);
+
   const [conversations, setConversations] = useState(() => {
     try {
-      const saved = localStorage.getItem('aeitron_whatsapp_chat');
-      return saved ? JSON.parse(saved) : INITIAL_CONVERSATIONS;
-    } catch {
-      return INITIAL_CONVERSATIONS;
-    }
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        // Ensure no old client references exist
+        const hasClients = parsed.some((c) => c.name?.includes('Dr. Michael') || c.name?.includes('Sophia Chen'));
+        if (!hasClients && parsed.length > 0) {
+          return parsed;
+        }
+      }
+    } catch {}
+    return [...INITIAL_TEAM_CHANNELS, ...initialDirects];
   });
 
   const [activeChatId, setActiveChatId] = useState('chan_general');
   const [search, setSearch] = useState('');
-  const [activeTab, setActiveTab] = useState('all'); // 'all' | 'team' | 'channels' | 'unread'
+  const [activeTab, setActiveTab] = useState('all'); // 'all' | 'direct' | 'channels' | 'unread'
   const [inputText, setInputText] = useState('');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
@@ -234,10 +230,10 @@ export default function MessagesView() {
   const saveConversations = (updated) => {
     setConversations(updated);
     try {
-      localStorage.setItem('aeitron_whatsapp_chat', JSON.stringify(updated));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
       // Broadcast to other tabs/windows in real time!
       if (broadcastChannelRef.current) {
-        broadcastChannelRef.current.postMessage({ type: 'CHAT_UPDATE', data: updated });
+        broadcastChannelRef.current.postMessage({ type: 'TEAM_CHAT_UPDATE', data: updated });
       }
     } catch (err) {
       console.error('Failed to sync chat:', err);
@@ -247,18 +243,17 @@ export default function MessagesView() {
   // Real-Time BroadcastChannel listener for multi-tab / multi-user synchronization
   useEffect(() => {
     try {
-      const channel = new BroadcastChannel('aeitron_whatsapp_chat_channel');
+      const channel = new BroadcastChannel('aeitron_team_messenger_channel');
       broadcastChannelRef.current = channel;
 
       channel.onmessage = (event) => {
-        if (event.data?.type === 'CHAT_UPDATE') {
+        if (event.data?.type === 'TEAM_CHAT_UPDATE') {
           setConversations(event.data.data);
         }
       };
 
-      // Fallback cross-tab storage listener
       const handleStorageChange = (e) => {
-        if (e.key === 'aeitron_whatsapp_chat' && e.newValue) {
+        if (e.key === STORAGE_KEY && e.newValue) {
           try {
             setConversations(JSON.parse(e.newValue));
           } catch {}
@@ -313,7 +308,7 @@ export default function MessagesView() {
     setInputText('');
     setShowEmojiPicker(false);
 
-    // Realistic automated team response after 1.8s
+    // Realistic automated team member response after 1.8s
     if (activeChat.type === 'direct') {
       const responderName = activeChat.name;
       setTimeout(() => {
@@ -328,7 +323,7 @@ export default function MessagesView() {
           senderId: activeChat.id,
           senderName: activeChat.name,
           avatar: activeChat.avatar,
-          text: getRandomReply(activeChat.role || activeChat.name),
+          text: getRandomTeamReply(activeChat.role || activeChat.name),
           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           status: 'delivered',
         };
@@ -340,12 +335,12 @@ export default function MessagesView() {
               : c
           );
           try {
-            localStorage.setItem('aeitron_whatsapp_chat', JSON.stringify(nextConvs));
-            broadcastChannelRef.current?.postMessage({ type: 'CHAT_UPDATE', data: nextConvs });
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(nextConvs));
+            broadcastChannelRef.current?.postMessage({ type: 'TEAM_CHAT_UPDATE', data: nextConvs });
           } catch {}
           return nextConvs;
         });
-      }, 2400);
+      }, 2200);
     }
   };
 
@@ -371,42 +366,40 @@ export default function MessagesView() {
     saveConversations(updated);
   };
 
-  // Start new 1-on-1 chat with team member
-  const handleStartChatWithUser = (targetUser) => {
-    const existing = conversations.find((c) => c.email?.toLowerCase() === targetUser.email.toLowerCase());
+  // Switch or start direct conversation with a team member
+  const handleSelectTeamMember = (targetUser) => {
+    const directId = `dm_${targetUser.email.replace(/[@.]/g, '_')}`;
+    const existing = conversations.find((c) => c.id === directId);
     if (existing) {
       setActiveChatId(existing.id);
-      setNewChatModal(false);
-      return;
+    } else {
+      const newDirect = {
+        id: directId,
+        type: 'direct',
+        name: targetUser.name,
+        role: targetUser.role,
+        category: 'team',
+        avatar: targetUser.avatar,
+        email: targetUser.email,
+        online: true,
+        lastSeen: 'Online',
+        unread: 0,
+        messages: [
+          {
+            id: Date.now(),
+            senderId: targetUser.email,
+            senderName: targetUser.name,
+            avatar: targetUser.avatar,
+            text: `Hi ${currentUser?.name?.split(' ')[0] || 'there'}! Ready for team updates.`,
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            status: 'read',
+          },
+        ],
+      };
+      const updated = [...conversations, newDirect];
+      saveConversations(updated);
+      setActiveChatId(newDirect.id);
     }
-
-    const newDirect = {
-      id: `dm_${Date.now()}`,
-      type: 'direct',
-      name: targetUser.name,
-      role: targetUser.role,
-      category: 'team',
-      avatar: targetUser.avatar,
-      email: targetUser.email,
-      online: true,
-      lastSeen: 'Online',
-      unread: 0,
-      messages: [
-        {
-          id: Date.now(),
-          senderId: targetUser.email,
-          senderName: targetUser.name,
-          avatar: targetUser.avatar,
-          text: `Hey ${currentUser?.name?.split(' ')[0] || 'there'}! Ready for team updates.`,
-          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          status: 'read',
-        },
-      ],
-    };
-
-    const updated = [newDirect, ...conversations];
-    saveConversations(updated);
-    setActiveChatId(newDirect.id);
     setNewChatModal(false);
   };
 
@@ -418,8 +411,8 @@ export default function MessagesView() {
         (c.role && c.role.toLowerCase().includes(search.toLowerCase()));
 
       if (!matchSearch) return false;
-      if (activeTab === 'team') return c.category === 'team';
-      if (activeTab === 'channels') return c.category === 'channel';
+      if (activeTab === 'direct') return c.type === 'direct';
+      if (activeTab === 'channels') return c.type === 'channel';
       if (activeTab === 'unread') return c.unread > 0;
       return true;
     });
@@ -431,11 +424,11 @@ export default function MessagesView() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h2 className="text-xl font-bold text-text tracking-tight flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-            Aeitron Team Live Messenger (WhatsApp Web Engine)
+            <ShieldCheck className="text-emerald-500" size={24} />
+            Aeitron Internal Team Live Messenger (WhatsApp Engine)
           </h2>
           <p className="text-xs text-text-muted mt-0.5">
-            Encrypted real-time team collaboration, direct operator messaging, and automated agency dispatch.
+            Encrypted real-time communication exclusively for Aeitron team members, executives, and operators.
           </p>
         </div>
 
@@ -446,7 +439,7 @@ export default function MessagesView() {
             className="flex items-center gap-2 px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold transition-all shadow-xs"
           >
             <Plus size={14} />
-            <span>New Chat / Team Member</span>
+            <span>Chat with Team Member</span>
           </button>
         </div>
       </div>
@@ -454,7 +447,7 @@ export default function MessagesView() {
       {/* Main WhatsApp Window Container */}
       <div className="bg-bg-card border border-border/80 rounded-2xl shadow-xl overflow-hidden h-[660px] flex">
         {/* ========================================================================= */}
-        {/* LEFT COLUMN: CHAT LIST (WhatsApp Left Sidebar)                           */}
+        {/* LEFT COLUMN: TEAM DIRECTS & CHANNELS (WhatsApp Left Sidebar)              */}
         {/* ========================================================================= */}
         <div className="w-80 sm:w-88 border-r border-border/80 flex flex-col bg-bg/50 shrink-0">
           {/* Top User Bar */}
@@ -471,7 +464,7 @@ export default function MessagesView() {
               <div className="min-w-0">
                 <div className="text-xs font-bold text-text truncate">{currentUser?.name || 'Mahmud Hasan'}</div>
                 <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
-                  <span>●</span> Online & Active
+                  <span>●</span> {currentUser?.role || 'Team Member'}
                 </div>
               </div>
             </div>
@@ -481,7 +474,7 @@ export default function MessagesView() {
                 type="button"
                 onClick={() => setNewChatModal(true)}
                 className="p-1.5 hover:text-text rounded-lg hover:bg-bg transition-colors"
-                title="New Direct Message"
+                title="Direct Message Team Member"
               >
                 <Plus size={18} />
               </button>
@@ -494,7 +487,7 @@ export default function MessagesView() {
               <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
               <input
                 type="text"
-                placeholder="Search or start new chat..."
+                placeholder="Search team member or channel..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="w-full pl-8 pr-3 py-1.5 bg-bg border border-border rounded-xl text-xs text-text placeholder:text-text-muted/50 outline-none focus:border-emerald-500 transition-all"
@@ -502,12 +495,12 @@ export default function MessagesView() {
             </div>
           </div>
 
-          {/* Filter Pills (WhatsApp Web style: All, Team, Channels, Unread) */}
+          {/* Filter Pills (WhatsApp Web style: All Team, Direct, Channels) */}
           <div className="flex items-center gap-1.5 px-3 py-2 border-b border-border/50 overflow-x-auto bg-bg-card/30">
             {[
-              { id: 'all', label: 'All' },
-              { id: 'team', label: 'Team Direct' },
-              { id: 'channels', label: 'Channels' },
+              { id: 'all', label: 'All Team Chats' },
+              { id: 'direct', label: 'Direct (1-on-1)' },
+              { id: 'channels', label: 'Team Channels' },
               { id: 'unread', label: 'Unread' },
             ].map((tab) => (
               <button
@@ -537,7 +530,6 @@ export default function MessagesView() {
                   type="button"
                   onClick={() => {
                     setActiveChatId(chat.id);
-                    // Clear unread
                     setConversations((prev) =>
                       prev.map((c) => (c.id === chat.id ? { ...c, unread: 0 } : c))
                     );
@@ -576,7 +568,7 @@ export default function MessagesView() {
                         {lastMsg ? (
                           lastMsg.isVoice ? (
                             <span className="flex items-center gap-1 text-accent">
-                              <Mic size={11} /> Voice message ({lastMsg.duration})
+                              <Mic size={11} /> Voice note ({lastMsg.duration})
                             </span>
                           ) : (
                             lastMsg.text
@@ -638,13 +630,13 @@ export default function MessagesView() {
               </div>
             </div>
 
-            {/* Calling & Options Buttons */}
+            {/* Team Calling & Direct Actions */}
             <div className="flex items-center gap-1 sm:gap-2 text-text-muted">
               <button
                 type="button"
                 onClick={() => setCallModal({ type: 'voice', name: activeChat.name })}
                 className="p-2 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 rounded-xl transition-colors cursor-pointer"
-                title="Voice Call"
+                title="Direct Voice Call"
               >
                 <Phone size={17} />
               </button>
@@ -653,7 +645,7 @@ export default function MessagesView() {
                 type="button"
                 onClick={() => setCallModal({ type: 'video', name: activeChat.name })}
                 className="p-2 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 rounded-xl transition-colors cursor-pointer"
-                title="Video Call"
+                title="Direct Video Call"
               >
                 <Video size={18} />
               </button>
@@ -673,7 +665,7 @@ export default function MessagesView() {
             {/* Date Separator Pill */}
             <div className="flex justify-center">
               <span className="px-3 py-1 bg-bg border border-border/70 rounded-full text-[10px] font-semibold text-text-muted uppercase tracking-wider shadow-xs">
-                Today
+                Internal Team Channel • Today
               </span>
             </div>
 
@@ -836,9 +828,9 @@ export default function MessagesView() {
               {/* Attach File Button */}
               <button
                 type="button"
-                onClick={() => setInputText((prev) => prev + ' [Document attached: Invoice_Spec.pdf] ')}
+                onClick={() => setInputText((prev) => prev + ' [File attached: sprint_deliverables.pdf] ')}
                 className="p-2 text-text-muted hover:text-text rounded-xl transition-colors"
-                title="Attach Document / Invoice"
+                title="Attach Document / Workflow"
               >
                 <Paperclip size={19} />
               </button>
@@ -846,7 +838,7 @@ export default function MessagesView() {
               {/* Input Text Box */}
               <input
                 type="text"
-                placeholder={`Type a message to ${activeChat.name}...`}
+                placeholder={`Message team on ${activeChat.name}...`}
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
                 className="flex-1 px-4 py-2.5 bg-bg border border-border rounded-xl text-xs text-text placeholder:text-text-muted/50 outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/20 transition-all"
@@ -871,7 +863,7 @@ export default function MessagesView() {
                       senderName: currentUser?.name || 'Mahmud Hasan',
                       avatar: currentUser?.avatar || '/aeitron_icon_fb.png',
                       isVoice: true,
-                      duration: '0:12',
+                      duration: '0:14',
                       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                       status: 'sent',
                       isMe: true,
@@ -914,7 +906,7 @@ export default function MessagesView() {
             <div>
               <h3 className="text-lg font-bold">{callModal.name}</h3>
               <p className="text-xs text-emerald-400 font-medium mt-1 animate-pulse">
-                {callModal.type === 'video' ? 'Connecting Encrypted Video Call...' : 'Calling via WebRTC...'}
+                {callModal.type === 'video' ? 'Connecting Encrypted Team Video Call...' : 'Calling Team Member via WebRTC...'}
               </p>
             </div>
 
@@ -933,13 +925,13 @@ export default function MessagesView() {
       )}
 
       {/* ========================================================================= */}
-      {/* NEW DIRECT CHAT MODAL                                                     */}
+      {/* DIRECT TEAM MEMBER SELECTOR MODAL                                         */}
       {/* ========================================================================= */}
       {newChatModal && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-bg-card border border-border shadow-2xl rounded-2xl max-w-md w-full p-6 animate-fade-in">
             <div className="flex items-center justify-between pb-3 border-b border-border mb-4">
-              <h3 className="text-sm font-bold text-text">Start Real-Time Chat with Team Member</h3>
+              <h3 className="text-sm font-bold text-text">Direct Message Team Member</h3>
               <button
                 onClick={() => setNewChatModal(false)}
                 className="text-text-muted hover:text-text p-1 rounded-lg hover:bg-bg"
@@ -953,7 +945,7 @@ export default function MessagesView() {
                 <button
                   key={u.id}
                   type="button"
-                  onClick={() => handleStartChatWithUser(u)}
+                  onClick={() => handleSelectTeamMember(u)}
                   className="w-full flex items-center justify-between p-3 rounded-xl border border-border/80 hover:border-emerald-500 hover:bg-emerald-500/5 transition-all text-left group"
                 >
                   <div className="flex items-center gap-3">
@@ -967,7 +959,7 @@ export default function MessagesView() {
                   </div>
 
                   <span className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold opacity-0 group-hover:opacity-100 transition-opacity">
-                    Chat Now →
+                    Direct Message →
                   </span>
                 </button>
               ))}
@@ -979,13 +971,13 @@ export default function MessagesView() {
   );
 }
 
-function getRandomReply(roleOrName) {
+function getRandomTeamReply(roleOrName) {
   const replies = [
-    "Got it! I am on it right now and updating the client pipeline.",
-    "Sounds great. The automation is running smoothly in production.",
-    "Understood! I will verify the webhook logs and report back in 5 mins.",
-    "Received! Everything is aligned with the agency weekly sprint goals.",
-    "Perfect, thanks for the update! Meeting with the client went exceptionally well.",
+    "Got it! Working on this task right now and keeping the agency dashboard updated.",
+    "Sounds great! Everything is verified and running smoothly in our production workflows.",
+    "Understood! Checking the webhook latency and will post the confirmation in 5 mins.",
+    "Perfect! Completely aligned with our agency weekly growth sprint.",
+    "Confirmed! Just finished synchronizing with the team ledger.",
   ];
   return replies[Math.floor(Math.random() * replies.length)];
 }

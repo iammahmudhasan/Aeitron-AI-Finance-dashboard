@@ -33,7 +33,7 @@ const NAV_GROUPS = [
       { icon: Package, label: 'Products', view: 'products' },
       { icon: Receipt, label: 'Transactions', view: 'transactions' },
       { icon: BarChart3, label: 'Reports & Analytics', view: 'reports' },
-      { icon: MessageSquare, label: 'Messages', view: 'messages', badge: '3' },
+      { icon: MessageSquare, label: 'Team Chat', view: 'messages', badge: '3' },
       { icon: Users, label: 'Team Performance', view: 'team' },
       { icon: Megaphone, label: 'Campaigns', view: 'campaigns' },
     ],

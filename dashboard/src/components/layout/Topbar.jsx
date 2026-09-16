@@ -11,7 +11,7 @@ const VIEW_TITLES = {
   products: 'Products',
   transactions: 'Transactions',
   reports: 'Reports & Analytics',
-  messages: 'Messages',
+  messages: 'Team Chat',
   team: 'Team Performance',
   campaigns: 'Campaigns',
   clients: 'Customer List',
