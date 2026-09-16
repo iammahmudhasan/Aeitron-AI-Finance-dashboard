@@ -294,6 +294,40 @@ export default function MessagesView() {
     } catch {}
   };
 
+  // Clear unread on mount since user is viewing the messenger
+  useEffect(() => {
+    setThreads((prev) => {
+      const hasUnread = prev.some((t) => (t.unread || 0) > 0);
+      if (!hasUnread) return prev;
+      const cleared = prev.map((t) => ({ ...t, unread: 0 }));
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(cleared));
+        broadcastRef.current?.postMessage({
+          type: 'SYNC_THREADS',
+          threads: cleared,
+        });
+      } catch {}
+      return cleared;
+    });
+  }, []);
+
+  const handleSelectThread = (threadId) => {
+    setActiveThreadId(threadId);
+    setThreads((prev) => {
+      const target = prev.find((t) => t.id === threadId);
+      if (!target || target.unread === 0) return prev;
+      const updated = prev.map((t) => (t.id === threadId ? { ...t, unread: 0 } : t));
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+        broadcastRef.current?.postMessage({
+          type: 'SYNC_THREADS',
+          threads: updated,
+        });
+      } catch {}
+      return updated;
+    });
+  };
+
   const activeThread = useMemo(() => {
     return threads.find((t) => t.id === activeThreadId) || threads[0];
   }, [threads, activeThreadId]);
@@ -562,7 +596,7 @@ export default function MessagesView() {
                     <button
                       key={ch.id}
                       type="button"
-                      onClick={() => setActiveThreadId(ch.id)}
+                      onClick={() => handleSelectThread(ch.id)}
                       className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium transition-all ${
                         isActive
                           ? 'bg-accent text-white font-semibold shadow-xs'
@@ -599,7 +633,7 @@ export default function MessagesView() {
                     <button
                       key={tm.id}
                       type="button"
-                      onClick={() => setActiveThreadId(tm.id)}
+                      onClick={() => handleSelectThread(tm.id)}
                       className={`w-full flex items-center gap-2.5 p-2 rounded-xl text-xs transition-all ${
                         isActive
                           ? 'bg-accent text-white shadow-xs'

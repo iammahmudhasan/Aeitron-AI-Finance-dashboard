@@ -33,7 +33,7 @@ const NAV_GROUPS = [
       { icon: Package, label: 'Products', view: 'products' },
       { icon: Receipt, label: 'Transactions', view: 'transactions' },
       { icon: BarChart3, label: 'Reports & Analytics', view: 'reports' },
-      { icon: MessageSquare, label: 'Team Chat', view: 'messages', badge: '3' },
+      { icon: MessageSquare, label: 'Messages', view: 'messages' },
       { icon: Users, label: 'Team Performance', view: 'team' },
       { icon: Megaphone, label: 'Campaigns', view: 'campaigns' },
     ],
@@ -74,6 +74,72 @@ export default function Sidebar({ open, onClose, activeView, onNavigate }) {
     }
   });
 
+  // Dynamic unread count for messages - strictly 0 when user is viewing messages
+  const [unreadMessages, setUnreadMessages] = useState(() => {
+    if (activeView === 'messages') return 0;
+    try {
+      const stored = localStorage.getItem('aeitron_team_hub_channel_v4');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        return parsed.reduce((sum, t) => sum + (Number(t.unread) || 0), 0);
+      }
+    } catch {}
+    return 0;
+  });
+
+  // Whenever activeView becomes 'messages', immediately remove the badge
+  useEffect(() => {
+    if (activeView === 'messages') {
+      setUnreadMessages(0);
+      try {
+        const stored = localStorage.getItem('aeitron_team_hub_channel_v4');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          const cleared = parsed.map((t) => ({ ...t, unread: 0 }));
+          localStorage.setItem('aeitron_team_hub_channel_v4', JSON.stringify(cleared));
+        }
+      } catch {}
+    }
+  }, [activeView]);
+
+  // Real-time unread count updates via BroadcastChannel and storage events
+  useEffect(() => {
+    let bc;
+    try {
+      bc = new BroadcastChannel('aeitron_team_chat_channel');
+      bc.onmessage = (e) => {
+        if (e.data?.type === 'SYNC_THREADS' && Array.isArray(e.data.threads)) {
+          if (activeView === 'messages') {
+            setUnreadMessages(0);
+          } else {
+            const count = e.data.threads.reduce((sum, t) => sum + (Number(t.unread) || 0), 0);
+            setUnreadMessages(count);
+          }
+        }
+      };
+    } catch {}
+
+    const handleStorage = (e) => {
+      if (e.key === 'aeitron_team_hub_channel_v4' && e.newValue) {
+        if (activeView === 'messages') {
+          setUnreadMessages(0);
+        } else {
+          try {
+            const parsed = JSON.parse(e.newValue);
+            const count = parsed.reduce((sum, t) => sum + (Number(t.unread) || 0), 0);
+            setUnreadMessages(count);
+          } catch {}
+        }
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+
+    return () => {
+      bc?.close();
+      window.removeEventListener('storage', handleStorage);
+    };
+  }, [activeView]);
+
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const profileMenuRef = useRef(null);
 
@@ -99,6 +165,21 @@ export default function Sidebar({ open, onClose, activeView, onNavigate }) {
   }
 
   function handleNav(view) {
+    if (view === 'messages') {
+      // Immediately clear unread messages when clicked
+      setUnreadMessages(0);
+      try {
+        const stored = localStorage.getItem('aeitron_team_hub_channel_v4');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          const cleared = parsed.map((t) => ({ ...t, unread: 0 }));
+          localStorage.setItem('aeitron_team_hub_channel_v4', JSON.stringify(cleared));
+          const bc = new BroadcastChannel('aeitron_team_chat_channel');
+          bc.postMessage({ type: 'SYNC_THREADS', threads: cleared });
+          bc.close();
+        }
+      } catch {}
+    }
     onNavigate(view);
     onClose();
   }
@@ -183,6 +264,10 @@ export default function Sidebar({ open, onClose, activeView, onNavigate }) {
                 {group.items.map((item) => {
                   const isActive = activeView === item.view;
                   const Icon = item.icon;
+                  const itemBadge = item.view === 'messages'
+                    ? (activeView === 'messages' || unreadMessages <= 0 ? null : unreadMessages)
+                    : item.badge;
+
                   return (
                     <button
                       key={item.label}
@@ -202,9 +287,9 @@ export default function Sidebar({ open, onClose, activeView, onNavigate }) {
                       {!collapsed && (
                         <span className="truncate flex-1 text-left">{item.label}</span>
                       )}
-                      {!collapsed && item.badge && (
+                      {!collapsed && itemBadge && (
                         <span className="px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-accent/20 text-accent dark:bg-accent-light dark:text-accent">
-                          {item.badge}
+                          {itemBadge}
                         </span>
                       )}
                     </button>
