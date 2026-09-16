@@ -1,59 +1,75 @@
 import { useState } from 'react';
-import { Menu, Plus, Search, Bell, Sun, Moon } from 'lucide-react';
+import { Menu, Plus, Search, Bell, Sun, Moon, ChevronRight, HelpCircle } from 'lucide-react';
 import { useNotifications } from '../../context/NotificationContext';
 import { useTheme } from '../../context/ThemeContext';
+import { useAuth } from '../../context/AuthContext';
 import NotificationPanel from '../notifications/NotificationPanel';
 import DownloadReportButton from '../shared/DownloadReportButton';
 
-const VIEW_CONFIG = {
-  dashboard: { title: 'Dashboard', addLabel: 'Add Client' },
-  clients: { title: 'Client Management', addLabel: 'Add Client' },
-  expenses: { title: 'Expense Tracker', addLabel: 'Add Expense' },
-  leads: { title: 'Lead Pipeline', addLabel: 'Add Lead' },
-  invoices: { title: 'Invoices', addLabel: 'New Invoice' },
-  system: { title: 'System Health', addLabel: 'Add Automation' },
-  team: { title: 'Team', addLabel: 'Add Member' },
-  agents: { title: 'AI Agents', addLabel: null },
+const VIEW_TITLES = {
+  dashboard: 'Overview',
+  products: 'Products',
+  transactions: 'Transactions',
+  reports: 'Reports & Analytics',
+  messages: 'Messages',
+  team: 'Team Performance',
+  campaigns: 'Campaigns',
+  clients: 'Customer List',
+  channels: 'Channels',
+  orders: 'Order Management',
+  roles: 'Roles & Permissions',
+  billing: 'Billing & Subscription',
+  integrations: 'Integrations',
+  support: 'Customer Support',
+  help: 'Help Center',
+  system: 'System Settings',
+  expenses: 'Expense Tracker',
+  invoices: 'Invoices',
+  agents: 'AI Agents',
+  discovery: 'Lead Discovery',
 };
 
 export default function Topbar({ onMenuClick, onAddClient, activeView, searchQuery = '', onSearchChange }) {
-  const config = VIEW_CONFIG[activeView] || VIEW_CONFIG.dashboard;
+  const currentViewTitle = VIEW_TITLES[activeView] || 'Overview';
   const { unreadCount } = useNotifications();
   const { theme, toggleTheme } = useTheme();
+  const { currentUser } = useAuth();
   const [notifOpen, setNotifOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-30 h-16 bg-bg-card/80 backdrop-blur-md border-b border-border flex items-center justify-between px-6">
-      {/* Left: Menu + Title */}
-      <div className="flex items-center gap-4">
+    <header className="sticky top-0 z-30 h-16 bg-bg/90 backdrop-blur-md border-b border-border flex items-center justify-between px-6">
+      {/* Left: Breadcrumbs */}
+      <div className="flex items-center gap-3">
         <button
           onClick={onMenuClick}
-          className="lg:hidden text-text-muted hover:text-text transition-colors"
+          className="lg:hidden text-text-muted hover:text-text p-1 transition-colors"
+          aria-label="Toggle navigation menu"
         >
           <Menu size={20} />
         </button>
-        <div>
-          <h1 className="text-lg font-semibold text-text tracking-tight">
-            {config.title}
-          </h1>
-          <p className="text-xs text-text-muted hidden sm:block">
-            Welcome back, Admin
-          </p>
+
+        <div className="flex items-center gap-1.5 text-xs font-medium text-text-muted">
+          <span className="hover:text-text cursor-pointer">Dashboard</span>
+          <ChevronRight size={13} className="text-text-muted/60" />
+          <span className="text-text font-semibold">{currentViewTitle}</span>
         </div>
       </div>
 
-      {/* Right: Search + Actions */}
-      <div className="flex items-center gap-3">
-        {/* Search */}
-        <div className="hidden md:flex items-center gap-2 px-3 py-2 bg-bg border border-border rounded-lg w-56">
-          <Search size={15} className="text-text-muted" />
+      {/* Right: Search + Quick Tools + Theme + Profile Avatar */}
+      <div className="flex items-center gap-2 sm:gap-3">
+        {/* Search with ⌘K Badge */}
+        <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-bg-card border border-border rounded-xl w-60 shadow-sm transition-all focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/15">
+          <Search size={14} className="text-text-muted shrink-0" />
           <input
             type="text"
             placeholder="Search..."
             value={searchQuery}
             onChange={(e) => onSearchChange?.(e.target.value)}
-            className="bg-transparent outline-none text-sm text-text placeholder:text-text-muted/50 w-full"
+            className="bg-transparent outline-none text-xs text-text placeholder:text-text-muted/50 w-full"
           />
+          <kbd className="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-mono text-text-muted/80 bg-bg border border-border rounded shadow-xs shrink-0">
+            ⌘K
+          </kbd>
         </div>
 
         {/* Download Report */}
@@ -62,43 +78,38 @@ export default function Topbar({ onMenuClick, onAddClient, activeView, searchQue
         {/* Theme Toggle */}
         <button
           onClick={toggleTheme}
-          className="p-2 text-text-muted hover:text-text hover:bg-bg-hover rounded-lg transition-colors cursor-pointer"
+          className="p-2 text-text-muted hover:text-text hover:bg-bg-hover rounded-xl transition-colors cursor-pointer border border-transparent hover:border-border"
           title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
           aria-label={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
         >
-          {theme === 'dark' ? <Sun size={18} className="text-warning" /> : <Moon size={18} />}
+          {theme === 'dark' ? <Sun size={17} className="text-warning" /> : <Moon size={17} />}
         </button>
 
         {/* Notifications */}
         <div className="relative">
           <button
             onClick={() => setNotifOpen(!notifOpen)}
-            className="relative p-2 text-text-muted hover:text-text hover:bg-bg-hover rounded-lg transition-colors"
+            className="relative p-2 text-text-muted hover:text-text hover:bg-bg-hover rounded-xl transition-colors border border-transparent hover:border-border cursor-pointer"
+            aria-label="Notifications"
           >
-            <Bell size={18} />
+            <Bell size={17} />
             {unreadCount > 0 && (
-              <span className="absolute top-1 right-1 min-w-[16px] h-4 flex items-center justify-center px-1 text-[10px] font-bold text-white bg-danger rounded-full">
-                {unreadCount > 99 ? '99+' : unreadCount}
+              <span className="absolute top-1.5 right-1.5 min-w-[15px] h-[15px] flex items-center justify-center px-1 text-[9px] font-bold text-white bg-danger rounded-full ring-2 ring-bg-card">
+                {unreadCount > 9 ? '9+' : unreadCount}
               </span>
             )}
           </button>
           <NotificationPanel isOpen={notifOpen} onClose={() => setNotifOpen(false)} />
         </div>
 
-        {/* Context-aware Add button */}
-        {config.addLabel && (
-          <button
-            onClick={onAddClient}
-            className="flex items-center gap-2 px-4 py-2 bg-accent hover:bg-accent-hover text-white text-sm font-medium rounded-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-accent/25"
-          >
-            <Plus size={16} />
-            <span className="hidden sm:inline">{config.addLabel}</span>
-          </button>
-        )}
-
-        {/* Avatar */}
-        <div className="w-8 h-8 rounded-full bg-white border border-border flex items-center justify-center p-1 overflow-hidden shadow-sm ml-1">
-          <img src="/aeitron_logo.jpeg" alt="Aeitron Logo" className="w-full h-full object-contain" />
+        {/* User Circular Avatar */}
+        <div className="flex items-center gap-2 pl-2 border-l border-border/80">
+          <img
+            src={currentUser?.avatar || '/aeitron_icon_fb.png'}
+            alt={currentUser?.name}
+            className="w-8 h-8 rounded-full object-cover border border-border shadow-xs"
+            title={`${currentUser?.name} (${currentUser?.role})`}
+          />
         </div>
       </div>
     </header>

@@ -1,66 +1,101 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
-  LayoutDashboard, Receipt, Users, Kanban, FileText, Activity,
-  LogOut, X, ChevronDown, ChevronRight, PanelLeftClose, PanelLeftOpen, UsersRound, Bot,
-  Radar,
+  LayoutDashboard,
+  Package,
+  Receipt,
+  BarChart3,
+  MessageSquare,
+  Users,
+  Megaphone,
+  UsersRound,
+  Globe,
+  ClipboardList,
+  ShieldCheck,
+  CreditCard,
+  Layers,
+  Headphones,
+  HelpCircle,
+  Settings,
+  ChevronsUpDown,
+  LogOut,
+  X,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Check,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 const NAV_GROUPS = [
   {
-    label: 'Overview',
+    label: 'Main Menu',
     items: [
       { icon: LayoutDashboard, label: 'Dashboard', view: 'dashboard' },
+      { icon: Package, label: 'Products', view: 'products' },
+      { icon: Receipt, label: 'Transactions', view: 'transactions' },
+      { icon: BarChart3, label: 'Reports & Analytics', view: 'reports' },
+      { icon: MessageSquare, label: 'Messages', view: 'messages', badge: '3' },
+      { icon: Users, label: 'Team Performance', view: 'team' },
+      { icon: Megaphone, label: 'Campaigns', view: 'campaigns' },
     ],
   },
   {
-    label: 'Finance',
+    label: 'Customers',
     items: [
-      { icon: Receipt, label: 'Expenses', view: 'expenses' },
-      { icon: FileText, label: 'Invoices', view: 'invoices' },
+      { icon: UsersRound, label: 'Customer List', view: 'clients' },
+      { icon: Globe, label: 'Channels', view: 'channels' },
+      { icon: ClipboardList, label: 'Order Management', view: 'orders' },
     ],
   },
   {
-    label: 'Projects',
+    label: 'Management',
     items: [
-      { icon: Users, label: 'Clients', view: 'clients' },
-      { icon: Kanban, label: 'Leads', view: 'leads' },
-      { icon: Radar, label: 'Lead Discovery', view: 'discovery' },
+      { icon: ShieldCheck, label: 'Roles & Permissions', view: 'roles' },
+      { icon: CreditCard, label: 'Billing & Subscription', view: 'billing' },
+      { icon: Layers, label: 'Integrations', view: 'integrations' },
     ],
   },
   {
-    label: 'Team',
+    label: 'Settings',
     items: [
-      { icon: UsersRound, label: 'Team', view: 'team' },
-      { icon: Bot, label: 'Agents', view: 'agents' },
-    ],
-  },
-  {
-    label: 'Operations',
-    items: [
-      { icon: Activity, label: 'System Health', view: 'system' },
+      { icon: Headphones, label: 'Customer Support', view: 'support' },
+      { icon: HelpCircle, label: 'Help Center', view: 'help' },
+      { icon: Settings, label: 'System Settings', view: 'system' },
     ],
   },
 ];
 
 export default function Sidebar({ open, onClose, activeView, onNavigate }) {
-  const { logout } = useAuth();
-  const { theme, toggleTheme } = useTheme();
+  const { currentUser, users, switchUser, logout } = useAuth();
   const [collapsed, setCollapsed] = useState(() => {
-    try { return localStorage.getItem('aeitron_sidebar_collapsed') === 'true'; } catch { return false; }
+    try {
+      return localStorage.getItem('aeitron_sidebar_collapsed') === 'true';
+    } catch {
+      return false;
+    }
   });
-  const [openSections, setOpenSections] = useState({
-    Overview: true, Finance: true, Projects: true, Team: true, Operations: true,
-  });
+
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const profileMenuRef = useRef(null);
+
+  // Close profile dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(e.target)) {
+        setProfileMenuOpen(false);
+      }
+    }
+    if (profileMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [profileMenuOpen]);
 
   function toggleCollapsed() {
     const next = !collapsed;
     setCollapsed(next);
-    try { localStorage.setItem('aeitron_sidebar_collapsed', String(next)); } catch {}
-  }
-
-  function toggleSection(label) {
-    setOpenSections((prev) => ({ ...prev, [label]: !prev[label] }));
+    try {
+      localStorage.setItem('aeitron_sidebar_collapsed', String(next));
+    } catch {}
   }
 
   function handleNav(view) {
@@ -79,146 +114,222 @@ export default function Sidebar({ open, onClose, activeView, onNavigate }) {
 
       <aside
         className={`
-          fixed top-0 left-0 z-50 h-full bg-sidebar
-          flex flex-col transition-all duration-200
+          fixed top-0 left-0 z-50 h-full bg-sidebar border-r border-sidebar-border
+          flex flex-col transition-all duration-200 select-none
           lg:translate-x-0 lg:static lg:z-auto
-          ${collapsed ? 'w-16' : 'w-64'}
+          ${collapsed ? 'w-[76px]' : 'w-[260px]'}
           ${open ? 'translate-x-0 animate-slide-in' : '-translate-x-full'}
         `}
       >
-        {/* Header */}
-        <div className={`flex items-center h-16 border-b border-sidebar-border ${collapsed ? 'justify-center px-2' : 'justify-between px-5'}`}>
-          <div className="flex items-center gap-3">
-            <img
-              src="/aeitron_logo.jpeg"
-              alt="Aeitron Logo"
-              className="w-8 h-8 rounded-lg object-contain bg-white p-1 shadow-sm shrink-0"
-              onError={(e) => {
-                e.target.src = '/aeitron_icon_fb.png';
-              }}
-            />
+        {/* Header Agency Switcher */}
+        <div className={`p-4 border-b border-sidebar-border flex items-center ${collapsed ? 'justify-center' : 'justify-between'}`}>
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-9 h-9 rounded-xl bg-white p-1.5 shadow-sm border border-white/20 flex items-center justify-center shrink-0">
+              <img
+                src="/aeitron_logo.jpeg"
+                alt="Logo"
+                className="w-full h-full object-contain"
+                onError={(e) => {
+                  e.currentTarget.src = '/aeitron_icon_fb.png';
+                }}
+              />
+            </div>
             {!collapsed && (
-              <span className="text-sidebar-text-active font-semibold text-lg tracking-tight whitespace-nowrap">
-                Aeitron AI
-              </span>
+              <div className="min-w-0 flex-1">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-sidebar-text/60 block">
+                  Agency
+                </span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-sm font-semibold text-sidebar-text-active truncate">
+                    Aeitron AI Studio
+                  </span>
+                  <ChevronsUpDown size={13} className="text-sidebar-text/40 shrink-0" />
+                </div>
+              </div>
             )}
           </div>
-          <button
-            onClick={onClose}
-            className="lg:hidden text-sidebar-text hover:text-sidebar-text-active transition-colors"
-          >
-            <X size={20} />
-          </button>
+
+          {!collapsed && (
+            <button
+              onClick={onClose}
+              className="lg:hidden text-sidebar-text hover:text-sidebar-text-active p-1"
+            >
+              <X size={18} />
+            </button>
+          )}
         </div>
 
-        {/* Collapse toggle (desktop only) */}
-        <div className={`hidden lg:flex px-3 py-2 ${collapsed ? 'justify-center' : 'justify-end'}`}>
+        {/* Collapse button (Desktop only) */}
+        <div className={`hidden lg:flex px-3 pt-2 ${collapsed ? 'justify-center' : 'justify-end'}`}>
           <button
             onClick={toggleCollapsed}
-            className="p-1.5 rounded-md text-sidebar-text hover:text-sidebar-text-active hover:bg-sidebar-hover transition-colors"
+            className="p-1 rounded-md text-sidebar-text/60 hover:text-sidebar-text-active hover:bg-sidebar-hover transition-colors"
             title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
-            {collapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
+            {collapsed ? <PanelLeftOpen size={15} /> : <PanelLeftClose size={15} />}
           </button>
         </div>
 
-        {/* Navigation */}
-        <nav className="flex-1 px-2 py-1 space-y-1 overflow-y-auto">
+        {/* Navigation items list */}
+        <nav className="flex-1 px-3 py-2 space-y-4 overflow-y-auto custom-scrollbar">
           {NAV_GROUPS.map((group) => (
-            <SidebarGroup
-              key={group.label}
-              label={group.label}
-              isOpen={openSections[group.label]}
-              onToggle={() => toggleSection(group.label)}
-              collapsed={collapsed}
-            >
-              {group.items.map((item) => (
-                <SidebarLink
-                  key={item.label}
-                  icon={item.icon}
-                  label={item.label}
-                  active={activeView === item.view}
-                  onClick={() => handleNav(item.view)}
-                  collapsed={collapsed}
-                />
-              ))}
-            </SidebarGroup>
+            <div key={group.label} className="space-y-1">
+              {!collapsed && (
+                <div className="px-3 py-1 text-[11px] font-semibold text-sidebar-text/50 uppercase tracking-wider">
+                  {group.label}
+                </div>
+              )}
+              <div className="space-y-0.5">
+                {group.items.map((item) => {
+                  const isActive = activeView === item.view;
+                  const Icon = item.icon;
+                  return (
+                    <button
+                      key={item.label}
+                      onClick={() => handleNav(item.view)}
+                      title={collapsed ? item.label : undefined}
+                      className={`
+                        w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium
+                        transition-all duration-150 cursor-pointer
+                        ${collapsed ? 'justify-center px-2 py-2.5' : ''}
+                        ${isActive
+                          ? 'bg-slate-900 text-white shadow-sm dark:bg-accent dark:text-white font-semibold'
+                          : 'text-sidebar-text hover:text-sidebar-text-active hover:bg-sidebar-hover'
+                        }
+                      `}
+                    >
+                      <Icon size={17} className={isActive ? 'text-white' : 'text-sidebar-text/70'} />
+                      {!collapsed && (
+                        <span className="truncate flex-1 text-left">{item.label}</span>
+                      )}
+                      {!collapsed && item.badge && (
+                        <span className="px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-accent/20 text-accent dark:bg-accent-light dark:text-accent">
+                          {item.badge}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           ))}
         </nav>
 
-        {/* Footer */}
-        <div className={`py-4 border-t border-sidebar-border ${collapsed ? 'px-2' : 'px-3'} space-y-2`}>
-          {/* Logout */}
-          <button
-            onClick={logout}
-            className={`flex items-center gap-3 w-full rounded-lg text-sm font-medium text-sidebar-text hover:text-danger hover:bg-white/5 transition-all duration-200 cursor-pointer ${collapsed ? 'justify-center p-2.5' : 'px-3 py-2.5'}`}
-            title="Logout"
-          >
-            <LogOut size={18} />
-            {!collapsed && <span>Logout</span>}
-          </button>
-          {!collapsed && (
-            <p className="text-xs text-sidebar-text/50 px-3">Aeitron Finance v2.0</p>
+        {/* Bottom Profile Widget & Menu */}
+        <div className="p-3 border-t border-sidebar-border relative" ref={profileMenuRef}>
+          {/* Profile Dropdown Popup */}
+          {profileMenuOpen && (
+            <div className={`
+              absolute bottom-full mb-2 bg-bg-card border border-border shadow-2xl rounded-2xl p-2.5 z-50 text-text
+              animate-fade-in
+              ${collapsed ? 'left-3 w-64' : 'left-3 right-3'}
+            `}>
+              <div className="p-2 border-b border-border/70 mb-2">
+                <div className="flex items-center gap-2.5">
+                  <img
+                    src={currentUser?.avatar || '/aeitron_icon_fb.png'}
+                    alt={currentUser?.name}
+                    className="w-9 h-9 rounded-xl object-cover border border-border shrink-0"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <div className="text-xs font-bold text-text truncate">{currentUser?.name}</div>
+                    <div className="text-[11px] text-text-muted truncate">{currentUser?.email}</div>
+                  </div>
+                </div>
+                <div className="mt-2 flex items-center gap-1.5 text-[10px] font-semibold text-accent bg-accent/10 px-2 py-1 rounded-lg">
+                  <span>{currentUser?.badge || currentUser?.role}</span>
+                </div>
+              </div>
+
+              {/* Role Switcher in dropdown */}
+              <div className="px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-text-muted">
+                Switch Role Profile
+              </div>
+              <div className="space-y-1 mb-2">
+                {users.map((u) => {
+                  const isCurrent = u.email.toLowerCase() === currentUser?.email.toLowerCase();
+                  return (
+                    <button
+                      key={u.id}
+                      onClick={() => {
+                        switchUser(u.email);
+                        setProfileMenuOpen(false);
+                      }}
+                      className={`
+                        w-full flex items-center justify-between p-1.5 rounded-lg text-xs transition-colors
+                        ${isCurrent ? 'bg-accent/15 text-accent font-semibold' : 'hover:bg-bg-hover text-text'}
+                      `}
+                    >
+                      <div className="flex items-center gap-2 truncate">
+                        <img src={u.avatar} alt={u.name} className="w-5 h-5 rounded-md object-cover" />
+                        <span className="truncate">{u.name}</span>
+                        <span className="text-[10px] text-text-muted">({u.role.split(' ')[0]})</span>
+                      </div>
+                      {isCurrent && <Check size={13} className="shrink-0 text-accent" />}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="border-t border-border/70 pt-1 space-y-0.5">
+                <button
+                  onClick={() => {
+                    onNavigate('roles');
+                    setProfileMenuOpen(false);
+                  }}
+                  className="w-full flex items-center gap-2 px-2.5 py-1.5 text-xs text-text hover:bg-bg-hover rounded-lg transition-colors"
+                >
+                  <ShieldCheck size={14} className="text-text-muted" />
+                  <span>Roles & Permissions</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setProfileMenuOpen(false);
+                    logout();
+                  }}
+                  className="w-full flex items-center gap-2 px-2.5 py-1.5 text-xs text-danger hover:bg-danger/10 rounded-lg transition-colors"
+                >
+                  <LogOut size={14} />
+                  <span>Sign Out</span>
+                </button>
+              </div>
+            </div>
           )}
+
+          {/* Profile Card Button */}
+          <button
+            onClick={() => setProfileMenuOpen(!profileMenuOpen)}
+            className={`
+              w-full flex items-center gap-3 p-2 rounded-xl
+              bg-sidebar-hover/60 hover:bg-sidebar-hover text-sidebar-text-active
+              transition-all border border-sidebar-border cursor-pointer
+              ${collapsed ? 'justify-center p-2' : 'justify-between'}
+            `}
+            title={collapsed ? `${currentUser?.name} (${currentUser?.role})` : undefined}
+          >
+            <div className="flex items-center gap-2.5 min-w-0">
+              <img
+                src={currentUser?.avatar || '/aeitron_icon_fb.png'}
+                alt={currentUser?.name}
+                className="w-8 h-8 rounded-lg object-cover border border-white/20 shrink-0"
+              />
+              {!collapsed && (
+                <div className="min-w-0 text-left">
+                  <div className="text-xs font-semibold text-sidebar-text-active truncate">
+                    {currentUser?.name || 'Salung Prastyo'}
+                  </div>
+                  <div className="text-[11px] text-sidebar-text/60 truncate">
+                    {currentUser?.role || 'Sales Operator'}
+                  </div>
+                </div>
+              )}
+            </div>
+            {!collapsed && (
+              <ChevronsUpDown size={14} className="text-sidebar-text/50 shrink-0" />
+            )}
+          </button>
         </div>
       </aside>
     </>
-  );
-}
-
-function SidebarGroup({ label, children, isOpen, onToggle, collapsed }) {
-  if (collapsed) {
-    return <div className="space-y-1 py-1">{children}</div>;
-  }
-
-  return (
-    <div className="py-1">
-      <button
-        onClick={onToggle}
-        className="flex items-center justify-between w-full px-3 py-2 text-xs font-semibold uppercase tracking-wider text-sidebar-text/50 hover:text-sidebar-text/70 transition-colors"
-      >
-        <span>{label}</span>
-        {isOpen ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
-      </button>
-      {isOpen && <div className="space-y-0.5 mt-0.5">{children}</div>}
-    </div>
-  );
-}
-
-function SidebarLink({ icon: Icon, label, active, onClick, collapsed }) {
-  if (collapsed) {
-    return (
-      <button
-        onClick={onClick}
-        title={label}
-        className={`
-          flex items-center justify-center w-full p-2.5 rounded-lg
-          transition-all duration-200 cursor-pointer
-          ${active
-            ? 'bg-sidebar-active text-sidebar-text-active'
-            : 'text-sidebar-text hover:text-sidebar-text-active hover:bg-sidebar-hover'
-          }
-        `}
-      >
-        <Icon size={18} />
-      </button>
-    );
-  }
-
-  return (
-    <button
-      onClick={onClick}
-      className={`
-        flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-medium
-        transition-all duration-200 cursor-pointer
-        ${active
-          ? 'bg-sidebar-active text-sidebar-text-active'
-          : 'text-sidebar-text hover:text-sidebar-text-active hover:bg-sidebar-hover'
-        }
-      `}
-    >
-      <Icon size={18} />
-      <span>{label}</span>
-    </button>
   );
 }

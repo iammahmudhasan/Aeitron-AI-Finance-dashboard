@@ -1,13 +1,17 @@
-import { createContext, useContext, useState, useCallback } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import {
   validateCredentials,
   resetPassword as authResetPassword,
-  restoreDefaultCredentials as authRestoreDefaults,
   getLockoutState,
-  getRegisteredCredentials,
   setSession,
   clearSession,
   getActiveStorage,
+  getActiveUser,
+  setActiveUser as persistActiveUser,
+  getAllUsers,
+  saveUser as authSaveUser,
+  deleteUser as authDeleteUser,
+  getUserByEmail,
 } from '../utils/auth';
 
 const AuthContext = createContext(null);
@@ -17,12 +21,26 @@ export function AuthProvider({ children }) {
     return getActiveStorage() !== null;
   });
 
-  const login = useCallback(async (email, password, rememberMe = false) => {
+  const [currentUser, setCurrentUser] = useState(() => {
+    return getActiveUser();
+  });
+
+  const [users, setUsers] = useState(() => {
+    return getAllUsers();
+  });
+
+  // Sync users list whenever storage updates
+  const refreshUsers = useCallback(() => {
+    setUsers(getAllUsers());
+  }, []);
+
+  const login = useCallback(async (email, password, rememberMe = true) => {
     const result = await validateCredentials(email, password);
-    if (result.success) {
+    if (result.success && result.user) {
       setIsAuthenticated(true);
-      setSession(rememberMe);
-      return { success: true };
+      setCurrentUser(result.user);
+      setSession(rememberMe, result.user);
+      return { success: true, user: result.user };
     }
     return {
       success: false,
@@ -37,24 +55,63 @@ export function AuthProvider({ children }) {
     clearSession();
   }, []);
 
-  const resetPassword = useCallback(async (email, newPassword) => {
-    return await authResetPassword(email, newPassword);
+  const switchUser = useCallback((userEmail) => {
+    const target = getUserByEmail(userEmail);
+    if (target) {
+      setCurrentUser(target);
+      persistActiveUser(target, true);
+      console.info(`[Auth] Switched active user to ${target.name} (${target.role})`);
+      return true;
+    }
+    return false;
   }, []);
 
-  const restoreDefaults = useCallback(() => {
-    return authRestoreDefaults();
+  const addUser = useCallback((userData) => {
+    const ok = authSaveUser(userData);
+    if (ok) refreshUsers();
+    return ok;
+  }, [refreshUsers]);
+
+  const updateUser = useCallback((userData) => {
+    const ok = authSaveUser(userData);
+    if (ok) {
+      refreshUsers();
+      if (currentUser?.email.toLowerCase() === userData.email?.toLowerCase()) {
+        const updated = getUserByEmail(userData.email);
+        if (updated) {
+          setCurrentUser(updated);
+          persistActiveUser(updated, true);
+        }
+      }
+    }
+    return ok;
+  }, [refreshUsers, currentUser]);
+
+  const deleteUser = useCallback((email) => {
+    const ok = authDeleteUser(email);
+    if (ok) refreshUsers();
+    return ok;
+  }, [refreshUsers]);
+
+  const resetPassword = useCallback(async (email, newPassword) => {
+    return await authResetPassword(email, newPassword);
   }, []);
 
   return (
     <AuthContext.Provider
       value={{
         isAuthenticated,
+        currentUser,
+        users,
         login,
         logout,
+        switchUser,
+        addUser,
+        updateUser,
+        deleteUser,
         resetPassword,
-        restoreDefaults,
         getLockoutState,
-        getRegisteredCredentials,
+        refreshUsers,
       }}
     >
       {children}

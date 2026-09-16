@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { DEFAULT_EMAIL, DEFAULT_PASSWORD } from '../utils/auth';
+import { DEFAULT_EMAIL, DEFAULT_PASSWORD, DEFAULT_USERS } from '../utils/auth';
 import {
   Eye,
   EyeOff,
@@ -13,17 +13,18 @@ import {
   AlertCircle,
   Sparkles,
   RotateCcw,
+  UserCheck,
 } from 'lucide-react';
 
 export default function LoginPage() {
-  const { login, resetPassword, restoreDefaults, getLockoutState } = useAuth();
+  const { login, resetPassword, getLockoutState } = useAuth();
 
   // Mode: 'login' | 'reset'
   const [mode, setMode] = useState('login');
 
-  // Login form state
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  // Login form state - defaults to Salung Prastyo (Sales Operator) or CEO
+  const [email, setEmail] = useState('sales@aeitron.com');
+  const [password, setPassword] = useState('admin');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
 
@@ -60,10 +61,10 @@ export default function LoginPage() {
     return () => clearInterval(timer);
   }, [lockoutSeconds]);
 
-  // One-click quick fill
-  const handleQuickFill = () => {
-    setEmail(DEFAULT_EMAIL);
-    setPassword(DEFAULT_PASSWORD);
+  // One-click quick role selection
+  const handleSelectRole = (user) => {
+    setEmail(user.email);
+    setPassword('admin');
     setError('');
   };
 
@@ -99,18 +100,18 @@ export default function LoginPage() {
     setError('');
     setResetSuccess('');
 
-    if (!resetEmail.trim()) {
-      setError('Please enter your account email address.');
+    if (!resetEmail) {
+      setError('Please enter your account email.');
       return;
     }
 
-    if (newPassword.length < 4) {
+    if (!newPassword || newPassword.length < 4) {
       setError('New password must be at least 4 characters long.');
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      setError('Passwords do not match. Please re-type carefully.');
+      setError('Passwords do not match. Please re-enter.');
       return;
     }
 
@@ -118,30 +119,21 @@ export default function LoginPage() {
     try {
       const res = await resetPassword(resetEmail, newPassword);
       if (res.success) {
-        setResetSuccess('Password updated successfully! You can now sign in with your new password.');
+        setResetSuccess(res.message);
         setEmail(resetEmail);
         setPassword(newPassword);
-        setLockoutSeconds(0);
+        setTimeout(() => {
+          setMode('login');
+          setResetSuccess('');
+        }, 1800);
       } else {
-        setError(res.error || 'Failed to update password.');
+        setError(res.error || 'Failed to reset password.');
       }
     } catch (err) {
-      setError(err?.message || 'Error occurred during password reset.');
+      setError(err?.message || 'Password reset failed.');
     } finally {
       setLoading(false);
     }
-  };
-
-  // Restore factory defaults
-  const handleRestoreDefaults = () => {
-    restoreDefaults();
-    setEmail(DEFAULT_EMAIL);
-    setPassword(DEFAULT_PASSWORD);
-    setResetEmail(DEFAULT_EMAIL);
-    setLockoutSeconds(0);
-    setError('');
-    setResetSuccess('Credentials restored to defaults (ceo@aeitron.com / admin).');
-    setMode('login');
   };
 
   return (
@@ -155,17 +147,16 @@ export default function LoginPage() {
 
       <div className="w-full max-w-md relative z-10">
         {/* Brand Header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center mb-4">
+        <div className="text-center mb-6">
+          <div className="inline-flex items-center justify-center mb-3">
             <div className="relative group">
               <div className="absolute -inset-1.5 rounded-2xl bg-gradient-to-r from-accent via-purple-500 to-indigo-500 opacity-40 blur-md group-hover:opacity-75 transition duration-500"></div>
-              <div className="relative w-16 h-16 rounded-2xl bg-white p-2.5 shadow-xl border border-white/20 flex items-center justify-center overflow-hidden">
+              <div className="relative w-14 h-14 rounded-2xl bg-white p-2 shadow-xl border border-white/20 flex items-center justify-center overflow-hidden">
                 <img
                   src="/aeitron_logo.jpeg"
                   alt="Aeitron AI Logo"
                   className="w-full h-full object-contain"
                   onError={(e) => {
-                    // Fallback if jpeg is blocked
                     e.currentTarget.src = '/aeitron_icon_fb.png';
                   }}
                 />
@@ -173,28 +164,28 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <h1 className="text-3xl font-bold text-text tracking-tight flex items-center justify-center gap-2">
+          <h1 className="text-2xl font-bold text-text tracking-tight flex items-center justify-center gap-2">
             Aeitron AI
-            <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-accent/15 text-accent border border-accent/25">
-              OS
+            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-accent/15 text-accent border border-accent/25">
+              FINANCE OS
             </span>
           </h1>
-          <p className="text-text-muted text-sm mt-1.5">
-            AI-Powered Agency Finance & Automation Platform
+          <p className="text-text-muted text-xs mt-1">
+            Enterprise Multi-Role Agency Operating System
           </p>
         </div>
 
         {/* Card Container */}
-        <div className="bg-bg-card border border-border/80 rounded-2xl p-7 sm:p-8 shadow-xl backdrop-blur-md transition-all duration-300">
+        <div className="bg-bg-card border border-border/80 rounded-2xl p-6 sm:p-7 shadow-xl backdrop-blur-md transition-all duration-300">
           {/* Header Switcher */}
-          <div className="flex items-center justify-between pb-5 mb-5 border-b border-border/60">
+          <div className="flex items-center justify-between pb-4 mb-4 border-b border-border/60">
             <div>
-              <h2 className="text-lg font-semibold text-text">
-                {mode === 'login' ? 'Sign In to Dashboard' : 'Reset Password'}
+              <h2 className="text-base font-semibold text-text">
+                {mode === 'login' ? 'Sign In to Workspace' : 'Reset Password'}
               </h2>
               <p className="text-xs text-text-muted mt-0.5">
                 {mode === 'login'
-                  ? 'Enter your credentials to access your workspace'
+                  ? 'Select role profile or enter custom credentials'
                   : 'Set a new password for your account'}
               </p>
             </div>
@@ -213,12 +204,48 @@ export default function LoginPage() {
             )}
           </div>
 
+          {/* Quick Role Selectors */}
+          {mode === 'login' && (
+            <div className="mb-5">
+              <label className="block text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-2">
+                Fast Role Switcher
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                {DEFAULT_USERS.map((u) => {
+                  const isSelected = email.toLowerCase() === u.email.toLowerCase();
+                  return (
+                    <button
+                      key={u.id}
+                      type="button"
+                      onClick={() => handleSelectRole(u)}
+                      className={`flex items-center gap-2 p-2 rounded-xl border text-left transition-all ${
+                        isSelected
+                          ? 'border-accent bg-accent/10 shadow-sm ring-1 ring-accent/30'
+                          : 'border-border bg-bg/50 hover:bg-bg hover:border-text-muted/30'
+                      }`}
+                    >
+                      <img
+                        src={u.avatar}
+                        alt={u.name}
+                        className="w-7 h-7 rounded-lg object-cover border border-border shrink-0"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <div className="text-xs font-semibold text-text truncate">{u.name.split(' ')[0]}</div>
+                        <div className="text-[10px] text-text-muted truncate">{u.role}</div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* Error Message */}
           {error && (
-            <div className="flex items-start gap-2.5 text-xs text-danger bg-danger/10 border border-danger/25 rounded-xl p-3.5 mb-5 animate-fade-in">
+            <div className="flex items-start gap-2.5 text-xs text-danger bg-danger/10 border border-danger/25 rounded-xl p-3 mb-4 animate-fade-in">
               <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
               <div>
-                <span className="font-semibold block">Authentication Notice</span>
+                <span className="font-semibold block">Notice</span>
                 <span>{error}</span>
               </div>
             </div>
@@ -226,7 +253,7 @@ export default function LoginPage() {
 
           {/* Success Message */}
           {resetSuccess && (
-            <div className="flex items-start gap-2.5 text-xs text-success bg-success/10 border border-success/25 rounded-xl p-3.5 mb-5 animate-fade-in">
+            <div className="flex items-start gap-2.5 text-xs text-success bg-success/10 border border-success/25 rounded-xl p-3 mb-4 animate-fade-in">
               <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
               <div>
                 <span className="font-semibold block">Success</span>
@@ -237,11 +264,11 @@ export default function LoginPage() {
 
           {/* ==================== LOGIN MODE ==================== */}
           {mode === 'login' && (
-            <form onSubmit={handleLoginSubmit} className="space-y-4">
+            <form onSubmit={handleLoginSubmit} className="space-y-3.5">
               {/* Email */}
-              <div className="space-y-1.5">
+              <div className="space-y-1">
                 <label htmlFor="email" className="block text-xs font-medium text-text-muted uppercase tracking-wider">
-                  Email Address
+                  Account Email
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-text-muted/60">
@@ -254,15 +281,14 @@ export default function LoginPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     autoComplete="email"
-                    autoFocus
-                    placeholder="ceo@aeitron.com"
-                    className="w-full pl-10 pr-4 py-2.5 bg-bg border border-border rounded-xl text-text text-sm placeholder:text-text-muted/40 outline-none transition-all duration-200 focus:border-accent focus:ring-2 focus:ring-accent/20"
+                    placeholder="sales@aeitron.com"
+                    className="w-full pl-10 pr-4 py-2 bg-bg border border-border rounded-xl text-text text-sm placeholder:text-text-muted/40 outline-none transition-all duration-200 focus:border-accent focus:ring-2 focus:ring-accent/20"
                   />
                 </div>
               </div>
 
               {/* Password */}
-              <div className="space-y-1.5">
+              <div className="space-y-1">
                 <div className="flex items-center justify-between">
                   <label
                     htmlFor="password"
@@ -280,7 +306,7 @@ export default function LoginPage() {
                     }}
                     className="text-xs text-accent hover:text-accent-hover font-medium transition-colors"
                   >
-                    Forgot Password?
+                    Forgot?
                   </button>
                 </div>
                 <div className="relative">
@@ -295,7 +321,7 @@ export default function LoginPage() {
                     required
                     autoComplete="current-password"
                     placeholder="••••••••"
-                    className="w-full pl-10 pr-10 py-2.5 bg-bg border border-border rounded-xl text-text text-sm placeholder:text-text-muted/40 outline-none transition-all duration-200 focus:border-accent focus:ring-2 focus:ring-accent/20"
+                    className="w-full pl-10 pr-10 py-2 bg-bg border border-border rounded-xl text-text text-sm placeholder:text-text-muted/40 outline-none transition-all duration-200 focus:border-accent focus:ring-2 focus:ring-accent/20"
                   />
                   <button
                     type="button"
@@ -310,7 +336,7 @@ export default function LoginPage() {
               </div>
 
               {/* Remember Me & Security Badge */}
-              <div className="flex items-center justify-between pt-1">
+              <div className="flex items-center justify-between pt-0.5">
                 <label className="flex items-center gap-2 cursor-pointer select-none">
                   <input
                     type="checkbox"
@@ -323,7 +349,7 @@ export default function LoginPage() {
 
                 <div className="flex items-center gap-1 text-[11px] text-text-muted/70">
                   <ShieldCheck className="w-3.5 h-3.5 text-success" />
-                  <span>SHA-256 Encrypted</span>
+                  <span>SHA-256</span>
                 </div>
               </div>
 
@@ -342,40 +368,18 @@ export default function LoginPage() {
                   `Locked (${lockoutSeconds}s)`
                 ) : (
                   <>
-                    <span>Sign In</span>
+                    <span>Enter Dashboard</span>
                     <ArrowRight className="w-4 h-4" />
                   </>
                 )}
               </button>
-
-              {/* One-Click Quick Fill Option */}
-              <div className="pt-3">
-                <div className="rounded-xl border border-dashed border-border bg-bg/50 p-3 flex items-center justify-between gap-2">
-                  <div className="text-left">
-                    <div className="flex items-center gap-1.5 text-xs font-medium text-text">
-                      <Sparkles className="w-3.5 h-3.5 text-accent" />
-                      <span>Quick Demo Access</span>
-                    </div>
-                    <p className="text-[11px] text-text-muted mt-0.5">
-                      Default: <code className="text-accent font-mono">ceo@aeitron.com</code> / <code className="text-accent font-mono">admin</code>
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleQuickFill}
-                    className="px-2.5 py-1.5 bg-accent/10 hover:bg-accent/20 text-accent text-xs font-medium rounded-lg transition-colors border border-accent/20 shrink-0"
-                  >
-                    Quick Fill
-                  </button>
-                </div>
-              </div>
             </form>
           )}
 
           {/* ==================== RESET PASSWORD MODE ==================== */}
           {mode === 'reset' && (
-            <form onSubmit={handleResetSubmit} className="space-y-4">
-              <div className="space-y-1.5">
+            <form onSubmit={handleResetSubmit} className="space-y-3.5">
+              <div className="space-y-1">
                 <label htmlFor="resetEmail" className="block text-xs font-medium text-text-muted uppercase tracking-wider">
                   Account Email
                 </label>
@@ -389,14 +393,17 @@ export default function LoginPage() {
                     value={resetEmail}
                     onChange={(e) => setResetEmail(e.target.value)}
                     required
-                    placeholder="ceo@aeitron.com"
-                    className="w-full pl-10 pr-4 py-2.5 bg-bg border border-border rounded-xl text-text text-sm placeholder:text-text-muted/40 outline-none transition-all duration-200 focus:border-accent focus:ring-2 focus:ring-accent/20"
+                    placeholder="sales@aeitron.com"
+                    className="w-full pl-10 pr-4 py-2 bg-bg border border-border rounded-xl text-text text-sm placeholder:text-text-muted/40 outline-none transition-all duration-200 focus:border-accent focus:ring-2 focus:ring-accent/20"
                   />
                 </div>
               </div>
 
-              <div className="space-y-1.5">
-                <label htmlFor="newPassword" className="block text-xs font-medium text-text-muted uppercase tracking-wider">
+              <div className="space-y-1">
+                <label
+                  htmlFor="newPassword"
+                  className="block text-xs font-medium text-text-muted uppercase tracking-wider"
+                >
                   New Password
                 </label>
                 <div className="relative">
@@ -409,8 +416,8 @@ export default function LoginPage() {
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     required
-                    placeholder="Enter new password (min 4 chars)"
-                    className="w-full pl-10 pr-10 py-2.5 bg-bg border border-border rounded-xl text-text text-sm placeholder:text-text-muted/40 outline-none transition-all duration-200 focus:border-accent focus:ring-2 focus:ring-accent/20"
+                    placeholder="At least 4 characters"
+                    className="w-full pl-10 pr-10 py-2 bg-bg border border-border rounded-xl text-text text-sm placeholder:text-text-muted/40 outline-none transition-all duration-200 focus:border-accent focus:ring-2 focus:ring-accent/20"
                   />
                   <button
                     type="button"
@@ -423,13 +430,16 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              <div className="space-y-1.5">
-                <label htmlFor="confirmPassword" className="block text-xs font-medium text-text-muted uppercase tracking-wider">
+              <div className="space-y-1">
+                <label
+                  htmlFor="confirmPassword"
+                  className="block text-xs font-medium text-text-muted uppercase tracking-wider"
+                >
                   Confirm New Password
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-text-muted/60">
-                    <Lock className="w-4 h-4" />
+                    <KeyRound className="w-4 h-4" />
                   </div>
                   <input
                     id="confirmPassword"
@@ -437,8 +447,8 @@ export default function LoginPage() {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     required
-                    placeholder="Re-type your new password"
-                    className="w-full pl-10 pr-4 py-2.5 bg-bg border border-border rounded-xl text-text text-sm placeholder:text-text-muted/40 outline-none transition-all duration-200 focus:border-accent focus:ring-2 focus:ring-accent/20"
+                    placeholder="Repeat new password"
+                    className="w-full pl-10 pr-4 py-2 bg-bg border border-border rounded-xl text-text text-sm placeholder:text-text-muted/40 outline-none transition-all duration-200 focus:border-accent focus:ring-2 focus:ring-accent/20"
                   />
                 </div>
               </div>
@@ -448,38 +458,10 @@ export default function LoginPage() {
                 disabled={loading}
                 className="w-full py-2.5 px-4 bg-accent hover:bg-accent-hover text-white text-sm font-medium rounded-xl transition-all duration-200 hover:shadow-lg hover:shadow-accent/25 active:scale-[0.99] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2 mt-2"
               >
-                {loading ? (
-                  <span className="inline-flex items-center gap-2">
-                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Updating Password...
-                  </span>
-                ) : (
-                  <>
-                    <span>Set New Password</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </>
-                )}
+                {loading ? 'Updating Password...' : 'Save & Set Password'}
               </button>
-
-              {/* Reset to Factory Defaults */}
-              <div className="pt-2 text-center">
-                <button
-                  type="button"
-                  onClick={handleRestoreDefaults}
-                  className="inline-flex items-center gap-1.5 text-xs text-text-muted hover:text-text transition-colors"
-                >
-                  <RotateCcw className="w-3.5 h-3.5" />
-                  <span>Restore Factory Defaults (admin)</span>
-                </button>
-              </div>
             </form>
           )}
-        </div>
-
-        {/* Footer */}
-        <div className="text-center mt-6 text-xs text-text-muted/60 space-y-1">
-          <p>&copy; {new Date().getFullYear()} Aeitron AI. All rights reserved.</p>
-          <p className="text-[11px]">Empowering Agencies with Intelligent Automation</p>
         </div>
       </div>
     </div>
