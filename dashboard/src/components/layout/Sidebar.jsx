@@ -221,7 +221,7 @@ export default function Sidebar({ open, onClose, activeView, onNavigate }) {
             </div>
             {!collapsed && (
               <div className="min-w-0 flex-1">
-                <span className="text-sm font-bold text-sidebar-text-active truncate block">
+                <span className="text-[17px] font-bold text-sidebar-text-active tracking-tight truncate block">
                   Aeitron AI
                 </span>
               </div>
