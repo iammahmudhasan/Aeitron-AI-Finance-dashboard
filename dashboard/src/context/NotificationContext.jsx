@@ -34,7 +34,26 @@ function notificationReducer(state, action) {
 function loadFromStorage() {
   try {
     const stored = localStorage.getItem(NOTIFICATIONS_STORAGE_KEY);
-    return stored ? JSON.parse(stored) : [];
+    if (!stored) return [];
+    const list = JSON.parse(stored);
+    const currentUser = (() => {
+      try {
+        const u = localStorage.getItem('aeitron_auth_user');
+        return u ? JSON.parse(u) : null;
+      } catch {
+        return null;
+      }
+    })();
+
+    // Automatically purge any self-sent message notifications
+    return list.filter((n) => {
+      if (n.type === 'team_message' && currentUser) {
+        if (n.senderEmail && currentUser.email && n.senderEmail.toLowerCase() === currentUser.email.toLowerCase()) return false;
+        if (n.senderName && currentUser.name && n.senderName.toLowerCase().includes(currentUser.name.toLowerCase())) return false;
+        if (n.title && currentUser.name && n.title.toLowerCase().includes(currentUser.name.toLowerCase())) return false;
+      }
+      return true;
+    });
   } catch {
     return [];
   }
@@ -99,6 +118,25 @@ export function NotificationProvider({ children }) {
       bc.onmessage = (event) => {
         if (event.data?.type === 'SYNC_ADD_NOTIFICATION') {
           const notif = event.data.payload;
+          const currentUser = (() => {
+            try {
+              const u = localStorage.getItem('aeitron_auth_user');
+              return u ? JSON.parse(u) : null;
+            } catch {
+              return null;
+            }
+          })();
+
+          // Never notify self if the message came from current user
+          if (notif.type === 'team_message' && currentUser) {
+            if (notif.senderEmail && currentUser.email && notif.senderEmail.toLowerCase() === currentUser.email.toLowerCase()) {
+              return;
+            }
+            if (notif.senderName && currentUser.name && notif.senderName.toLowerCase().includes(currentUser.name.toLowerCase())) {
+              return;
+            }
+          }
+
           dispatch({ type: 'ADD_NOTIFICATION', payload: notif });
           if (notif.type === 'team_message') {
             playNotificationSound();
@@ -117,6 +155,25 @@ export function NotificationProvider({ children }) {
   }, []);
 
   const addNotification = useCallback((notification) => {
+    // Never notify yourself when you send a message
+    const currentUser = (() => {
+      try {
+        const u = localStorage.getItem('aeitron_auth_user');
+        return u ? JSON.parse(u) : null;
+      } catch {
+        return null;
+      }
+    })();
+
+    if (notification.type === 'team_message' && currentUser) {
+      if (notification.senderEmail && currentUser.email && notification.senderEmail.toLowerCase() === currentUser.email.toLowerCase()) {
+        return;
+      }
+      if (notification.senderName && currentUser.name && notification.senderName.toLowerCase().includes(currentUser.name.toLowerCase())) {
+        return;
+      }
+    }
+
     const newNotif = {
       id: crypto.randomUUID(),
       read: false,

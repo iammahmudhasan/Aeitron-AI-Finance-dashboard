@@ -373,22 +373,9 @@ export default function MessagesView() {
 
     saveAndBroadcast(updatedThreads);
 
-    // 2. Play subtle instant audio chime
-    playNotificationSound();
-
-    // 3. Trigger Global Dashboard Notification (Top bell badge + floating alert)
     const channelLabel = activeThread.type === 'channel' ? `#${activeThread.name}` : activeThread.name;
-    addNotification({
-      title: `Team Message from ${currentSenderName}`,
-      message: `${currentSenderName} in ${channelLabel}: "${messageText.length > 55 ? messageText.slice(0, 52) + '...' : messageText}"`,
-      type: NOTIFICATION_TYPES.TEAM_MESSAGE || 'team_message',
-      senderName: currentSenderName,
-      channelName: channelLabel,
-      avatar: newMessage.avatar,
-      link: 'messages',
-    });
 
-    // 4. Simulate realistic team peer response after 2 seconds
+    // 2. Simulate realistic team peer response after 2 seconds
     if (activeThread.type === 'team' || Math.random() > 0.3) {
       setTimeout(() => {
         setTypingUser(activeThread.type === 'team' ? activeThread.name : 'Alex Rivera (AI Ops)');
