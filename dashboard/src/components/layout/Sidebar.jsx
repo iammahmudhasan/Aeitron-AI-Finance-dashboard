@@ -221,15 +221,9 @@ export default function Sidebar({ open, onClose, activeView, onNavigate }) {
             </div>
             {!collapsed && (
               <div className="min-w-0 flex-1">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-sidebar-text/60 block">
-                  Agency
+                <span className="text-sm font-bold text-sidebar-text-active truncate block">
+                  Aeitron AI
                 </span>
-                <div className="flex items-center gap-1.5">
-                  <span className="text-sm font-semibold text-sidebar-text-active truncate">
-                    Aeitron AI Studio
-                  </span>
-                  <ChevronsUpDown size={13} className="text-sidebar-text/40 shrink-0" />
-                </div>
               </div>
             )}
           </div>
