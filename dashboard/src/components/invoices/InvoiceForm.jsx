@@ -1,10 +1,19 @@
 import { useState, useEffect } from 'react';
-import { X, Plus, Trash2 } from 'lucide-react';
+import { X, Plus, Trash2, Building2 } from 'lucide-react';
 import { useInvoices } from '../../context/InvoiceContext';
 import { useClients } from '../../context/ClientContext';
-import { INVOICE_STATUSES } from '../../utils/constants';
+import { INVOICE_STATUSES, BANK_DETAILS_STORAGE_KEY } from '../../utils/constants';
 
 const emptyLineItem = { description: '', quantity: 1, unitPrice: '' };
+
+const defaultBankDetails = {
+  enabled: false,
+  bankName: '',
+  accountName: '',
+  accountNumber: '',
+  routingNumber: '',
+  swiftCode: '',
+};
 
 function generateInvoiceNumber(invoices) {
   const num = invoices.length + 1;
@@ -14,6 +23,7 @@ function generateInvoiceNumber(invoices) {
 export default function InvoiceForm({ isOpen, onClose, editInvoice }) {
   const { invoices, dispatch } = useInvoices();
   const { clients } = useClients();
+  const [saveBankSuccess, setSaveBankSuccess] = useState(false);
 
   const [form, setForm] = useState({
     clientId: '',
@@ -25,6 +35,7 @@ export default function InvoiceForm({ isOpen, onClose, editInvoice }) {
     status: 'Draft',
     lineItems: [{ ...emptyLineItem }],
     notes: '',
+    bankDetails: { ...defaultBankDetails },
   });
   const [errors, setErrors] = useState({});
 
@@ -40,8 +51,24 @@ export default function InvoiceForm({ isOpen, onClose, editInvoice }) {
         status: editInvoice.status,
         lineItems: editInvoice.lineItems.length > 0 ? editInvoice.lineItems : [{ ...emptyLineItem }],
         notes: editInvoice.notes || '',
+        bankDetails: editInvoice.bankDetails
+          ? { ...defaultBankDetails, ...editInvoice.bankDetails, enabled: true }
+          : { ...defaultBankDetails },
       });
     } else {
+      let initialBank = { ...defaultBankDetails };
+      try {
+        const raw = localStorage.getItem(BANK_DETAILS_STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed?.bankName || parsed?.accountNumber) {
+            initialBank = { ...defaultBankDetails, ...parsed, enabled: true };
+          }
+        }
+      } catch (err) {
+        console.error('Error loading saved bank:', err);
+      }
+
       const today = new Date().toISOString().split('T')[0];
       const due = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
       setForm({
@@ -54,6 +81,7 @@ export default function InvoiceForm({ isOpen, onClose, editInvoice }) {
         status: 'Draft',
         lineItems: [{ ...emptyLineItem }],
         notes: '',
+        bankDetails: initialBank,
       });
     }
     setErrors({});
@@ -114,6 +142,26 @@ export default function InvoiceForm({ isOpen, onClose, editInvoice }) {
     return errs;
   }
 
+    function handleBankChange(field, value) {
+    setForm((prev) => ({
+      ...prev,
+      bankDetails: {
+        ...prev.bankDetails,
+        [field]: value,
+      },
+    }));
+  }
+
+  function handleSaveAsDefaultBank() {
+    try {
+      localStorage.setItem(BANK_DETAILS_STORAGE_KEY, JSON.stringify(form.bankDetails));
+      setSaveBankSuccess(true);
+      setTimeout(() => setSaveBankSuccess(false), 3000);
+    } catch (err) {
+      console.error('Failed to save bank details:', err);
+    }
+  }
+
   function handleSubmit(e) {
     e.preventDefault();
     const errs = validate();
@@ -144,6 +192,7 @@ export default function InvoiceForm({ isOpen, onClose, editInvoice }) {
       subtotal: calcTotal(),
       total: calcTotal(),
       notes: form.notes.trim(),
+      bankDetails: form.bankDetails?.enabled ? { ...form.bankDetails } : null,
     };
 
     if (editInvoice) {
@@ -310,6 +359,86 @@ export default function InvoiceForm({ isOpen, onClose, editInvoice }) {
                 <span className="text-lg font-semibold text-text">${calcTotal().toFixed(2)}</span>
               </div>
             </div>
+          </div>
+
+          {/* Bank Account / Payment Details */}
+          <div className="border border-border rounded-xl p-4 bg-bg/50 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Building2 size={16} className="text-accent" />
+                <span className="text-sm font-medium text-text">Bank / Payment Details</span>
+              </div>
+              <label className="flex items-center gap-2 cursor-pointer text-xs text-text-muted select-none">
+                <input
+                  type="checkbox"
+                  checked={form.bankDetails?.enabled || false}
+                  onChange={(e) => handleBankChange('enabled', e.target.checked)}
+                  className="w-4 h-4 rounded border-border text-accent focus:ring-accent/30 cursor-pointer"
+                />
+                <span>Include on this invoice</span>
+              </label>
+            </div>
+
+            {form.bankDetails?.enabled && (
+              <div className="pt-2 space-y-3 animate-fade-in">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-text-muted mb-1">Bank Name</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. JPMorgan Chase / City Bank"
+                      value={form.bankDetails.bankName || ''}
+                      onChange={(e) => handleBankChange('bankName', e.target.value)}
+                      className="w-full px-3 py-2 bg-bg border border-border rounded-lg text-sm text-text outline-none focus:border-accent transition-colors"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-text-muted mb-1">Account Name / Beneficiary</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Aeitron AI LLC"
+                      value={form.bankDetails.accountName || ''}
+                      onChange={(e) => handleBankChange('accountName', e.target.value)}
+                      className="w-full px-3 py-2 bg-bg border border-border rounded-lg text-sm text-text outline-none focus:border-accent transition-colors"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-text-muted mb-1">Account Number / IBAN</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. 123456789012"
+                      value={form.bankDetails.accountNumber || ''}
+                      onChange={(e) => handleBankChange('accountNumber', e.target.value)}
+                      className="w-full px-3 py-2 bg-bg border border-border rounded-lg text-sm text-text font-mono outline-none focus:border-accent transition-colors"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-text-muted mb-1">Routing / SWIFT / Branch</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. 021000021 / CHASUS33"
+                      value={form.bankDetails.routingNumber || ''}
+                      onChange={(e) => handleBankChange('routingNumber', e.target.value)}
+                      className="w-full px-3 py-2 bg-bg border border-border rounded-lg text-sm text-text font-mono outline-none focus:border-accent transition-colors"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between pt-1 text-xs">
+                  <button
+                    type="button"
+                    onClick={handleSaveAsDefaultBank}
+                    className="text-accent hover:text-accent-hover font-medium underline underline-offset-2 transition-colors"
+                  >
+                    {saveBankSuccess ? '✓ Saved as default agency bank!' : 'Save as default agency bank'}
+                  </button>
+                  <span className="text-[11px] text-text-muted">Will be shown on invoice preview & print</span>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Notes */}

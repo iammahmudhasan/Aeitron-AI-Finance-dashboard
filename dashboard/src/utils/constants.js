@@ -124,3 +124,6 @@ export const DEFAULT_API_SERVICES = [
   { name: 'Make.com', balance: 100, limit: 100 },
   { name: 'n8n Cloud', balance: 100, limit: 100 },
 ];
+
+export const BANK_DETAILS_STORAGE_KEY = 'aeitron_agency_bank_details';
+

@@ -1,4 +1,4 @@
-import { X, Printer, Download } from 'lucide-react';
+import { X, Printer, Download, Building2 } from 'lucide-react';
 import { formatCurrency, formatDate } from '../../utils/formatters';
 import { INVOICE_STATUS_COLORS } from '../../utils/constants';
 
@@ -27,7 +27,13 @@ export default function InvoiceDetail({ invoice, onClose }) {
           .text-right { text-align: right; }
           .total-row { border-top: 2px solid #1a1d26; }
           .total-row td { font-weight: 700; font-size: 16px; padding-top: 16px; }
-          .notes { background: #f4f5f7; padding: 16px; border-radius: 8px; font-size: 13px; color: #4a4f5e; }
+          .notes { background: #f4f5f7; padding: 16px; border-radius: 8px; font-size: 13px; color: #4a4f5e; margin-top: 20px; }
+          .bank-box { background: #f8f9fa; border: 1px solid #e2e4ea; border-radius: 8px; padding: 16px; margin-top: 24px; }
+          .bank-box h4 { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #6c5ce7; margin-bottom: 10px; font-weight: 700; }
+          .bank-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 13px; }
+          .bank-grid div { line-height: 1.4; }
+          .bank-grid span { color: #8c90a0; font-weight: 500; }
+          .bank-grid code { font-family: monospace; font-weight: 600; color: #1a1d26; }
           .status { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
           @media print { body { padding: 20px; } }
         </style>
@@ -81,6 +87,19 @@ export default function InvoiceDetail({ invoice, onClose }) {
             </tr>
           </tbody>
         </table>
+
+        ${invoice.bankDetails && (invoice.bankDetails.bankName || invoice.bankDetails.accountNumber) ? `
+          <div class="bank-box">
+            <h4>Payment / Bank Transfer Details</h4>
+            <div class="bank-grid">
+              ${invoice.bankDetails.bankName ? `<div><span>Bank Name:</span> <strong>${invoice.bankDetails.bankName}</strong></div>` : ''}
+              ${invoice.bankDetails.accountName ? `<div><span>Beneficiary / Name:</span> <strong>${invoice.bankDetails.accountName}</strong></div>` : ''}
+              ${invoice.bankDetails.accountNumber ? `<div><span>Account / IBAN:</span> <code>${invoice.bankDetails.accountNumber}</code></div>` : ''}
+              ${invoice.bankDetails.routingNumber ? `<div><span>Routing / SWIFT:</span> <code>${invoice.bankDetails.routingNumber}</code></div>` : ''}
+            </div>
+          </div>
+        ` : ''}
+
         ${invoice.notes ? `<div class="notes"><strong>Notes:</strong> ${invoice.notes}</div>` : ''}
       </body>
       </html>
@@ -108,6 +127,18 @@ export default function InvoiceDetail({ invoice, onClose }) {
       [''],
       ['Total', '', '', invoice.total],
     ];
+
+    if (invoice.bankDetails && (invoice.bankDetails.bankName || invoice.bankDetails.accountNumber)) {
+      rows.push(
+        [''],
+        ['--- Payment & Bank Details ---'],
+        ['Bank Name', invoice.bankDetails.bankName || ''],
+        ['Account Holder', invoice.bankDetails.accountName || ''],
+        ['Account / IBAN', invoice.bankDetails.accountNumber || ''],
+        ['Routing / SWIFT', invoice.bankDetails.routingNumber || ''],
+      );
+    }
+
     const csv = rows.map((row) => row.map((cell) => `"${cell}"`).join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
@@ -211,6 +242,42 @@ export default function InvoiceDetail({ invoice, onClose }) {
               </tfoot>
             </table>
           </div>
+
+          {/* Payment & Bank Details */}
+          {invoice.bankDetails && (invoice.bankDetails.bankName || invoice.bankDetails.accountNumber) && (
+            <div className="bg-bg border border-border rounded-xl p-4 space-y-2">
+              <div className="flex items-center gap-2 text-accent">
+                <Building2 size={16} />
+                <span className="text-xs font-semibold uppercase tracking-wider">Payment & Bank Transfer Details</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs pt-1">
+                {invoice.bankDetails.bankName && (
+                  <div>
+                    <span className="text-text-muted">Bank Name: </span>
+                    <span className="font-semibold text-text">{invoice.bankDetails.bankName}</span>
+                  </div>
+                )}
+                {invoice.bankDetails.accountName && (
+                  <div>
+                    <span className="text-text-muted">Account Holder: </span>
+                    <span className="font-semibold text-text">{invoice.bankDetails.accountName}</span>
+                  </div>
+                )}
+                {invoice.bankDetails.accountNumber && (
+                  <div>
+                    <span className="text-text-muted">Account / IBAN: </span>
+                    <span className="font-mono font-semibold text-text">{invoice.bankDetails.accountNumber}</span>
+                  </div>
+                )}
+                {invoice.bankDetails.routingNumber && (
+                  <div>
+                    <span className="text-text-muted">Routing / SWIFT: </span>
+                    <span className="font-mono font-semibold text-text">{invoice.bankDetails.routingNumber}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Notes */}
           {invoice.notes && (
