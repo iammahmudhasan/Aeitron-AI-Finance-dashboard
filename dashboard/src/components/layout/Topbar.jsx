@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Menu, Plus, Search, Bell } from 'lucide-react';
+import { Menu, Plus, Search, Bell, Sun, Moon } from 'lucide-react';
 import { useNotifications } from '../../context/NotificationContext';
+import { useTheme } from '../../context/ThemeContext';
 import NotificationPanel from '../notifications/NotificationPanel';
 import DownloadReportButton from '../shared/DownloadReportButton';
 
@@ -18,6 +19,7 @@ const VIEW_CONFIG = {
 export default function Topbar({ onMenuClick, onAddClient, activeView, searchQuery = '', onSearchChange }) {
   const config = VIEW_CONFIG[activeView] || VIEW_CONFIG.dashboard;
   const { unreadCount } = useNotifications();
+  const { theme, toggleTheme } = useTheme();
   const [notifOpen, setNotifOpen] = useState(false);
 
   return (
@@ -56,6 +58,16 @@ export default function Topbar({ onMenuClick, onAddClient, activeView, searchQue
 
         {/* Download Report */}
         <DownloadReportButton />
+
+        {/* Theme Toggle */}
+        <button
+          onClick={toggleTheme}
+          className="p-2 text-text-muted hover:text-text hover:bg-bg-hover rounded-lg transition-colors cursor-pointer"
+          title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+          aria-label={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+        >
+          {theme === 'dark' ? <Sun size={18} className="text-warning" /> : <Moon size={18} />}
+        </button>
 
         {/* Notifications */}
         <div className="relative">
