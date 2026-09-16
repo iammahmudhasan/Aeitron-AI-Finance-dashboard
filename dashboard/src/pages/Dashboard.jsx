@@ -370,6 +370,25 @@ function DashboardView({ currentUser, searchQuery }) {
   const [timeframe, setTimeframe] = useState('Daily');
   const firstName = currentUser?.name ? currentUser.name.split(' ')[0] : 'Salung';
 
+  // Real-time current date state
+  const [currentDateStr, setCurrentDateStr] = useState(() => {
+    return new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  });
+  const [dateIso, setDateIso] = useState(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  });
+
+  // Keep date real-time and updated dynamically
+  useEffect(() => {
+    const updateRealtimeDate = () => {
+      const d = new Date();
+      setCurrentDateStr(d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }));
+    };
+    const timer = setInterval(updateRealtimeDate, 60000);
+    return () => clearInterval(timer);
+  }, []);
+
   const handleExportCsv = () => {
     const csvContent = "data:text/csv;charset=utf-8," 
       + "Metric,Value\n"
@@ -416,10 +435,24 @@ function DashboardView({ currentUser, searchQuery }) {
             <ChevronDown size={14} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
           </div>
 
-          {/* Date Picker Button */}
-          <div className="flex items-center gap-1.5 px-3 py-2 bg-bg-card border border-border rounded-xl text-xs font-semibold text-text shadow-xs">
-            <Calendar size={13} className="text-text-muted" />
-            <span>6 Nov 2025</span>
+          {/* Real-time Interactive Date / Calendar Button */}
+          <div className="relative flex items-center gap-1.5 px-3 py-2 bg-bg-card border border-border rounded-xl text-xs font-semibold text-text shadow-xs hover:border-accent/50 hover:shadow-sm transition-all cursor-pointer group">
+            <Calendar size={13} className="text-accent shrink-0 group-hover:scale-110 transition-transform" />
+            <span className="select-none font-semibold text-text">{currentDateStr}</span>
+            <input
+              type="date"
+              value={dateIso}
+              onChange={(e) => {
+                const val = e.target.value;
+                if (!val) return;
+                setDateIso(val);
+                const [y, m, d] = val.split('-');
+                const dateObj = new Date(Number(y), Number(m) - 1, Number(d));
+                setCurrentDateStr(dateObj.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }));
+              }}
+              className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+              title="Click to select a date or view calendar"
+            />
           </div>
 
           {/* Export CSV Button */}
