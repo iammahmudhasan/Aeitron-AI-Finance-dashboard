@@ -61,8 +61,16 @@ export default function EarningsLineChart() {
   const activePoint = topGrossPoints[activeIdx];
   const activeData = MONTHS[activeIdx];
 
+  const tooltipW = 126;
+  const tooltipH = 46;
+  const minTooltipX = padLeft - 6; // 39px -> safe gap from Y-axis labels
+  const maxTooltipX = chartW - padRight - tooltipW + 6; // 775px -> safe gap from right edge
+  const tooltipX = activePoint ? Math.max(minTooltipX, Math.min(maxTooltipX, activePoint.x - tooltipW / 2)) : 0;
+  const tooltipY = activePoint ? Math.max(6, activePoint.y - tooltipH - 12) : 0;
+  const arrowX = activePoint ? Math.max(tooltipX + 14, Math.min(tooltipX + tooltipW - 14, activePoint.x)) : 0;
+
   return (
-    <div className="bg-bg-card border border-border/80 rounded-3xl p-6 sm:p-8 shadow-xs relative">
+    <div className="bg-bg-card border border-border/80 rounded-3xl p-6 sm:p-8 shadow-xs relative overflow-hidden">
       {/* Header with Title and Legend */}
       <div className="flex items-center justify-between pb-6">
         <h3 className="text-lg font-bold text-text">Earnings</h3>
@@ -80,11 +88,11 @@ export default function EarningsLineChart() {
       </div>
 
       {/* SVG Line Chart Canvas */}
-      <div className="relative w-full overflow-x-auto select-none">
-        <div className="min-w-[700px]">
+      <div className="relative w-full overflow-x-auto custom-scrollbar select-none">
+        <div className="min-w-[680px]">
           <svg
             viewBox={`0 0 ${chartW} ${chartH}`}
-            className="w-full h-auto overflow-visible"
+            className="w-full h-auto block"
           >
             {/* Horizontal Dashed Guidelines & Y-Axis Labels */}
             {yTicks.map((val) => {
@@ -158,23 +166,28 @@ export default function EarningsLineChart() {
               />
             )}
 
-            {/* Floating Black Tooltip Card */}
+            {/* Floating Black Tooltip Card with Edge Clamping & Pointer Arrow */}
             {activePoint && (
               <g
-                transform={`translate(${activePoint.x - 65}, ${Math.max(4, activePoint.y - 68)})`}
+                transform={`translate(${tooltipX}, ${tooltipY})`}
                 className="transition-transform duration-150 pointer-events-none drop-shadow-xl"
               >
                 {/* Tooltip Background Card */}
                 <rect
-                  width="130"
-                  height="48"
+                  width={tooltipW}
+                  height={tooltipH}
                   rx="10"
+                  fill="#0f172a"
+                />
+                {/* Tooltip Downward Pointer Arrow */}
+                <polygon
+                  points={`${arrowX - tooltipX - 5},${tooltipH - 0.5} ${arrowX - tooltipX + 5},${tooltipH - 0.5} ${arrowX - tooltipX},${tooltipH + 6}`}
                   fill="#0f172a"
                 />
                 {/* Value Text */}
                 <text
-                  x="65"
-                  y="22"
+                  x={tooltipW / 2}
+                  y="20"
                   textAnchor="middle"
                   fill="#ffffff"
                   className="font-bold text-[13px] tracking-tight"
@@ -183,8 +196,8 @@ export default function EarningsLineChart() {
                 </text>
                 {/* Subtitle / Date */}
                 <text
-                  x="65"
-                  y="36"
+                  x={tooltipW / 2}
+                  y="34"
                   textAnchor="middle"
                   fill="#94a3b8"
                   className="font-semibold text-[9px] uppercase tracking-wider"
