@@ -4,14 +4,6 @@ import {
   Calendar,
   ChevronDown,
   Download,
-  Package,
-  ShoppingCart,
-  Megaphone,
-  CreditCard,
-  Layers,
-  HelpCircle,
-  Headphones,
-  CheckCircle2,
   TrendingUp,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -21,8 +13,17 @@ import SalesTrendChart from '../components/charts/SalesTrendChart';
 import RevenueBreakdownCard from '../components/charts/RevenueBreakdownCard';
 import TransactionsTable from '../components/transactions/TransactionsTable';
 import RolesManagementView from '../components/management/RolesManagementView';
+import ProductsCatalogView from '../components/products/ProductsCatalogView';
+import OrdersManagementView from '../components/orders/OrdersManagementView';
+import ChannelsManagementView from '../components/channels/ChannelsManagementView';
+import CampaignsView from '../components/campaigns/CampaignsView';
+import MessagesView from '../components/messages/MessagesView';
+import IntegrationsHubView from '../components/integrations/IntegrationsHubView';
+import BillingSubscriptionsView from '../components/billing/BillingSubscriptionsView';
+import SupportTicketsView from '../components/support/SupportTicketsView';
+import HelpCenterView from '../components/help/HelpCenterView';
 
-// Existing Components
+// Existing Modules
 import StatCardGrid from '../components/cards/StatCardGrid';
 import ClientForm from '../components/clients/ClientForm';
 import ClientTable from '../components/clients/ClientTable';
@@ -158,52 +159,32 @@ export default function Dashboard() {
             <DashboardView currentUser={currentUser} searchQuery={searchQuery} />
           )}
 
+          {/* AI Products & Solutions Catalog */}
+          {activeView === 'products' && <ProductsCatalogView />}
+
           {/* Transactions dedicated view */}
           {activeView === 'transactions' && (
             <div className="space-y-4">
               <div>
-                <h2 className="text-xl font-bold text-text">Business Transactions</h2>
-                <p className="text-xs text-text-muted mt-0.5">Real-time ledger of inbound and outbound sales</p>
+                <h2 className="text-xl font-bold text-text">Business Transactions Ledger</h2>
+                <p className="text-xs text-text-muted mt-0.5">Real-time ledger of agency settlements and client payments</p>
               </div>
               <TransactionsTable globalSearch={searchQuery} />
             </div>
           )}
 
-          {/* Roles & Permissions Management view */}
-          {activeView === 'roles' && <RolesManagementView />}
-
-          {/* Products View */}
-          {activeView === 'products' && (
-            <GenericCatalogView
-              title="Products & Services"
-              subtitle="Manage your agency services, AI packages, and hardware offerings"
-              icon={Package}
-            />
-          )}
-
-          {/* Orders View */}
-          {activeView === 'orders' && (
-            <div className="space-y-4">
-              <div>
-                <h2 className="text-xl font-bold text-text">Order Management</h2>
-                <p className="text-xs text-text-muted mt-0.5">Track fulfillment, shipping status, and client orders</p>
-              </div>
-              <TransactionsTable globalSearch={searchQuery} />
-            </div>
-          )}
-
-          {/* Reports & Analytics View */}
+          {/* Reports & Analytics */}
           {activeView === 'reports' && (
             <div className="space-y-6">
               <div>
                 <h2 className="text-xl font-bold text-text">Reports & Financial Analytics</h2>
-                <p className="text-xs text-text-muted mt-0.5">Multi-channel performance metrics and forecasts</p>
+                <p className="text-xs text-text-muted mt-0.5">Comprehensive agency revenue trends, burn rates, and margin distribution</p>
               </div>
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <div className="lg:col-span-8">
                   <SalesTrendChart />
                 </div>
-                <div>
+                <div className="lg:col-span-4">
                   <RevenueBreakdownCard />
                 </div>
               </div>
@@ -215,43 +196,21 @@ export default function Dashboard() {
             </div>
           )}
 
-          {/* Campaigns */}
-          {activeView === 'campaigns' && (
-            <GenericCatalogView
-              title="Marketing & Growth Campaigns"
-              subtitle="Automated email sequences, outbound outreach, and ad campaigns"
-              icon={Megaphone}
+          {/* Unified Messages */}
+          {activeView === 'messages' && <MessagesView />}
+
+          {/* Team Performance */}
+          {activeView === 'team' && (
+            <TeamView
+              onEdit={handleEditMember}
+              onRequestDelete={handleRequestDelete}
             />
           )}
 
-          {/* Billing & Subscription */}
-          {activeView === 'billing' && (
-            <GenericCatalogView
-              title="Billing & Subscriptions"
-              subtitle="Manage SaaS subscriptions, client retainer recurring payments, and merchant accounts"
-              icon={CreditCard}
-            />
-          )}
+          {/* Outbound Campaigns */}
+          {activeView === 'campaigns' && <CampaignsView />}
 
-          {/* Integrations */}
-          {activeView === 'integrations' && (
-            <GenericCatalogView
-              title="App & API Integrations"
-              subtitle="Connect Stripe, PayPal, Quickbooks, OpenAI, and custom webhooks"
-              icon={Layers}
-            />
-          )}
-
-          {/* Support & Help */}
-          {(activeView === 'support' || activeView === 'help') && (
-            <GenericCatalogView
-              title="Customer Support & Help Desk"
-              subtitle="24/7 Priority assistance for Aeitron AI Finance Platform"
-              icon={Headphones}
-            />
-          )}
-
-          {/* Standard Views */}
+          {/* Customers & CRM */}
           {activeView === 'clients' && (
             <ClientsView
               onEdit={handleEditClient}
@@ -260,12 +219,39 @@ export default function Dashboard() {
               searchQuery={searchQuery}
             />
           )}
+
+          {/* Communication Channels */}
+          {activeView === 'channels' && <ChannelsManagementView />}
+
+          {/* Orders & Client Deliverables */}
+          {activeView === 'orders' && <OrdersManagementView />}
+
+          {/* Roles & Permissions */}
+          {activeView === 'roles' && <RolesManagementView />}
+
+          {/* Billing & Retainers */}
+          {activeView === 'billing' && <BillingSubscriptionsView />}
+
+          {/* API & Technical Integrations */}
+          {activeView === 'integrations' && <IntegrationsHubView />}
+
+          {/* Support Tickets */}
+          {activeView === 'support' && <SupportTicketsView />}
+
+          {/* Help Center & SOPs */}
+          {activeView === 'help' && <HelpCenterView />}
+
+          {/* Expenses */}
           {activeView === 'expenses' && (
             <ExpensesView onEdit={handleEditExpense} onRequestDelete={handleRequestDelete} searchQuery={searchQuery} />
           )}
+
+          {/* Leads Pipeline */}
           {activeView === 'leads' && (
             <LeadsView onEdit={handleEditLead} onRequestDelete={handleRequestDelete} searchQuery={searchQuery} />
           )}
+
+          {/* Invoices */}
           {activeView === 'invoices' && (
             <InvoicesView
               onEdit={handleEditInvoice}
@@ -274,14 +260,14 @@ export default function Dashboard() {
               searchQuery={searchQuery}
             />
           )}
+
+          {/* AI Autonomous Agents */}
           {activeView === 'agents' && <AgentsView />}
+
+          {/* Lead Discovery Radar */}
           {activeView === 'discovery' && <LeadDiscovery />}
-          {activeView === 'team' && (
-            <TeamView
-              onEdit={handleEditMember}
-              onRequestDelete={handleRequestDelete}
-            />
-          )}
+
+          {/* System Health */}
           {activeView === 'system' && (
             <SystemView
               onEdit={handleEditAutomation}
@@ -382,7 +368,7 @@ function DashboardView({ currentUser, searchQuery }) {
             Welcome back, {firstName}
           </h1>
           <p className="text-xs text-text-muted mt-0.5">
-            Here's what's happening with your business finance today.
+            Here's what's happening across your AI Automation Agency today.
           </p>
         </div>
 
@@ -442,40 +428,12 @@ function DashboardView({ currentUser, searchQuery }) {
         <div className="mb-4">
           <h2 className="text-sm font-bold text-text uppercase tracking-wider flex items-center gap-2">
             <TrendingUp size={16} className="text-accent" />
-            Executive Intelligence & Operational Growth
+            Executive Intelligence & Autonomous Workforce Health
           </h2>
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <CEOBriefing />
           <GoalTracker />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function GenericCatalogView({ title, subtitle, icon: Icon }) {
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <div className="p-3 bg-accent/15 text-accent rounded-2xl">
-          <Icon size={24} />
-        </div>
-        <div>
-          <h2 className="text-xl font-bold text-text">{title}</h2>
-          <p className="text-xs text-text-muted mt-0.5">{subtitle}</p>
-        </div>
-      </div>
-
-      <div className="bg-bg-card border border-border/80 rounded-2xl p-8 text-center shadow-xs">
-        <div className="max-w-md mx-auto space-y-3">
-          <div className="w-12 h-12 rounded-full bg-accent/10 text-accent flex items-center justify-center mx-auto">
-            <Icon size={22} />
-          </div>
-          <h3 className="text-sm font-bold text-text">Connected Modules Live</h3>
-          <p className="text-xs text-text-muted leading-relaxed">
-            All records for this module are automatically synchronized with the main finance ledger and transactions database.
-          </p>
         </div>
       </div>
     </div>
