@@ -81,27 +81,27 @@ export default function Topbar({ onMenuClick, onAddClient, activeView, searchQue
       </div>
 
       {/* Right: Search + Quick Tools + Theme + Profile Avatar */}
-      <div className="flex items-center gap-2 sm:gap-3">
-        {/* Search with ⌘K Badge */}
-        <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-bg-card border border-border rounded-xl w-60 shadow-sm transition-all focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/15">
+      <div className="flex items-center gap-2.5 sm:gap-3">
+        {/* Search with Pill Styling matching Mockup */}
+        <div className="hidden md:flex items-center gap-2.5 px-4 py-2 bg-[#181a22] border border-[#262934] rounded-full w-64 shadow-xs transition-all focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/15">
           <Search size={14} className="text-text-muted shrink-0" />
           <input
             type="text"
             placeholder="Search..."
             value={searchQuery}
             onChange={(e) => onSearchChange?.(e.target.value)}
-            className="bg-transparent outline-none text-xs text-text placeholder:text-text-muted/50 w-full"
+            className="bg-transparent outline-none text-xs text-white placeholder:text-text-muted/60 w-full"
           />
-          <kbd className="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-mono text-text-muted/80 bg-bg border border-border rounded shadow-xs shrink-0">
+          <kbd className="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[9px] font-mono text-text-muted/70 bg-[#12141a] border border-[#262934] rounded-full shadow-xs shrink-0">
             ⌘K
           </kbd>
         </div>
 
-        {/* Contextual Action Button - Identical size and presence matching Invoices Topbar */}
+        {/* Contextual Action Button */}
         <button
           type="button"
           onClick={onAddClient}
-          className="flex items-center gap-1.5 px-3 py-1.5 bg-accent hover:bg-accent-hover text-white text-xs font-semibold rounded-xl transition-all shadow-xs cursor-pointer active:scale-95 shrink-0"
+          className="flex items-center gap-1.5 px-3.5 py-2 bg-accent hover:bg-accent-hover text-white text-xs font-semibold rounded-full transition-all shadow-xs cursor-pointer active:scale-95 shrink-0"
           title={actionLabel}
         >
           <Plus size={14} />
@@ -114,36 +114,34 @@ export default function Topbar({ onMenuClick, onAddClient, activeView, searchQue
         {/* Theme Toggle */}
         <button
           onClick={toggleTheme}
-          className="p-2 text-text-muted hover:text-text hover:bg-bg-hover rounded-xl transition-colors cursor-pointer border border-transparent hover:border-border"
+          className="w-9 h-9 flex items-center justify-center text-text-muted hover:text-white bg-[#181a22] border border-[#262934] rounded-full transition-colors cursor-pointer"
           title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
           aria-label={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
         >
-          {theme === 'dark' ? <Sun size={17} className="text-warning" /> : <Moon size={17} />}
+          {theme === 'dark' ? <Sun size={15} className="text-warning" /> : <Moon size={15} />}
         </button>
 
         {/* Notifications */}
         <div className="relative">
           <button
             onClick={() => setNotifOpen(!notifOpen)}
-            className="relative p-2 text-text-muted hover:text-text hover:bg-bg-hover rounded-xl transition-colors border border-transparent hover:border-border cursor-pointer"
+            className="relative w-9 h-9 flex items-center justify-center text-text-muted hover:text-white bg-[#181a22] border border-[#262934] rounded-full transition-colors cursor-pointer"
             aria-label="Notifications"
           >
-            <Bell size={17} />
+            <Bell size={15} />
             {unreadCount > 0 && (
-              <span className="absolute top-1.5 right-1.5 min-w-[15px] h-[15px] flex items-center justify-center px-1 text-[9px] font-bold text-white bg-danger rounded-full ring-2 ring-bg-card">
-                {unreadCount > 9 ? '9+' : unreadCount}
-              </span>
+              <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#ff5530] ring-2 ring-[#181a22]" />
             )}
           </button>
           <NotificationPanel isOpen={notifOpen} onClose={() => setNotifOpen(false)} />
         </div>
 
         {/* User Circular Avatar */}
-        <div className="flex items-center gap-2 pl-2 border-l border-border/80">
+        <div className="flex items-center gap-2 pl-1">
           <img
             src={currentUser?.avatar || '/aeitron_icon_fb.png'}
             alt={currentUser?.name}
-            className="w-8 h-8 rounded-full object-cover border border-border shadow-xs"
+            className="w-9 h-9 rounded-full object-cover border border-[#262934] shadow-xs cursor-pointer hover:ring-2 hover:ring-accent transition-all"
             title={`${currentUser?.name} (${currentUser?.role})`}
           />
         </div>

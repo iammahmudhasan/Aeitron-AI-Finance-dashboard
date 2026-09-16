@@ -5,9 +5,9 @@ const ThemeContext = createContext();
 export function ThemeProvider({ children }) {
   const [theme, setTheme] = useState(() => {
     try {
-      return localStorage.getItem('aeitron_theme') || 'light';
+      return localStorage.getItem('aeitron_theme') || 'dark';
     } catch {
-      return 'light';
+      return 'dark';
     }
   });
 

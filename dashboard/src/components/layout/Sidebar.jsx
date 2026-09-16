@@ -289,12 +289,12 @@ export default function Sidebar({ open, onClose, activeView, onNavigate }) {
                           transition-all duration-150 cursor-pointer
                           ${collapsed ? 'justify-center px-2 py-2.5' : ''}
                           ${isActive
-                            ? 'bg-slate-900 text-white shadow-sm dark:bg-accent dark:text-white font-semibold'
+                            ? 'bg-accent/15 text-accent font-semibold shadow-xs'
                             : 'text-sidebar-text hover:text-sidebar-text-active hover:bg-sidebar-hover'
                           }
                         `}
                       >
-                        <Icon size={17} className={isActive ? 'text-white' : 'text-sidebar-text/70'} />
+                        <Icon size={17} className={isActive ? 'text-accent' : 'text-sidebar-text/70'} />
                         {!collapsed && (
                           <span className="truncate flex-1 text-left">{item.label}</span>
                         )}

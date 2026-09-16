@@ -10,6 +10,11 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import DashboardLayout from '../components/layout/DashboardLayout';
+import MetricFlowKpiCards from '../components/cards/MetricFlowKpiCards';
+import OrdersByTimeHeatmap from '../components/charts/OrdersByTimeHeatmap';
+import MonthlySalesPerformanceChart from '../components/charts/MonthlySalesPerformanceChart';
+import SalesByCountryCard from '../components/cards/SalesByCountryCard';
+import TopProductSalesTable from '../components/tables/TopProductSalesTable';
 import OverviewStatCards from '../components/cards/OverviewStatCards';
 import EarningsLineChart from '../components/charts/EarningsLineChart';
 import SalesTrendChart from '../components/charts/SalesTrendChart';
@@ -440,19 +445,28 @@ function DashboardView({ currentUser, searchQuery }) {
         </div>
       </div>
 
-      {/* 3 Pastel KPI Cards matching reference mockup */}
-      <OverviewStatCards />
+      {/* 4 Obsidian & Coral Metric Flow KPI Cards */}
+      <MetricFlowKpiCards />
 
-      {/* Main Earnings Dual-Line Spline Chart matching reference mockup */}
-      <EarningsLineChart />
-
-      {/* Revenue Breakdown by Category */}
-      <div className="grid grid-cols-1 gap-6">
-        <RevenueBreakdownCard />
+      {/* Row 2: Heatmap & Monthly Sales Performance (2 columns) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        <div className="lg:col-span-5">
+          <OrdersByTimeHeatmap />
+        </div>
+        <div className="lg:col-span-7">
+          <MonthlySalesPerformanceChart />
+        </div>
       </div>
 
-      {/* Bottom Recent Transactions Table */}
-      <TransactionsTable globalSearch={searchQuery} />
+      {/* Row 3: Sales by Country & Top Product Sales (2 columns) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        <div className="lg:col-span-5">
+          <SalesByCountryCard />
+        </div>
+        <div className="lg:col-span-7">
+          <TopProductSalesTable />
+        </div>
+      </div>
 
       {/* Advanced Executive Briefing & Strategy Accordion / Cards */}
       <div className="pt-4 border-t border-border/60">
