@@ -730,15 +730,15 @@ export default function MessagesView() {
                     alt={msg.sender}
                     className="w-8 h-8 rounded-xl object-cover border border-border shrink-0 mt-0.5 shadow-xs"
                   />
-                  <div className={`min-w-0 ${isCurrentUser ? 'text-right' : 'text-left'}`}>
-                    <div className={`flex items-center gap-2 mb-1 ${isCurrentUser ? 'justify-end' : ''}`}>
+                  <div className={`flex flex-col ${isCurrentUser ? 'items-end' : 'items-start'} max-w-[85%]`}>
+                    <div className="flex items-center gap-2 mb-1">
                       <span className="text-xs font-bold text-text">{msg.sender}</span>
                       <span className="text-[10px] text-text-muted">{msg.time}</span>
                     </div>
 
-                    {/* Card Bubble */}
+                    {/* Card Bubble - Fits content dynamically */}
                     <div
-                      className={`p-3.5 rounded-2xl text-xs leading-relaxed shadow-xs ${
+                      className={`px-4 py-2.5 rounded-2xl text-xs leading-relaxed shadow-xs w-fit max-w-lg break-words text-left ${
                         isCurrentUser
                           ? 'bg-accent text-white rounded-tr-xs font-normal'
                           : 'bg-bg text-text border border-border/80 rounded-tl-xs'
