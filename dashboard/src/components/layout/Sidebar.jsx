@@ -89,29 +89,21 @@ export default function Sidebar({ open, onClose, activeView, onNavigate }) {
       >
         {/* Header */}
         <div className={`flex items-center h-16 border-b border-sidebar-border ${collapsed ? 'justify-center px-2' : 'justify-between px-5'}`}>
-          {!collapsed && (
-            <div className="flex items-center gap-3">
-              <img
-                src="/aeitron_logo.jpeg"
-                alt="Aeitron Logo"
-                className="w-8 h-8 rounded-lg object-contain bg-white p-1 shadow-sm"
-                onError={(e) => {
-                  e.target.src = '/aeitron_icon_fb.png';
-                }}
-              />
-              { <div className="w-8 h-8 rounded-lg bg-accent items-center justify-center text-white font-bold text-sm hidden">
-              A
-              </div> }
-              <span className="text-sidebar-text-active font-semibold text-lg tracking-tight">
+          <div className="flex items-center gap-3">
+            <img
+              src="/aeitron_logo.jpeg"
+              alt="Aeitron Logo"
+              className="w-8 h-8 rounded-lg object-contain bg-white p-1 shadow-sm shrink-0"
+              onError={(e) => {
+                e.target.src = '/aeitron_icon_fb.png';
+              }}
+            />
+            {!collapsed && (
+              <span className="text-sidebar-text-active font-semibold text-lg tracking-tight whitespace-nowrap">
                 Aeitron AI
               </span>
-            </div>
-          )}
-          {collapsed && (
-            <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center text-white font-bold text-sm">
-              A
-            </div>
-          )}
+            )}
+          </div>
           <button
             onClick={onClose}
             className="lg:hidden text-sidebar-text hover:text-sidebar-text-active transition-colors"
