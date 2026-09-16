@@ -329,8 +329,9 @@ export default function TransactionsTable({ globalSearch = '' }) {
             </tr>
           </thead>
           <tbody className="divide-y divide-border/40 text-xs">
-            {filteredTransactions.map((tx) => {
+            {filteredTransactions.map((tx, index) => {
               const isSelected = selectedIds.has(tx.id);
+              const openUpward = index >= Math.max(1, filteredTransactions.length - 2);
 
               return (
                 <tr
@@ -382,7 +383,11 @@ export default function TransactionsTable({ globalSearch = '' }) {
                     </button>
 
                     {activeMenuId === tx.id && (
-                      <div className="absolute right-3 top-8 bg-bg-card border border-border shadow-xl rounded-xl p-1.5 z-30 min-w-[120px] text-left animate-fade-in">
+                      <div
+                        className={`absolute right-3 ${
+                          openUpward ? 'bottom-8' : 'top-8'
+                        } bg-bg-card border border-border shadow-xl rounded-xl p-1.5 z-40 min-w-[120px] text-left animate-fade-in`}
+                      >
                         <button
                           type="button"
                           onClick={() => handleDelete(tx.id)}
