@@ -1,7 +1,7 @@
 import { useRef, useEffect } from 'react';
 import {
   Bell, X, Check, CheckCheck, Trash2,
-  AlertTriangle, DollarSign, Clock, UserPlus, FileText,
+  AlertTriangle, DollarSign, Clock, UserPlus, FileText, MessageSquare,
 } from 'lucide-react';
 import { useNotifications } from '../../context/NotificationContext';
 import { NOTIFICATION_TYPES } from '../../utils/constants';
@@ -12,6 +12,7 @@ const TYPE_CONFIG = {
   [NOTIFICATION_TYPES.BUDGET_THRESHOLD]: { icon: AlertTriangle, color: 'text-warning', bg: 'bg-warning/10' },
   [NOTIFICATION_TYPES.INVOICE_OVERDUE]: { icon: FileText, color: 'text-danger', bg: 'bg-danger/10' },
   [NOTIFICATION_TYPES.NEW_CLIENT]: { icon: UserPlus, color: 'text-success', bg: 'bg-success/10' },
+  [NOTIFICATION_TYPES.TEAM_MESSAGE]: { icon: MessageSquare, color: 'text-accent', bg: 'bg-accent/10' },
 };
 
 export default function NotificationPanel({ isOpen, onClose }) {

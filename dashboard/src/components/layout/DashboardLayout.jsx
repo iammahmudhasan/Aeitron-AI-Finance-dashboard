@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
+import TeamMessageToast from '../notifications/TeamMessageToast';
 
 export default function DashboardLayout({ children, onAddClient, activeView, onNavigate, searchQuery, onSearchChange }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex h-screen overflow-hidden relative">
+      <TeamMessageToast onNavigate={onNavigate} />
       <Sidebar
         open={sidebarOpen}
         onClose={() => setSidebarOpen(false)}

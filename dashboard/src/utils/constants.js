@@ -92,6 +92,7 @@ export const NOTIFICATION_TYPES = {
   BUDGET_THRESHOLD: 'budget_threshold',
   INVOICE_OVERDUE: 'invoice_overdue',
   NEW_CLIENT: 'new_client',
+  TEAM_MESSAGE: 'team_message',
 };
 
 export const LEAD_STAGE_PROBABILITIES = {
