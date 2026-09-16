@@ -6,6 +6,7 @@ import {
   Download,
   TrendingUp,
   Lock,
+  Plus,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import DashboardLayout from '../components/layout/DashboardLayout';
@@ -283,6 +284,10 @@ export default function Dashboard() {
               onView={setViewInvoice}
               onRequestDelete={handleRequestDelete}
               searchQuery={searchQuery}
+              onAdd={() => {
+                setEditInvoice(null);
+                setInvoiceFormOpen(true);
+              }}
             />
           )}
 
@@ -551,14 +556,24 @@ function LeadsView({ onEdit, onRequestDelete, searchQuery }) {
   );
 }
 
-function InvoicesView({ onEdit, onView, onRequestDelete, searchQuery }) {
+function InvoicesView({ onEdit, onView, onRequestDelete, searchQuery, onAdd }) {
   return (
     <>
-      <div>
-        <h2 className="text-xl font-semibold text-text">Invoices & Settlements</h2>
-        <p className="text-xs text-text-muted mt-0.5">
-          Create, track, and manage client invoices with multi-channel payment details
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-xl font-bold text-text">Invoices & Client Settlements</h2>
+          <p className="text-xs text-text-muted mt-0.5">
+            Create, track, and manage enterprise client invoices with multi-channel payment details
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={onAdd}
+          className="flex items-center gap-2 px-4 py-2 bg-accent hover:bg-accent-hover text-white text-xs font-semibold rounded-xl transition-all shadow-sm cursor-pointer active:scale-95"
+        >
+          <Plus size={14} />
+          <span>New Invoice</span>
+        </button>
       </div>
       <InvoiceTable onEdit={onEdit} onView={onView} onRequestDelete={onRequestDelete} globalSearch={searchQuery} />
     </>

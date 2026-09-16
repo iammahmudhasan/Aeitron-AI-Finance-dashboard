@@ -72,6 +72,18 @@ export default function Topbar({ onMenuClick, onAddClient, activeView, searchQue
           </kbd>
         </div>
 
+        {/* Contextual Action Button */}
+        {activeView === 'invoices' && (
+          <button
+            type="button"
+            onClick={onAddClient}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-accent hover:bg-accent-hover text-white text-xs font-semibold rounded-xl transition-all shadow-xs cursor-pointer active:scale-95"
+          >
+            <Plus size={14} />
+            <span className="hidden sm:inline">New Invoice</span>
+          </button>
+        )}
+
         {/* Download Report */}
         <DownloadReportButton />
 
