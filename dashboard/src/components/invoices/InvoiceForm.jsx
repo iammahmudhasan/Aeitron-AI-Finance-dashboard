@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { X, Plus, Trash2, Building2 } from 'lucide-react';
+import { X, Plus, Trash2, Building2, CreditCard, Wallet } from 'lucide-react';
 import { useInvoices } from '../../context/InvoiceContext';
 import { useClients } from '../../context/ClientContext';
-import { INVOICE_STATUSES, BANK_DETAILS_STORAGE_KEY } from '../../utils/constants';
+import { INVOICE_STATUSES, BANK_DETAILS_STORAGE_KEY, PAYMENT_METHODS_STORAGE_KEY } from '../../utils/constants';
 
 const emptyLineItem = { description: '', quantity: 1, unitPrice: '' };
 
@@ -15,6 +15,18 @@ const defaultBankDetails = {
   swiftCode: '',
 };
 
+const defaultStripeDetails = {
+  enabled: false,
+  paymentLink: '',
+  note: '',
+};
+
+const defaultPaypalDetails = {
+  enabled: false,
+  email: '',
+  paypalMe: '',
+};
+
 function generateInvoiceNumber(invoices) {
   const num = invoices.length + 1;
   return `INV-${String(num).padStart(4, '0')}`;
@@ -23,7 +35,8 @@ function generateInvoiceNumber(invoices) {
 export default function InvoiceForm({ isOpen, onClose, editInvoice }) {
   const { invoices, dispatch } = useInvoices();
   const { clients } = useClients();
-  const [saveBankSuccess, setSaveBankSuccess] = useState(false);
+  const [activePaymentTab, setActivePaymentTab] = useState('bank');
+  const [savePaymentSuccess, setSavePaymentSuccess] = useState(false);
 
   const [form, setForm] = useState({
     clientId: '',
@@ -36,6 +49,8 @@ export default function InvoiceForm({ isOpen, onClose, editInvoice }) {
     lineItems: [{ ...emptyLineItem }],
     notes: '',
     bankDetails: { ...defaultBankDetails },
+    stripeDetails: { ...defaultStripeDetails },
+    paypalDetails: { ...defaultPaypalDetails },
   });
   const [errors, setErrors] = useState({});
 
@@ -54,19 +69,36 @@ export default function InvoiceForm({ isOpen, onClose, editInvoice }) {
         bankDetails: editInvoice.bankDetails
           ? { ...defaultBankDetails, ...editInvoice.bankDetails, enabled: true }
           : { ...defaultBankDetails },
+        stripeDetails: editInvoice.stripeDetails
+          ? { ...defaultStripeDetails, ...editInvoice.stripeDetails, enabled: true }
+          : { ...defaultStripeDetails },
+        paypalDetails: editInvoice.paypalDetails
+          ? { ...defaultPaypalDetails, ...editInvoice.paypalDetails, enabled: true }
+          : { ...defaultPaypalDetails },
       });
     } else {
       let initialBank = { ...defaultBankDetails };
+      let initialStripe = { ...defaultStripeDetails };
+      let initialPaypal = { ...defaultPaypalDetails };
+
       try {
-        const raw = localStorage.getItem(BANK_DETAILS_STORAGE_KEY);
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          if (parsed?.bankName || parsed?.accountNumber) {
-            initialBank = { ...defaultBankDetails, ...parsed, enabled: true };
+        const rawMethods = localStorage.getItem(PAYMENT_METHODS_STORAGE_KEY);
+        if (rawMethods) {
+          const parsed = JSON.parse(rawMethods);
+          if (parsed?.bank) initialBank = { ...defaultBankDetails, ...parsed.bank };
+          if (parsed?.stripe) initialStripe = { ...defaultStripeDetails, ...parsed.stripe };
+          if (parsed?.paypal) initialPaypal = { ...defaultPaypalDetails, ...parsed.paypal };
+        } else {
+          const rawBank = localStorage.getItem(BANK_DETAILS_STORAGE_KEY);
+          if (rawBank) {
+            const parsedBank = JSON.parse(rawBank);
+            if (parsedBank?.bankName || parsedBank?.accountNumber) {
+              initialBank = { ...defaultBankDetails, ...parsedBank, enabled: true };
+            }
           }
         }
       } catch (err) {
-        console.error('Error loading saved bank:', err);
+        console.error('Error loading saved payment methods:', err);
       }
 
       const today = new Date().toISOString().split('T')[0];
@@ -82,6 +114,8 @@ export default function InvoiceForm({ isOpen, onClose, editInvoice }) {
         lineItems: [{ ...emptyLineItem }],
         notes: '',
         bankDetails: initialBank,
+        stripeDetails: initialStripe,
+        paypalDetails: initialPaypal,
       });
     }
     setErrors({});
@@ -152,13 +186,39 @@ export default function InvoiceForm({ isOpen, onClose, editInvoice }) {
     }));
   }
 
-  function handleSaveAsDefaultBank() {
+  function handleStripeChange(field, value) {
+    setForm((prev) => ({
+      ...prev,
+      stripeDetails: {
+        ...prev.stripeDetails,
+        [field]: value,
+      },
+    }));
+  }
+
+  function handlePaypalChange(field, value) {
+    setForm((prev) => ({
+      ...prev,
+      paypalDetails: {
+        ...prev.paypalDetails,
+        [field]: value,
+      },
+    }));
+  }
+
+  function handleSaveDefaultPaymentMethods() {
     try {
+      const payload = {
+        bank: form.bankDetails,
+        stripe: form.stripeDetails,
+        paypal: form.paypalDetails,
+      };
+      localStorage.setItem(PAYMENT_METHODS_STORAGE_KEY, JSON.stringify(payload));
       localStorage.setItem(BANK_DETAILS_STORAGE_KEY, JSON.stringify(form.bankDetails));
-      setSaveBankSuccess(true);
-      setTimeout(() => setSaveBankSuccess(false), 3000);
+      setSavePaymentSuccess(true);
+      setTimeout(() => setSavePaymentSuccess(false), 3000);
     } catch (err) {
-      console.error('Failed to save bank details:', err);
+      console.error('Failed to save payment methods:', err);
     }
   }
 
@@ -193,6 +253,8 @@ export default function InvoiceForm({ isOpen, onClose, editInvoice }) {
       total: calcTotal(),
       notes: form.notes.trim(),
       bankDetails: form.bankDetails?.enabled ? { ...form.bankDetails } : null,
+      stripeDetails: form.stripeDetails?.enabled ? { ...form.stripeDetails } : null,
+      paypalDetails: form.paypalDetails?.enabled ? { ...form.paypalDetails } : null,
     };
 
     if (editInvoice) {
@@ -361,84 +423,231 @@ export default function InvoiceForm({ isOpen, onClose, editInvoice }) {
             </div>
           </div>
 
-          {/* Bank Account / Payment Details */}
+          {/* Payment Methods (Bank, Stripe, PayPal) */}
           <div className="border border-border rounded-xl p-4 bg-bg/50 space-y-3">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Building2 size={16} className="text-accent" />
-                <span className="text-sm font-medium text-text">Bank / Payment Details</span>
-              </div>
-              <label className="flex items-center gap-2 cursor-pointer text-xs text-text-muted select-none">
-                <input
-                  type="checkbox"
-                  checked={form.bankDetails?.enabled || false}
-                  onChange={(e) => handleBankChange('enabled', e.target.checked)}
-                  className="w-4 h-4 rounded border-border text-accent focus:ring-accent/30 cursor-pointer"
-                />
-                <span>Include on this invoice</span>
-              </label>
+              <span className="text-sm font-medium text-text">Payment Methods & Settlement</span>
+              <span className="text-[11px] text-text-muted">Configure payment options for this invoice</span>
             </div>
 
-            {form.bankDetails?.enabled && (
-              <div className="pt-2 space-y-3 animate-fade-in">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-medium text-text-muted mb-1">Bank Name</label>
+            {/* Method Tabs */}
+            <div className="flex items-center gap-1.5 p-1 bg-bg rounded-lg border border-border">
+              <button
+                type="button"
+                onClick={() => setActivePaymentTab('bank')}
+                className={`flex-1 flex items-center justify-center gap-2 py-1.5 px-3 rounded-md text-xs font-medium transition-all ${
+                  activePaymentTab === 'bank'
+                    ? 'bg-accent text-white shadow-sm'
+                    : 'text-text-muted hover:text-text hover:bg-bg-hover'
+                }`}
+              >
+                <Building2 size={14} />
+                <span>Bank Transfer</span>
+                {form.bankDetails?.enabled && (
+                  <span className={`w-1.5 h-1.5 rounded-full ${activePaymentTab === 'bank' ? 'bg-white' : 'bg-success'}`} />
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActivePaymentTab('stripe')}
+                className={`flex-1 flex items-center justify-center gap-2 py-1.5 px-3 rounded-md text-xs font-medium transition-all ${
+                  activePaymentTab === 'stripe'
+                    ? 'bg-accent text-white shadow-sm'
+                    : 'text-text-muted hover:text-text hover:bg-bg-hover'
+                }`}
+              >
+                <CreditCard size={14} />
+                <span>Stripe</span>
+                {form.stripeDetails?.enabled && (
+                  <span className={`w-1.5 h-1.5 rounded-full ${activePaymentTab === 'stripe' ? 'bg-white' : 'bg-success'}`} />
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActivePaymentTab('paypal')}
+                className={`flex-1 flex items-center justify-center gap-2 py-1.5 px-3 rounded-md text-xs font-medium transition-all ${
+                  activePaymentTab === 'paypal'
+                    ? 'bg-accent text-white shadow-sm'
+                    : 'text-text-muted hover:text-text hover:bg-bg-hover'
+                }`}
+              >
+                <Wallet size={14} />
+                <span>PayPal</span>
+                {form.paypalDetails?.enabled && (
+                  <span className={`w-1.5 h-1.5 rounded-full ${activePaymentTab === 'paypal' ? 'bg-white' : 'bg-success'}`} />
+                )}
+              </button>
+            </div>
+
+            {/* Tab 1: Bank Transfer */}
+            {activePaymentTab === 'bank' && (
+              <div className="space-y-3 pt-1 animate-fade-in">
+                <div className="flex items-center justify-between pb-1 border-b border-border/40">
+                  <span className="text-xs font-medium text-text-secondary">Direct Bank Wire / ACH</span>
+                  <label className="flex items-center gap-2 cursor-pointer text-xs text-text-muted select-none">
                     <input
-                      type="text"
-                      placeholder="e.g. JPMorgan Chase / City Bank"
-                      value={form.bankDetails.bankName || ''}
-                      onChange={(e) => handleBankChange('bankName', e.target.value)}
-                      className="w-full px-3 py-2 bg-bg border border-border rounded-lg text-sm text-text outline-none focus:border-accent transition-colors"
+                      type="checkbox"
+                      checked={form.bankDetails?.enabled || false}
+                      onChange={(e) => handleBankChange('enabled', e.target.checked)}
+                      className="w-4 h-4 rounded border-border text-accent focus:ring-accent/30 cursor-pointer"
                     />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-text-muted mb-1">Account Name / Beneficiary</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. Aeitron AI LLC"
-                      value={form.bankDetails.accountName || ''}
-                      onChange={(e) => handleBankChange('accountName', e.target.value)}
-                      className="w-full px-3 py-2 bg-bg border border-border rounded-lg text-sm text-text outline-none focus:border-accent transition-colors"
-                    />
-                  </div>
+                    <span>Include Bank on invoice</span>
+                  </label>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-medium text-text-muted mb-1">Account Number / IBAN</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. 123456789012"
-                      value={form.bankDetails.accountNumber || ''}
-                      onChange={(e) => handleBankChange('accountNumber', e.target.value)}
-                      className="w-full px-3 py-2 bg-bg border border-border rounded-lg text-sm text-text font-mono outline-none focus:border-accent transition-colors"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-text-muted mb-1">Routing / SWIFT / Branch</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. 021000021 / CHASUS33"
-                      value={form.bankDetails.routingNumber || ''}
-                      onChange={(e) => handleBankChange('routingNumber', e.target.value)}
-                      className="w-full px-3 py-2 bg-bg border border-border rounded-lg text-sm text-text font-mono outline-none focus:border-accent transition-colors"
-                    />
-                  </div>
-                </div>
+                {form.bankDetails?.enabled && (
+                  <div className="space-y-3 pt-1 animate-fade-in">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-medium text-text-muted mb-1">Bank Name</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. JPMorgan Chase / City Bank"
+                          value={form.bankDetails.bankName || ''}
+                          onChange={(e) => handleBankChange('bankName', e.target.value)}
+                          className="w-full px-3 py-2 bg-bg border border-border rounded-lg text-sm text-text outline-none focus:border-accent transition-colors"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-text-muted mb-1">Account Name / Beneficiary</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. Aeitron AI LLC"
+                          value={form.bankDetails.accountName || ''}
+                          onChange={(e) => handleBankChange('accountName', e.target.value)}
+                          className="w-full px-3 py-2 bg-bg border border-border rounded-lg text-sm text-text outline-none focus:border-accent transition-colors"
+                        />
+                      </div>
+                    </div>
 
-                <div className="flex items-center justify-between pt-1 text-xs">
-                  <button
-                    type="button"
-                    onClick={handleSaveAsDefaultBank}
-                    className="text-accent hover:text-accent-hover font-medium underline underline-offset-2 transition-colors"
-                  >
-                    {saveBankSuccess ? '✓ Saved as default agency bank!' : 'Save as default agency bank'}
-                  </button>
-                  <span className="text-[11px] text-text-muted">Will be shown on invoice preview & print</span>
-                </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-medium text-text-muted mb-1">Account Number / IBAN</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. 123456789012"
+                          value={form.bankDetails.accountNumber || ''}
+                          onChange={(e) => handleBankChange('accountNumber', e.target.value)}
+                          className="w-full px-3 py-2 bg-bg border border-border rounded-lg text-sm text-text font-mono outline-none focus:border-accent transition-colors"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-text-muted mb-1">Routing / SWIFT / Branch</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. 021000021 / CHASUS33"
+                          value={form.bankDetails.routingNumber || ''}
+                          onChange={(e) => handleBankChange('routingNumber', e.target.value)}
+                          className="w-full px-3 py-2 bg-bg border border-border rounded-lg text-sm text-text font-mono outline-none focus:border-accent transition-colors"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
+
+            {/* Tab 2: Stripe */}
+            {activePaymentTab === 'stripe' && (
+              <div className="space-y-3 pt-1 animate-fade-in">
+                <div className="flex items-center justify-between pb-1 border-b border-border/40">
+                  <span className="text-xs font-medium text-text-secondary">Stripe Credit/Debit Card Checkout</span>
+                  <label className="flex items-center gap-2 cursor-pointer text-xs text-text-muted select-none">
+                    <input
+                      type="checkbox"
+                      checked={form.stripeDetails?.enabled || false}
+                      onChange={(e) => handleStripeChange('enabled', e.target.checked)}
+                      className="w-4 h-4 rounded border-border text-accent focus:ring-accent/30 cursor-pointer"
+                    />
+                    <span>Include Stripe on invoice</span>
+                  </label>
+                </div>
+
+                {form.stripeDetails?.enabled && (
+                  <div className="space-y-3 pt-1 animate-fade-in">
+                    <div>
+                      <label className="block text-xs font-medium text-text-muted mb-1">Stripe Payment Link / Checkout URL</label>
+                      <input
+                        type="url"
+                        placeholder="https://buy.stripe.com/..."
+                        value={form.stripeDetails.paymentLink || ''}
+                        onChange={(e) => handleStripeChange('paymentLink', e.target.value)}
+                        className="w-full px-3 py-2 bg-bg border border-border rounded-lg text-sm text-text font-mono outline-none focus:border-accent transition-colors"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-text-muted mb-1">Payment Instructions / Notes</label>
+                      <input
+                        type="text"
+                        placeholder="Accepts Visa, Mastercard, Amex, Apple Pay, Google Pay"
+                        value={form.stripeDetails.note || ''}
+                        onChange={(e) => handleStripeChange('note', e.target.value)}
+                        className="w-full px-3 py-2 bg-bg border border-border rounded-lg text-sm text-text outline-none focus:border-accent transition-colors"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Tab 3: PayPal */}
+            {activePaymentTab === 'paypal' && (
+              <div className="space-y-3 pt-1 animate-fade-in">
+                <div className="flex items-center justify-between pb-1 border-b border-border/40">
+                  <span className="text-xs font-medium text-text-secondary">PayPal Transfer / Checkout</span>
+                  <label className="flex items-center gap-2 cursor-pointer text-xs text-text-muted select-none">
+                    <input
+                      type="checkbox"
+                      checked={form.paypalDetails?.enabled || false}
+                      onChange={(e) => handlePaypalChange('enabled', e.target.checked)}
+                      className="w-4 h-4 rounded border-border text-accent focus:ring-accent/30 cursor-pointer"
+                    />
+                    <span>Include PayPal on invoice</span>
+                  </label>
+                </div>
+
+                {form.paypalDetails?.enabled && (
+                  <div className="space-y-3 pt-1 animate-fade-in">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-medium text-text-muted mb-1">PayPal Email Address</label>
+                        <input
+                          type="email"
+                          placeholder="billing@aeitron.com"
+                          value={form.paypalDetails.email || ''}
+                          onChange={(e) => handlePaypalChange('email', e.target.value)}
+                          className="w-full px-3 py-2 bg-bg border border-border rounded-lg text-sm text-text outline-none focus:border-accent transition-colors"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-text-muted mb-1">PayPal.me Handle / Link</label>
+                        <input
+                          type="text"
+                          placeholder="paypal.me/aeitron"
+                          value={form.paypalDetails.paypalMe || ''}
+                          onChange={(e) => handlePaypalChange('paypalMe', e.target.value)}
+                          className="w-full px-3 py-2 bg-bg border border-border rounded-lg text-sm text-text outline-none focus:border-accent transition-colors"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Bottom Save as Default Action */}
+            <div className="flex items-center justify-between pt-2 border-t border-border/50 text-xs">
+              <button
+                type="button"
+                onClick={handleSaveDefaultPaymentMethods}
+                className="text-accent hover:text-accent-hover font-medium underline underline-offset-2 transition-colors"
+              >
+                {savePaymentSuccess ? '✓ Saved as default payment methods!' : 'Save current payment settings as default'}
+              </button>
+              <span className="text-[11px] text-text-muted">Enabled methods appear on preview & print</span>
+            </div>
           </div>
 
           {/* Notes */}

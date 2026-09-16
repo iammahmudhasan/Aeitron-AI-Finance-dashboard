@@ -126,4 +126,5 @@ export const DEFAULT_API_SERVICES = [
 ];
 
 export const BANK_DETAILS_STORAGE_KEY = 'aeitron_agency_bank_details';
+export const PAYMENT_METHODS_STORAGE_KEY = 'aeitron_agency_payment_methods';
 

@@ -1,4 +1,4 @@
-import { X, Printer, Download, Building2 } from 'lucide-react';
+import { X, Printer, Download, Building2, CreditCard, Wallet, ExternalLink } from 'lucide-react';
 import { formatCurrency, formatDate } from '../../utils/formatters';
 import { INVOICE_STATUS_COLORS } from '../../utils/constants';
 
@@ -29,7 +29,7 @@ export default function InvoiceDetail({ invoice, onClose }) {
           .total-row td { font-weight: 700; font-size: 16px; padding-top: 16px; }
           .notes { background: #f4f5f7; padding: 16px; border-radius: 8px; font-size: 13px; color: #4a4f5e; margin-top: 20px; }
           .bank-box { background: #f8f9fa; border: 1px solid #e2e4ea; border-radius: 8px; padding: 16px; margin-top: 24px; }
-          .bank-box h4 { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #6c5ce7; margin-bottom: 10px; font-weight: 700; }
+          .bank-box h4 { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #6c5ce7; margin-bottom: 12px; font-weight: 700; }
           .bank-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 13px; }
           .bank-grid div { line-height: 1.4; }
           .bank-grid span { color: #8c90a0; font-weight: 500; }
@@ -88,15 +88,43 @@ export default function InvoiceDetail({ invoice, onClose }) {
           </tbody>
         </table>
 
-        ${invoice.bankDetails && (invoice.bankDetails.bankName || invoice.bankDetails.accountNumber) ? `
+        ${(invoice.bankDetails && (invoice.bankDetails.bankName || invoice.bankDetails.accountNumber)) ||
+          (invoice.stripeDetails && invoice.stripeDetails.paymentLink) ||
+          (invoice.paypalDetails && (invoice.paypalDetails.email || invoice.paypalDetails.paypalMe)) ? `
           <div class="bank-box">
-            <h4>Payment / Bank Transfer Details</h4>
-            <div class="bank-grid">
-              ${invoice.bankDetails.bankName ? `<div><span>Bank Name:</span> <strong>${invoice.bankDetails.bankName}</strong></div>` : ''}
-              ${invoice.bankDetails.accountName ? `<div><span>Beneficiary / Name:</span> <strong>${invoice.bankDetails.accountName}</strong></div>` : ''}
-              ${invoice.bankDetails.accountNumber ? `<div><span>Account / IBAN:</span> <code>${invoice.bankDetails.accountNumber}</code></div>` : ''}
-              ${invoice.bankDetails.routingNumber ? `<div><span>Routing / SWIFT:</span> <code>${invoice.bankDetails.routingNumber}</code></div>` : ''}
-            </div>
+            <h4>Accepted Payment Methods</h4>
+            
+            ${invoice.bankDetails && (invoice.bankDetails.bankName || invoice.bankDetails.accountNumber) ? `
+              <div style="margin-bottom:12px;">
+                <p style="font-size:11px;font-weight:700;color:#1a1d26;margin-bottom:6px;">Bank Transfer / Wire</p>
+                <div class="bank-grid">
+                  ${invoice.bankDetails.bankName ? `<div><span>Bank Name:</span> <strong>${invoice.bankDetails.bankName}</strong></div>` : ''}
+                  ${invoice.bankDetails.accountName ? `<div><span>Beneficiary:</span> <strong>${invoice.bankDetails.accountName}</strong></div>` : ''}
+                  ${invoice.bankDetails.accountNumber ? `<div><span>Account / IBAN:</span> <code>${invoice.bankDetails.accountNumber}</code></div>` : ''}
+                  ${invoice.bankDetails.routingNumber ? `<div><span>Routing / SWIFT:</span> <code>${invoice.bankDetails.routingNumber}</code></div>` : ''}
+                </div>
+              </div>
+            ` : ''}
+
+            ${invoice.stripeDetails && invoice.stripeDetails.paymentLink ? `
+              <div style="margin-bottom:12px;padding-top:10px;border-top:1px dashed #e2e4ea;">
+                <p style="font-size:11px;font-weight:700;color:#6366f1;margin-bottom:4px;">Pay Online via Stripe (Cards, Apple/Google Pay)</p>
+                <div style="font-size:13px;">
+                  <span>Payment Link:</span> <a href="${invoice.stripeDetails.paymentLink}" target="_blank" style="color:#6c5ce7;word-break:break-all;">${invoice.stripeDetails.paymentLink}</a>
+                  ${invoice.stripeDetails.note ? `<p style="color:#8c90a0;font-size:11px;margin-top:2px;">${invoice.stripeDetails.note}</p>` : ''}
+                </div>
+              </div>
+            ` : ''}
+
+            ${invoice.paypalDetails && (invoice.paypalDetails.email || invoice.paypalDetails.paypalMe) ? `
+              <div style="padding-top:10px;border-top:1px dashed #e2e4ea;">
+                <p style="font-size:11px;font-weight:700;color:#0070ba;margin-bottom:4px;">Pay via PayPal</p>
+                <div class="bank-grid">
+                  ${invoice.paypalDetails.email ? `<div><span>PayPal Email:</span> <strong>${invoice.paypalDetails.email}</strong></div>` : ''}
+                  ${invoice.paypalDetails.paypalMe ? `<div><span>PayPal.me:</span> <strong>${invoice.paypalDetails.paypalMe}</strong></div>` : ''}
+                </div>
+              </div>
+            ` : ''}
           </div>
         ` : ''}
 
@@ -131,11 +159,29 @@ export default function InvoiceDetail({ invoice, onClose }) {
     if (invoice.bankDetails && (invoice.bankDetails.bankName || invoice.bankDetails.accountNumber)) {
       rows.push(
         [''],
-        ['--- Payment & Bank Details ---'],
+        ['--- Bank Transfer Details ---'],
         ['Bank Name', invoice.bankDetails.bankName || ''],
         ['Account Holder', invoice.bankDetails.accountName || ''],
         ['Account / IBAN', invoice.bankDetails.accountNumber || ''],
         ['Routing / SWIFT', invoice.bankDetails.routingNumber || ''],
+      );
+    }
+
+    if (invoice.stripeDetails && invoice.stripeDetails.paymentLink) {
+      rows.push(
+        [''],
+        ['--- Stripe Payment ---'],
+        ['Payment Link', invoice.stripeDetails.paymentLink],
+        ['Notes', invoice.stripeDetails.note || ''],
+      );
+    }
+
+    if (invoice.paypalDetails && (invoice.paypalDetails.email || invoice.paypalDetails.paypalMe)) {
+      rows.push(
+        [''],
+        ['--- PayPal Payment ---'],
+        ['PayPal Email', invoice.paypalDetails.email || ''],
+        ['PayPal.me', invoice.paypalDetails.paypalMe || ''],
       );
     }
 
@@ -243,36 +289,103 @@ export default function InvoiceDetail({ invoice, onClose }) {
             </table>
           </div>
 
-          {/* Payment & Bank Details */}
-          {invoice.bankDetails && (invoice.bankDetails.bankName || invoice.bankDetails.accountNumber) && (
-            <div className="bg-bg border border-border rounded-xl p-4 space-y-2">
-              <div className="flex items-center gap-2 text-accent">
-                <Building2 size={16} />
-                <span className="text-xs font-semibold uppercase tracking-wider">Payment & Bank Transfer Details</span>
+          {/* Payment Methods (Bank, Stripe, PayPal) */}
+          {((invoice.bankDetails && (invoice.bankDetails.bankName || invoice.bankDetails.accountNumber)) ||
+            (invoice.stripeDetails && invoice.stripeDetails.paymentLink) ||
+            (invoice.paypalDetails && (invoice.paypalDetails.email || invoice.paypalDetails.paypalMe))) && (
+            <div className="bg-bg border border-border rounded-xl p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-text uppercase tracking-wider">Payment & Settlement Options</span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-accent/10 text-accent font-medium">Verified Payment Options</span>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs pt-1">
-                {invoice.bankDetails.bankName && (
-                  <div>
-                    <span className="text-text-muted">Bank Name: </span>
-                    <span className="font-semibold text-text">{invoice.bankDetails.bankName}</span>
+
+              <div className="space-y-3 pt-1">
+                {/* 1. Bank Transfer */}
+                {invoice.bankDetails && (invoice.bankDetails.bankName || invoice.bankDetails.accountNumber) && (
+                  <div className="p-3 bg-bg-card border border-border/80 rounded-lg space-y-2">
+                    <div className="flex items-center gap-2 text-text font-medium text-xs">
+                      <Building2 size={15} className="text-accent" />
+                      <span>Bank Wire / ACH Transfer</span>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                      {invoice.bankDetails.bankName && (
+                        <div>
+                          <span className="text-text-muted">Bank: </span>
+                          <span className="font-semibold text-text">{invoice.bankDetails.bankName}</span>
+                        </div>
+                      )}
+                      {invoice.bankDetails.accountName && (
+                        <div>
+                          <span className="text-text-muted">Beneficiary: </span>
+                          <span className="font-semibold text-text">{invoice.bankDetails.accountName}</span>
+                        </div>
+                      )}
+                      {invoice.bankDetails.accountNumber && (
+                        <div>
+                          <span className="text-text-muted">Account / IBAN: </span>
+                          <span className="font-mono font-semibold text-text">{invoice.bankDetails.accountNumber}</span>
+                        </div>
+                      )}
+                      {invoice.bankDetails.routingNumber && (
+                        <div>
+                          <span className="text-text-muted">Routing / SWIFT: </span>
+                          <span className="font-mono font-semibold text-text">{invoice.bankDetails.routingNumber}</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
-                {invoice.bankDetails.accountName && (
-                  <div>
-                    <span className="text-text-muted">Account Holder: </span>
-                    <span className="font-semibold text-text">{invoice.bankDetails.accountName}</span>
+
+                {/* 2. Stripe Checkout */}
+                {invoice.stripeDetails && invoice.stripeDetails.paymentLink && (
+                  <div className="p-3 bg-bg-card border border-border/80 rounded-lg space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 text-text font-medium text-xs">
+                        <CreditCard size={15} className="text-indigo-500" />
+                        <span>Credit / Debit Card via Stripe</span>
+                      </div>
+                      <a
+                        href={invoice.stripeDetails.paymentLink}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium rounded-md transition-colors shadow-sm"
+                      >
+                        <span>Pay via Stripe</span>
+                        <ExternalLink size={12} />
+                      </a>
+                    </div>
+                    {invoice.stripeDetails.note && (
+                      <p className="text-[11px] text-text-muted">{invoice.stripeDetails.note}</p>
+                    )}
                   </div>
                 )}
-                {invoice.bankDetails.accountNumber && (
-                  <div>
-                    <span className="text-text-muted">Account / IBAN: </span>
-                    <span className="font-mono font-semibold text-text">{invoice.bankDetails.accountNumber}</span>
-                  </div>
-                )}
-                {invoice.bankDetails.routingNumber && (
-                  <div>
-                    <span className="text-text-muted">Routing / SWIFT: </span>
-                    <span className="font-mono font-semibold text-text">{invoice.bankDetails.routingNumber}</span>
+
+                {/* 3. PayPal */}
+                {invoice.paypalDetails && (invoice.paypalDetails.email || invoice.paypalDetails.paypalMe) && (
+                  <div className="p-3 bg-bg-card border border-border/80 rounded-lg space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 text-text font-medium text-xs">
+                        <Wallet size={15} className="text-blue-500" />
+                        <span>PayPal Transfer</span>
+                      </div>
+                      {invoice.paypalDetails.paypalMe && (
+                        <a
+                          href={`https://${invoice.paypalDetails.paypalMe.replace(/^https?:\/\//, '')}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-md transition-colors shadow-sm"
+                        >
+                          <span>PayPal.Me</span>
+                          <ExternalLink size={12} />
+                        </a>
+                      )}
+                    </div>
+                    {invoice.paypalDetails.email && (
+                      <div className="text-xs">
+                        <span className="text-text-muted">PayPal Email: </span>
+                        <span className="font-semibold text-text">{invoice.paypalDetails.email}</span>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
