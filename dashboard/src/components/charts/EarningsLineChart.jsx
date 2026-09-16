@@ -65,14 +65,14 @@ export default function EarningsLineChart() {
     <div className="bg-bg-card border border-border/80 rounded-3xl p-6 sm:p-8 shadow-xs relative">
       {/* Header with Title and Legend */}
       <div className="flex items-center justify-between pb-6">
-        <h3 className="text-lg font-bold text-slate-900 dark:text-white">Earnings</h3>
+        <h3 className="text-lg font-bold text-text">Earnings</h3>
 
         <div className="flex items-center gap-5 text-xs font-semibold">
-          <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
+          <div className="flex items-center gap-2 text-text-secondary">
             <span className="w-2.5 h-2.5 rounded-full bg-[#52c480] inline-block" />
             <span>First half</span>
           </div>
-          <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
+          <div className="flex items-center gap-2 text-text-secondary">
             <span className="w-2.5 h-2.5 rounded-full bg-[#5b587b] inline-block" />
             <span>Top Gross</span>
           </div>
@@ -95,7 +95,8 @@ export default function EarningsLineChart() {
                     x={padLeft - 14}
                     y={y + 4}
                     textAnchor="end"
-                    className="text-[11px] fill-slate-400 font-medium"
+                    className="text-[11px] font-medium"
+                    fill="var(--color-text-muted)"
                   >
                     {val}
                   </text>
@@ -104,9 +105,8 @@ export default function EarningsLineChart() {
                     y1={y}
                     x2={chartW - padRight}
                     y2={y}
-                    stroke="currentColor"
+                    stroke="var(--color-border)"
                     strokeDasharray="4 4"
-                    className="text-slate-200 dark:text-slate-800"
                     strokeWidth="1"
                   />
                 </g>
@@ -138,10 +138,10 @@ export default function EarningsLineChart() {
                 y1={activePoint.y}
                 x2={activePoint.x}
                 y2={getY(0)}
-                stroke="#cbd5e1"
+                stroke="var(--color-text-muted)"
                 strokeDasharray="3 3"
                 strokeWidth="1.5"
-                className="dark:stroke-slate-700"
+                strokeOpacity="0.5"
               />
             )}
 
@@ -151,7 +151,7 @@ export default function EarningsLineChart() {
                 cx={activePoint.x}
                 cy={activePoint.y}
                 r="5"
-                fill="white"
+                fill="var(--color-bg-card)"
                 stroke="#5b587b"
                 strokeWidth="2.5"
                 className="transition-all duration-150"
@@ -169,14 +169,15 @@ export default function EarningsLineChart() {
                   width="130"
                   height="48"
                   rx="10"
-                  className="fill-slate-950"
+                  fill="#0f172a"
                 />
                 {/* Value Text */}
                 <text
                   x="65"
                   y="22"
                   textAnchor="middle"
-                  className="fill-white font-bold text-[13px] tracking-tight"
+                  fill="#ffffff"
+                  className="font-bold text-[13px] tracking-tight"
                 >
                   {activeData.labelVal}
                 </text>
@@ -185,7 +186,8 @@ export default function EarningsLineChart() {
                   x="65"
                   y="36"
                   textAnchor="middle"
-                  className="fill-slate-400 font-semibold text-[9px] uppercase tracking-wider"
+                  fill="#94a3b8"
+                  className="font-semibold text-[9px] uppercase tracking-wider"
                 >
                   {activeData.year}
                 </text>
@@ -228,10 +230,13 @@ export default function EarningsLineChart() {
                   type="button"
                   onClick={() => setActiveIdx(idx)}
                   onMouseEnter={() => setActiveIdx(idx)}
-                  className={`transition-colors cursor-pointer py-1 px-1.5 rounded-md ${
+                  style={{
+                    color: isActive ? 'var(--color-text)' : 'var(--color-text-muted)',
+                  }}
+                  className={`transition-all duration-150 cursor-pointer py-1 px-1.5 rounded-md ${
                     isActive
-                      ? 'font-bold text-slate-900 dark:text-white scale-105'
-                      : 'font-medium text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+                      ? 'font-bold scale-105'
+                      : 'font-medium hover:opacity-80'
                   }`}
                 >
                   {m.month}
