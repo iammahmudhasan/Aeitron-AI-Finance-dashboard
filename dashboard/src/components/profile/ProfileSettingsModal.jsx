@@ -5,7 +5,6 @@ import {
   Camera,
   User,
   Mail,
-  Briefcase,
   Phone,
   FileText,
   Check,
@@ -31,7 +30,6 @@ export default function ProfileSettingsModal({ isOpen, onClose }) {
 
   const [name, setName] = useState(currentUser?.name || '');
   const [avatar, setAvatar] = useState(currentUser?.avatar || '/aeitron_icon_fb.png');
-  const [role, setRole] = useState(currentUser?.role || '');
   const [phone, setPhone] = useState(currentUser?.phone || '+1 (555) 234-8901');
   const [bio, setBio] = useState(currentUser?.bio || 'Leading agency automations, AI telephony voice systems, and business intelligence.');
   const [showUrlInput, setShowUrlInput] = useState(false);
@@ -74,7 +72,6 @@ export default function ProfileSettingsModal({ isOpen, onClose }) {
       ...currentUser,
       name: name.trim(),
       avatar,
-      role: role.trim(),
       phone: phone.trim(),
       bio: bio.trim(),
     });
@@ -239,22 +236,6 @@ export default function ProfileSettingsModal({ isOpen, onClose }) {
             </div>
           </div>
 
-          {/* Role / Job Title */}
-          <div className="space-y-1">
-            <label className="block text-xs font-medium text-text-muted">
-              Agency Role / Title
-            </label>
-            <div className="relative">
-              <Briefcase size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted/70" />
-              <input
-                type="text"
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                placeholder="e.g. CEO & Founder, Sales Operator"
-                className="w-full pl-10 pr-4 py-2 bg-bg border border-border rounded-xl text-text text-xs focus:border-accent outline-none transition-colors"
-              />
-            </div>
-          </div>
 
           {/* Phone / WhatsApp */}
           <div className="space-y-1">
