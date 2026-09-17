@@ -1,8 +1,16 @@
 import { Play, Pause, RotateCcw, Clock } from 'lucide-react';
 import { useProjectTask } from '../../context/ProjectTaskContext';
 
-export default function TimeTrackerWidget() {
+export default function TimeTrackerWidget({ activeView }) {
   const { activeTimer, toggleTimer, resetTimer } = useProjectTask();
+
+  // Show only when timer is running/active, or when user is on tasks/projects view, or on ultra-wide screens (2xl)
+  const isRelevantView = activeView === 'tasks' || activeView === 'projects';
+  const hasActiveTime = activeTimer.isRunning || activeTimer.seconds > 0;
+
+  if (!isRelevantView && !hasActiveTime) {
+    return null;
+  }
 
   const formatTime = (totalSeconds) => {
     const hours = Math.floor(totalSeconds / 3600);
@@ -12,7 +20,7 @@ export default function TimeTrackerWidget() {
   };
 
   return (
-    <div className="hidden xl:flex items-center gap-2 h-10 px-3.5 bg-[#181a22] border border-[#262934] rounded-full shadow-xs shrink-0">
+    <div className="flex items-center gap-1.5 h-10 px-3 bg-[#181a22] border border-[#262934] rounded-full shadow-xs shrink-0">
       <Clock size={14} className={activeTimer.isRunning ? 'text-emerald-400 animate-pulse' : 'text-text-muted'} />
       <span className="font-mono text-xs font-semibold text-white">
         {formatTime(activeTimer.seconds)}

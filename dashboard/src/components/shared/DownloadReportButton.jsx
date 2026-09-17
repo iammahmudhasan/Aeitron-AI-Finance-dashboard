@@ -77,7 +77,7 @@ export default function DownloadReportButton() {
         title="Download Report"
       >
         <Download size={15} className="text-text-muted shrink-0" />
-        <span className="hidden md:inline whitespace-nowrap">Report</span>
+        <span className="hidden 2xl:inline whitespace-nowrap">Report</span>
         <ChevronDown size={14} className={`text-text-muted transition-transform duration-150 shrink-0 ${open ? 'rotate-180' : ''}`} />
       </button>
 

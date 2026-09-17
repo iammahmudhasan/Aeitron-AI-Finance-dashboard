@@ -113,7 +113,7 @@ export default function Topbar({ onMenuClick, onAddClient, activeView, searchQue
         </div>
 
         {/* Global Billable Work Time Tracker */}
-        <TimeTrackerWidget />
+        <TimeTrackerWidget activeView={activeView} />
 
         {/* Contextual Action Button */}
         <button
