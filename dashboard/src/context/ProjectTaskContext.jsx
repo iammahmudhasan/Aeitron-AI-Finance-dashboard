@@ -27,9 +27,9 @@ const INITIAL_PROJECTS = [
   },
   {
     id: 'proj-2',
-    name: 'Craftly Omnichannel Brand Identity & Web App',
+    name: 'Omnichannel Enterprise Portal & Web App',
     clientName: 'Lumina Health Labs',
-    company: 'Craftly',
+    company: 'Aeitron AI',
     stage: 'testing',
     progress: 85,
     deadline: '2026-09-30',
@@ -66,7 +66,7 @@ const INITIAL_PROJECTS = [
     id: 'proj-4',
     name: 'FinTech Micro-Lending Portal Delivery',
     clientName: 'Kite Payments',
-    company: 'Craftly',
+    company: 'Aeitron AI',
     stage: 'deployed',
     progress: 100,
     deadline: '2026-09-10',
@@ -108,7 +108,7 @@ const INITIAL_TASKS = [
   {
     id: 'task-3',
     projectId: 'proj-2',
-    projectName: 'Craftly Omnichannel Brand Identity & Web App',
+    projectName: 'Omnichannel Enterprise Portal & Web App',
     title: 'Responsive QA test on Mobile Safari & Android Chrome',
     status: 'review',
     priority: 'Urgent',
@@ -119,7 +119,7 @@ const INITIAL_TASKS = [
   {
     id: 'task-4',
     projectId: 'proj-2',
-    projectName: 'Craftly Omnichannel Brand Identity & Web App',
+    projectName: 'Omnichannel Enterprise Portal & Web App',
     title: 'Setup Google Tag Manager and conversion tracking events',
     status: 'done',
     priority: 'Medium',

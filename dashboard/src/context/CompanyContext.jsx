@@ -5,34 +5,24 @@ const CompanyContext = createContext(null);
 const STORAGE_KEY = 'aeitron_active_company';
 
 export const COMPANIES = [
-  { id: 'all', name: 'Consolidated Group', tag: 'All Entities', color: '#ff5530' },
   { id: 'aeitron', name: 'Aeitron AI', tag: 'AI Automation Agency', color: '#ff5530' },
-  { id: 'craftly', name: 'Craftly', tag: 'Creative & Product Studio', color: '#7c6df7' },
 ];
 
 export function CompanyProvider({ children }) {
-  const [activeCompany, setActiveCompany] = useState(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      return saved || 'all';
-    } catch {
-      return 'all';
-    }
-  });
+  const [activeCompany, setActiveCompany] = useState('aeitron');
 
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, activeCompany);
+      localStorage.setItem(STORAGE_KEY, 'aeitron');
     } catch {
       // ignore
     }
-  }, [activeCompany]);
+  }, []);
 
-  const currentCompanyObj = COMPANIES.find((c) => c.id === activeCompany) || COMPANIES[0];
+  const currentCompanyObj = COMPANIES[0];
 
   const filterByCompany = (items = []) => {
-    if (activeCompany === 'all') return items;
-    return items.filter((item) => !item.company || item.company.toLowerCase().includes(activeCompany));
+    return items;
   };
 
   return (

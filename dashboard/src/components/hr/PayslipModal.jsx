@@ -44,9 +44,9 @@ export default function PayslipModal({ record, onClose }) {
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <img src="/aeitron_icon_fb.png" alt="Logo" className="w-8 h-8 rounded-lg" />
-                <h1 className="text-lg font-bold text-white tracking-tight">Aeitron AI & Craftly Group</h1>
+                <h1 className="text-lg font-bold text-white tracking-tight">Aeitron AI</h1>
               </div>
-              <p className="text-[11px] text-text-muted">Enterprise Multi-Entity Agency Operating System</p>
+              <p className="text-[11px] text-text-muted">Enterprise AI Automation Agency Operating System</p>
               <p className="text-[11px] text-text-muted">Dhaka, Bangladesh · Global Autonomous Deliveries</p>
             </div>
             <div className="text-right">
@@ -118,7 +118,6 @@ export default function PayslipModal({ record, onClose }) {
                 <span>Executive Verified</span>
               </div>
               <div className="text-xs font-bold text-white">Mahmud Hasan</div>
-              <div className="text-[10px] text-text-muted">Chief Operating Officer, Craftly</div>
               <div className="text-[10px] text-text-muted">Founder & CEO, Aeitron AI</div>
             </div>
           </div>

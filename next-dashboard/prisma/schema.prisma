@@ -26,7 +26,7 @@ model User {
   phone        String?
   bio          String?
   department   String?
-  company      String      @default("Aeitron AI") // Aeitron AI, Craftly
+  company      String      @default("Aeitron AI")
   permissions  String[]    // Granular module access: ["dashboard", "invoices", "projects", "tasks", ...]
   isActive     Boolean     @default(true)
   createdAt    DateTime    @default(now())
@@ -47,7 +47,7 @@ model User {
 model Client {
   id              String      @id @default(uuid())
   name            String
-  company         String      @default("Aeitron AI") // Parent organization: Aeitron AI or Craftly
+  company         String      @default("Aeitron AI")
   clientCompany   String?     // The client's corporate name
   email           String      @unique
   phone           String?

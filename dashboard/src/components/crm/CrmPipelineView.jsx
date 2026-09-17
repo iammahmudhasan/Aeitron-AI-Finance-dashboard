@@ -15,10 +15,10 @@ const STAGES = [
 
 const INITIAL_DEALS = [
   { id: 'deal-1', name: 'Nova Logistics AI Customer Bot', client: 'Nova Freight', company: 'Aeitron AI', value: 16500, stage: 'proposal', source: 'Referral', rep: 'Salung Prastyo' },
-  { id: 'deal-2', name: 'Craftly Brand System & SaaS UI', client: 'Pulse Medtech', company: 'Craftly', value: 12500, stage: 'negotiation', source: 'Inbound', rep: 'Mahmud Hasan' },
+  { id: 'deal-2', name: 'Pulse AI Diagnostic Automation & UI', client: 'Pulse Medtech', company: 'Aeitron AI', value: 12500, stage: 'negotiation', source: 'Inbound', rep: 'Mahmud Hasan' },
   { id: 'deal-3', name: 'Enterprise Document Vector Pipeline', client: 'Apex Legal Group', company: 'Aeitron AI', value: 24000, stage: 'qualified', source: 'Cold Outreach', rep: 'Alex Rivera' },
   { id: 'deal-4', name: 'Autonomous Outreach Engine', client: 'ScaleFlow Marketing', company: 'Aeitron AI', value: 18000, stage: 'won', source: 'Inbound', rep: 'Salung Prastyo' },
-  { id: 'deal-5', name: 'Shopify Plus Custom App', client: 'Glow Retail', company: 'Craftly', value: 9500, stage: 'lead', source: 'Referral', rep: 'Salung Prastyo' },
+  { id: 'deal-5', name: 'Omnichannel Retail AI Engine', client: 'Glow Retail', company: 'Aeitron AI', value: 9500, stage: 'lead', source: 'Referral', rep: 'Salung Prastyo' },
 ];
 
 export default function CrmPipelineView() {
@@ -284,7 +284,6 @@ export default function CrmPipelineView() {
                     className="w-full bg-[#181a22] border border-[#262934] rounded-xl px-3 py-2 text-white outline-none"
                   >
                     <option value="Aeitron AI">Aeitron AI</option>
-                    <option value="Craftly">Craftly</option>
                   </select>
                 </div>
                 <div>

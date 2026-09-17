@@ -239,7 +239,6 @@ export default function ProjectsView() {
                     className="w-full bg-[#181a22] border border-[#262934] rounded-xl px-3 py-2 text-white outline-none"
                   >
                     <option value="Aeitron AI">Aeitron AI</option>
-                    <option value="Craftly">Craftly</option>
                   </select>
                 </div>
                 <div>

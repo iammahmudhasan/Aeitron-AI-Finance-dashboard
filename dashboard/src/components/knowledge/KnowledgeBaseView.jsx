@@ -51,8 +51,8 @@ Phase 3: Integration, UAT testing, & Production Deployment (40% completion settl
     title: 'New Employee 7-Day Onboarding Checklist',
     dept: 'HR & Operations SOPs',
     readTime: '2 min',
-    summary: 'Automated onboarding sequence for newly hired engineers, project leads, and sales reps across Aeitron and Craftly.',
-    content: `Day 1: Setup company email (@aeitron.com / @craftly.studio), join Slack/Discord, complete NID & Bank details.
+    summary: 'Automated onboarding sequence for newly hired engineers, project leads, and sales reps across Aeitron AI.',
+    content: `Day 1: Setup company email (@aeitron.com), join Slack/Discord, complete NID & Bank details.
 Day 2: Review Security Guidelines & sign NDA.
 Day 3: Clone repository, setup local dev environment, and verify Prisma DB connection.
 Day 5: Pair with Alex Rivera or Mahmud Hasan on first client deliverable task.`,

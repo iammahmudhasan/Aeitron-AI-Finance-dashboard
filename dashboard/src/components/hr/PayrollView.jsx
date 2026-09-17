@@ -20,7 +20,7 @@ export default function PayrollView() {
       addExpense({
         category: 'Salaries & Payroll',
         amount: total,
-        description: 'Automated Monthly Salary Run for Aeitron AI & Craftly Staff',
+        description: 'Automated Monthly Salary Run for Aeitron AI Staff',
         date: new Date().toISOString().split('T')[0],
       });
     }
@@ -79,7 +79,7 @@ export default function PayrollView() {
           <div className="text-2xl sm:text-3xl font-bold text-white">
             {payrollRecords.length} <span className="text-xs font-normal text-text-muted">Employees</span>
           </div>
-          <div className="text-[11px] text-text-muted mt-1">Craftly Studio + Aeitron AI</div>
+          <div className="text-[11px] text-text-muted mt-1">Aeitron AI Enterprise</div>
         </div>
 
         <div className="bg-bg-card border border-border rounded-2xl p-5 shadow-xs">

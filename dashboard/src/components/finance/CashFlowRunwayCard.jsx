@@ -14,14 +14,12 @@ export default function CashFlowRunwayCard() {
 
   const clientPL = [
     { client: 'Acme Global Corp', project: 'NexusFlow AI Agent', revenue: 18500, cost: 8400, net: 10100, margin: '55%', company: 'Aeitron AI' },
-    { client: 'Lumina Health Labs', project: 'Craftly Brand App', revenue: 12000, cost: 5600, net: 6400, margin: '53%', company: 'Craftly' },
+    { client: 'Lumina Health Labs', project: 'Enterprise Health Portal', revenue: 12000, cost: 5600, net: 6400, margin: '53%', company: 'Aeitron AI' },
     { client: 'Apex Logistics Ltd', project: 'Voice & WhatsApp Bot', revenue: 22000, cost: 3200, net: 18800, margin: '85%', company: 'Aeitron AI' },
-    { client: 'Kite Payments', project: 'FinTech Lending Portal', revenue: 15000, cost: 7100, net: 7900, margin: '52%', company: 'Craftly' },
+    { client: 'Kite Payments', project: 'FinTech Lending Engine', revenue: 15000, cost: 7100, net: 7900, margin: '52%', company: 'Aeitron AI' },
   ];
 
-  const filteredPL = activeCompany === 'all'
-    ? clientPL
-    : clientPL.filter((item) => item.company.toLowerCase().includes(activeCompany));
+  const filteredPL = clientPL;
 
   return (
     <div className="space-y-6">
