@@ -35,9 +35,9 @@ const INITIAL_GREETING = {
   role: 'bot',
   text: `👋 **হ্যালো মাহমুদ ভাই!**
 
-আমি Aeitron AI-এর ডেডিকেটেড এক্সিকিউটিভ কো-পাইলট। ড্যাশবোর্ডের চলমান ক্লায়েন্ট প্রজেক্ট, টিম প্রগ্রেস, ফাইন্যান্সিয়াল হেলথ ও অটোমেশন রিয়েল-টাইমে মনিটর করছি।
+আমি Aeitron AI-এর নিউরাল কো-পাইলট। আমি কোনো সেভ করা ফেক উত্তর ব্যবহার করি না—সরাসরি আসল AI মডেলের ট্রেন করা নিউরাল নেটওয়ার্ক ও ড্যাশবোর্ডের লাইভ ডেটা থেকে রিয়েল-টাইমে রেসপন্স তৈরি করি।
 
-আজকে কোনো প্রজেক্টের স্ট্যাটাস, রেভিনিউ হিসাব, টিম টাস্ক কিংবা নতুন কোনো অটোমেশন স্ট্র্যাটেজি নিয়ে কথা বলতে চান? বলুন কীভাবে সাহায্য করব!`,
+আজকে কোনো প্রজেক্ট, রেভিনিউ, টাস্ক বা অটোমেশন নিয়ে কি জানতে চান?`,
   timestamp: 'Just now',
 };
 
@@ -204,13 +204,13 @@ export default function AICopilot() {
         { role: 'user', content: textToSend },
       ];
 
-      // Try active AI provider / fine-tuned model first
+      // Execute real AI model generation directly via LLM weights
       let reply;
       try {
         reply = await sendAgentMessage(systemPrompt, apiMessages, selectedModel);
-      } catch {
-        // High-intelligence semantic RAG engine fallback (Human, reliable with live dashboard numbers)
-        reply = generateIntelligentOfflineResponse(textToSend, liveContext);
+      } catch (err) {
+        console.warn('Live AI execution note:', err.message);
+        reply = `⚠️ **লাইভ AI মডেল আনকানেক্টেড:**\n\nআপনি কোনো প্রি-সেভ করা ফেক উত্তর চান না—সরাসরি আসল AI মডেলের ট্রেন করা নিউরাল নেটওয়ার্ক চালাতে অনুগ্রহ করে উপরের **⚙️ সেটিংস**-এ আপনার API Key (OpenAI / Groq / DeepSeek / Gemini) অথবা লোকাল Ollama এন্ডপয়েন্ট দিন।\n\n*(Error: ${err.message || 'API Key not configured'})*`;
       }
 
       setMessages((prev) => [
@@ -220,16 +220,6 @@ export default function AICopilot() {
           text: reply,
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           model: selectedModel,
-        },
-      ]);
-    } catch {
-      const fallback = generateIntelligentOfflineResponse(textToSend, liveContext);
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: 'bot',
-          text: fallback,
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         },
       ]);
     } finally {
@@ -341,6 +331,17 @@ export default function AICopilot() {
                 />
               </div>
             )}
+
+            <div>
+              <label className="text-[10px] text-text-muted uppercase tracking-wider block mb-1">Fine-Tuned / Active Model Name</label>
+              <input
+                type="text"
+                value={selectedModel}
+                onChange={(e) => setSelectedModel(e.target.value)}
+                placeholder="e.g. ft:gpt-4o-mini-2024-07-18:aeitron-ai:xxxx or aeitron-llama"
+                className="w-full bg-[#12141c] border border-[#2b3042] rounded-lg px-2.5 py-1.5 text-white text-xs outline-none focus:border-accent font-mono text-[11px]"
+              />
+            </div>
 
             <div>
               <label className="text-[10px] text-text-muted uppercase tracking-wider block mb-1">Base URL (Optional)</label>
