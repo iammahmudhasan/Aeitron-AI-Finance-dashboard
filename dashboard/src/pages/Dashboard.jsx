@@ -66,12 +66,10 @@ import GoalTracker from '../components/cards/GoalTracker';
 import CEOBriefing from '../components/cards/CEOBriefing';
 import TeamGrid from '../components/team/TeamGrid';
 import TeamForm from '../components/team/TeamForm';
-import AgentGrid from '../components/agents/AgentGrid';
 import LeadDiscovery from '../components/discovery/LeadDiscovery';
 import PayoutCalculator from '../components/team/PayoutCalculator';
 import ConfirmDialog from '../components/shared/ConfirmDialog';
 import AICopilot from '../components/copilot/AICopilot';
-import FineTuningStudioView from '../components/finetuning/FineTuningStudioView';
 import useNotificationGenerator from '../hooks/useNotificationGenerator';
 
 export default function Dashboard() {
@@ -327,12 +325,6 @@ export default function Dashboard() {
               }}
             />
           )}
-
-          {/* AI Autonomous Agents */}
-          {activeView === 'agents' && <AgentsView />}
-
-          {/* AI Model Fine-Tuning Studio */}
-          {activeView === 'finetuning' && <FineTuningStudioView />}
 
           {/* Lead Discovery Radar */}
           {activeView === 'discovery' && <LeadDiscovery />}
@@ -605,20 +597,6 @@ function TeamView({ onEdit, onRequestDelete }) {
       </div>
       <TeamGrid onEdit={onEdit} onRequestDelete={onRequestDelete} />
       <PayoutCalculator />
-    </>
-  );
-}
-
-function AgentsView() {
-  return (
-    <>
-      <div>
-        <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">AI Agents Workforce</h2>
-        <p className="text-xs text-text-muted mt-0.5">
-          Autonomous AI agents operating your agency pipeline
-        </p>
-      </div>
-      <AgentGrid />
     </>
   );
 }

@@ -30,8 +30,6 @@ import {
   GitPullRequest,
   BookOpen,
   TrendingUp,
-  Bot,
-  Cpu,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import ProfileSettingsModal from '../profile/ProfileSettingsModal';
@@ -76,10 +74,8 @@ const NAV_GROUPS = [
     ],
   },
   {
-    label: 'Knowledge & AI',
+    label: 'Knowledge & Integrations',
     items: [
-      { icon: Bot, label: 'AI Agents Workforce', view: 'agents' },
-      { icon: Cpu, label: 'Model Fine-Tuning', view: 'finetuning' },
       { icon: BookOpen, label: 'Knowledge Base', view: 'knowledge' },
       { icon: Layers, label: 'Integrations Hub', view: 'integrations' },
     ],

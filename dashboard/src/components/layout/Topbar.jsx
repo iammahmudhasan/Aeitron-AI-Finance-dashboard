@@ -33,9 +33,7 @@ const VIEW_TITLES = {
   system: 'System Settings',
   expenses: 'Expense Tracker',
   invoices: 'Invoices',
-  agents: 'AI Agents',
   discovery: 'Lead Discovery',
-  finetuning: 'Model Fine-Tuning',
 };
 
 const VIEW_ACTIONS = {
@@ -64,10 +62,8 @@ const VIEW_ACTIONS = {
   integrations: 'New Integration',
   support: 'New Ticket',
   help: 'New Ticket',
-  agents: 'Deploy Agent',
   discovery: 'Find Leads',
   messages: 'New Chat',
-  finetuning: 'New Training Run',
 };
 
 export default function Topbar({ onMenuClick, onAddClient, activeView, searchQuery = '', onSearchChange }) {
