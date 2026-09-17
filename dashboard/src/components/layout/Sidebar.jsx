@@ -225,7 +225,7 @@ export default function Sidebar({ open, onClose, activeView, onNavigate }) {
         className={`
           fixed top-0 left-0 z-50 h-full bg-sidebar border-r border-sidebar-border
           flex flex-col transition-all duration-200 select-none
-          lg:translate-x-0 lg:static lg:z-auto
+          lg:translate-x-0 lg:relative lg:z-30
           ${collapsed ? 'w-[76px]' : 'w-[260px]'}
           ${open ? 'translate-x-0 animate-slide-in' : '-translate-x-full'}
         `}
@@ -337,11 +337,11 @@ export default function Sidebar({ open, onClose, activeView, onNavigate }) {
         </nav>
 
         {/* Bottom Profile Widget & Menu */}
-        <div className="p-3 border-t border-sidebar-border relative" ref={profileMenuRef}>
+        <div className="p-3 border-t border-sidebar-border relative z-40" ref={profileMenuRef}>
           {/* Profile Dropdown Popup */}
           {profileMenuOpen && (
             <div className={`
-              absolute bottom-full mb-2 bg-bg-card border border-border shadow-2xl rounded-2xl p-2.5 z-50 text-text
+              absolute bottom-full mb-2 bg-bg-card border border-border shadow-2xl rounded-2xl p-2.5 z-[100] text-text ring-1 ring-white/10
               animate-fade-in
               ${collapsed ? 'left-3 w-64' : 'left-3 right-3'}
             `}>

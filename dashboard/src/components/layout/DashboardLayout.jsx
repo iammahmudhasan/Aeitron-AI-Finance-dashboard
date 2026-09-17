@@ -15,7 +15,7 @@ export default function DashboardLayout({ children, onAddClient, activeView, onN
         activeView={activeView}
         onNavigate={onNavigate}
       />
-      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden relative z-0">
         <Topbar
           onMenuClick={() => setSidebarOpen(true)}
           onAddClient={onAddClient}
