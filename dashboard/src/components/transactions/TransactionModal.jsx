@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { X, Plus, DollarSign, User, Package, Hash } from 'lucide-react';
+import { formatCompactCurrency } from '../../utils/formatters';
 
 const INITIAL_TRANSACTIONS = [
   {
@@ -174,9 +175,10 @@ export default function TransactionModal({ isOpen, onClose, onSuccess }) {
               <input
                 type="number"
                 min="1"
+                max="9999999"
                 required
                 value={formQty}
-                onChange={(e) => setFormQty(e.target.value)}
+                onChange={(e) => setFormQty(e.target.value.slice(0, 8))}
                 className="w-full px-3.5 py-2.5 bg-bg border border-border rounded-xl text-text outline-none focus:border-accent transition-colors"
               />
             </div>
@@ -186,10 +188,11 @@ export default function TransactionModal({ isOpen, onClose, onSuccess }) {
               </label>
               <input
                 type="number"
-                min="1"
+                min="0"
+                max="9999999999"
                 required
                 value={formPrice}
-                onChange={(e) => setFormPrice(e.target.value)}
+                onChange={(e) => setFormPrice(e.target.value.slice(0, 10))}
                 className="w-full px-3.5 py-2.5 bg-bg border border-border rounded-xl text-text outline-none focus:border-accent transition-colors"
               />
             </div>
@@ -208,10 +211,13 @@ export default function TransactionModal({ isOpen, onClose, onSuccess }) {
             </select>
           </div>
 
-          <div className="p-2.5 bg-bg border border-border/80 rounded-xl flex items-center justify-between text-[11px]">
-            <span className="text-text-muted">Total Transaction Revenue:</span>
-            <span className="font-bold text-accent text-sm">
-              ${((Number(formQty) || 1) * (Number(formPrice) || 0)).toLocaleString()}
+          <div className="p-2.5 bg-bg border border-border/80 rounded-xl flex items-center justify-between text-[11px] gap-2 overflow-hidden">
+            <span className="text-text-muted shrink-0">Total Transaction Revenue:</span>
+            <span
+              className="font-bold text-accent text-sm truncate max-w-[220px]"
+              title={`$${((Number(formQty) || 1) * (Number(formPrice) || 0)).toLocaleString()}`}
+            >
+              {formatCompactCurrency((Number(formQty) || 1) * (Number(formPrice) || 0))}
             </span>
           </div>
 
