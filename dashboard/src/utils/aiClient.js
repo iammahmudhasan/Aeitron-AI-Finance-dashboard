@@ -70,6 +70,20 @@ const PROVIDER_CONFIG = {
     parseResponse: (data) => data.choices?.[0]?.message?.content ?? '',
   },
 
+  groq: {
+    url: 'https://api.groq.com/openai/v1/chat/completions',
+    model: 'llama-3.3-70b-versatile',
+    buildHeaders: (apiKey) => ({
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${apiKey}`,
+    }),
+    buildBody: (model, systemPrompt, messages) => ({
+      model: model && !model.startsWith('ft:') ? model : 'llama-3.3-70b-versatile',
+      messages: [{ role: 'system', content: systemPrompt }, ...messages],
+    }),
+    parseResponse: (data) => data.choices?.[0]?.message?.content ?? '',
+  },
+
   local: {
     url: 'http://localhost:1234/v1/chat/completions',
     model: 'local-model',
@@ -83,6 +97,35 @@ const PROVIDER_CONFIG = {
 };
 
 export const STORAGE_KEY_TUNED_MODEL = 'aeitron_active_tuned_model';
+export const STORAGE_KEY_AI_PROVIDER = 'aeitron_custom_ai_provider';
+export const STORAGE_KEY_AI_KEY = 'aeitron_custom_ai_key';
+export const STORAGE_KEY_AI_BASE_URL = 'aeitron_custom_ai_base_url';
+
+export function getCustomAiSettings() {
+  try {
+    return {
+      provider: localStorage.getItem(STORAGE_KEY_AI_PROVIDER) || (import.meta.env.VITE_ACTIVE_AI_PROVIDER || 'openai').toLowerCase(),
+      apiKey: localStorage.getItem(STORAGE_KEY_AI_KEY) || import.meta.env.VITE_AI_API_KEY || '',
+      baseUrl: localStorage.getItem(STORAGE_KEY_AI_BASE_URL) || import.meta.env.VITE_AI_BASE_URL || '',
+    };
+  } catch {
+    return {
+      provider: (import.meta.env.VITE_ACTIVE_AI_PROVIDER || 'openai').toLowerCase(),
+      apiKey: import.meta.env.VITE_AI_API_KEY || '',
+      baseUrl: import.meta.env.VITE_AI_BASE_URL || '',
+    };
+  }
+}
+
+export function saveCustomAiSettings({ provider, apiKey, baseUrl }) {
+  try {
+    if (provider) localStorage.setItem(STORAGE_KEY_AI_PROVIDER, provider.toLowerCase());
+    if (apiKey !== undefined) localStorage.setItem(STORAGE_KEY_AI_KEY, apiKey);
+    if (baseUrl !== undefined) localStorage.setItem(STORAGE_KEY_AI_BASE_URL, baseUrl);
+  } catch {
+    // ignore
+  }
+}
 
 export function getActiveTunedModel() {
   try {
@@ -113,9 +156,10 @@ export function setActiveTunedModel(modelId) {
  * @returns {Promise<string>} The assistant's reply text
  */
 export async function sendAgentMessage(systemPrompt, messages, overrideModel = null) {
-  const provider = (import.meta.env.VITE_ACTIVE_AI_PROVIDER || 'openai').toLowerCase();
-  const apiKey = import.meta.env.VITE_AI_API_KEY || '';
-  const baseUrl = import.meta.env.VITE_AI_BASE_URL || '';
+  const custom = getCustomAiSettings();
+  const provider = custom.provider || (import.meta.env.VITE_ACTIVE_AI_PROVIDER || 'openai').toLowerCase();
+  const apiKey = custom.apiKey || import.meta.env.VITE_AI_API_KEY || '';
+  const baseUrl = custom.baseUrl || import.meta.env.VITE_AI_BASE_URL || '';
 
   const config = PROVIDER_CONFIG[provider];
   if (!config) {
@@ -123,7 +167,7 @@ export async function sendAgentMessage(systemPrompt, messages, overrideModel = n
   }
 
   if (!apiKey && provider !== 'local') {
-    throw new Error('VITE_AI_API_KEY is not set. Add it to your .env file or enter an API key.');
+    throw new Error('API Key is not set. Add it in Copilot settings or your .env file.');
   }
 
   const model = overrideModel || getActiveTunedModel() || config.model;
