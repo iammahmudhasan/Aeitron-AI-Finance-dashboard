@@ -419,14 +419,14 @@ function DashboardView({ currentUser, searchQuery }) {
             <select
               value={timeframe}
               onChange={(e) => setTimeframe(e.target.value)}
-              className="h-9 appearance-none pl-3.5 pr-8 bg-[#181a22] border border-[#262934] rounded-full text-xs font-semibold text-text outline-none cursor-pointer hover:bg-[#202330] transition-colors shadow-xs"
+              className="h-10 appearance-none pl-4 pr-8.5 bg-[#181a22] border border-[#262934] rounded-full text-xs sm:text-sm font-semibold text-text outline-none cursor-pointer hover:bg-[#202330] transition-colors shadow-xs"
             >
               <option value="Daily">Daily</option>
               <option value="Weekly">Weekly</option>
               <option value="Monthly">Monthly</option>
               <option value="Yearly">Yearly</option>
             </select>
-            <ChevronDown size={13} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
+            <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
           </div>
 
           {/* Real-time Interactive Date / Calendar Picker */}
@@ -436,9 +436,9 @@ function DashboardView({ currentUser, searchQuery }) {
           <button
             type="button"
             onClick={handleExportCsv}
-            className="h-9 flex items-center gap-1.5 px-3.5 bg-accent hover:bg-accent-hover text-white text-xs font-semibold rounded-full transition-all shadow-xs cursor-pointer active:scale-95 shrink-0"
+            className="h-10 flex items-center gap-2 px-4.5 bg-accent hover:bg-accent-hover text-white text-xs sm:text-sm font-semibold rounded-full transition-all shadow-md shadow-accent/20 cursor-pointer active:scale-95 shrink-0"
           >
-            <Download size={14} />
+            <Download size={15} />
             <span>Export CSV</span>
           </button>
         </div>
@@ -543,9 +543,9 @@ function InvoicesView({ onEdit, onView, onRequestDelete, searchQuery, onAdd }) {
         <button
           type="button"
           onClick={onAdd}
-          className="h-9 flex items-center gap-1.5 px-3.5 bg-accent hover:bg-accent-hover text-white text-xs font-semibold rounded-full transition-all shadow-xs cursor-pointer active:scale-95 shrink-0"
+          className="h-10 flex items-center gap-2 px-4.5 bg-accent hover:bg-accent-hover text-white text-xs sm:text-sm font-semibold rounded-full transition-all shadow-md shadow-accent/20 cursor-pointer active:scale-95 shrink-0"
         >
-          <Plus size={14} />
+          <Plus size={16} />
           <span>New Invoice</span>
         </button>
       </div>
