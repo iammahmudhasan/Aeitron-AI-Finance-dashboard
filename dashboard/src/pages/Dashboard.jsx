@@ -70,6 +70,7 @@ import LeadDiscovery from '../components/discovery/LeadDiscovery';
 import PayoutCalculator from '../components/team/PayoutCalculator';
 import ConfirmDialog from '../components/shared/ConfirmDialog';
 import AICopilot from '../components/copilot/AICopilot';
+import TransactionModal from '../components/transactions/TransactionModal';
 import useNotificationGenerator from '../hooks/useNotificationGenerator';
 
 export default function Dashboard() {
@@ -90,7 +91,17 @@ export default function Dashboard() {
   const [editAutomation, setEditAutomation] = useState(null);
   const [teamFormOpen, setTeamFormOpen] = useState(false);
   const [editMember, setEditMember] = useState(null);
+  const [transactionModalOpen, setTransactionModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Global listener for opening add transaction modal
+  useEffect(() => {
+    function handleGlobalAddTx() {
+      setTransactionModalOpen(true);
+    }
+    window.addEventListener('open-add-transaction', handleGlobalAddTx);
+    return () => window.removeEventListener('open-add-transaction', handleGlobalAddTx);
+  }, []);
 
   // Auto-generate notifications based on data changes
   useNotificationGenerator();
@@ -108,23 +119,29 @@ export default function Dashboard() {
   }, [currentUser, activeView, hasPermission]);
 
   function handleAdd() {
-    if (activeView === 'expenses') {
+    if (activeView === 'expenses' || activeView === 'cashflow') {
       setEditExpense(null);
       setExpenseFormOpen(true);
-    } else if (activeView === 'leads') {
+    } else if (activeView === 'leads' || activeView === 'pipeline') {
       setEditLead(null);
       setLeadFormOpen(true);
-    } else if (activeView === 'invoices') {
+    } else if (activeView === 'invoices' || activeView === 'billing') {
       setEditInvoice(null);
       setInvoiceFormOpen(true);
-    } else if (activeView === 'system') {
+    } else if (activeView === 'system' || activeView === 'integrations') {
       setEditAutomation(null);
       setAutomationFormOpen(true);
     } else if (activeView === 'team') {
       setEditMember(null);
       setTeamFormOpen(true);
     } else if (activeView === 'dashboard' || activeView === 'transactions') {
-      window.dispatchEvent(new CustomEvent('open-add-transaction'));
+      setTransactionModalOpen(true);
+    } else if (activeView === 'projects') {
+      window.dispatchEvent(new CustomEvent('open-add-project'));
+    } else if (activeView === 'tasks') {
+      window.dispatchEvent(new CustomEvent('open-add-task'));
+    } else if (activeView === 'attendance') {
+      window.dispatchEvent(new CustomEvent('open-apply-leave'));
     } else {
       setEditClient(null);
       setFormOpen(true);
@@ -370,6 +387,10 @@ export default function Dashboard() {
         isOpen={teamFormOpen}
         onClose={() => { setTeamFormOpen(false); setEditMember(null); }}
         editMember={editMember}
+      />
+      <TransactionModal
+        isOpen={transactionModalOpen}
+        onClose={() => setTransactionModalOpen(false)}
       />
       {viewInvoice && (
         <InvoiceDetail

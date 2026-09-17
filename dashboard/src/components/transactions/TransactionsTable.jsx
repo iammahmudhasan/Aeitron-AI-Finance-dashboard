@@ -127,8 +127,18 @@ export default function TransactionsTable({ globalSearch = '' }) {
     function handleOpenAdd() {
       setModalOpen(true);
     }
+    function handleUpdate() {
+      try {
+        const stored = localStorage.getItem('aeitron_transactions');
+        if (stored) setTransactions(JSON.parse(stored));
+      } catch {}
+    }
     window.addEventListener('open-add-transaction', handleOpenAdd);
-    return () => window.removeEventListener('open-add-transaction', handleOpenAdd);
+    window.addEventListener('transactions-updated', handleUpdate);
+    return () => {
+      window.removeEventListener('open-add-transaction', handleOpenAdd);
+      window.removeEventListener('transactions-updated', handleUpdate);
+    };
   }, []);
 
   const handleExportAllCsv = () => {
