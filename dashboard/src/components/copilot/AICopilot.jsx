@@ -246,9 +246,9 @@ export default function AICopilot() {
   const isLiveConnected = Boolean(apiKey || provider === 'local');
 
   return (
-    <div className="fixed bottom-0 right-0 sm:bottom-6 sm:right-6 z-[70] w-full sm:w-[440px] h-[calc(100vh-1.5rem)] sm:h-[600px] bg-[#12141c] border border-border/90 rounded-t-2xl sm:rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-fade-in font-sans">
+    <div className="fixed bottom-0 right-0 sm:bottom-4 sm:right-4 md:bottom-5 md:right-5 z-[70] w-full sm:w-[420px] max-w-[calc(100vw-1rem)] h-[calc(100dvh-1.5rem)] sm:h-[min(530px,calc(100dvh-3.5rem))] max-h-[calc(100dvh-1.5rem)] sm:max-h-[calc(100dvh-3.5rem)] bg-[#12141c] border border-border/90 rounded-t-2xl sm:rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-fade-in font-sans">
       {/* Copilot Header */}
-      <div className="px-4 py-3 border-b border-border/80 bg-[#161823] flex flex-col gap-2 shrink-0">
+      <div className="px-3.5 py-2.5 border-b border-border/80 bg-[#161823] flex flex-col gap-1.5 shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-accent/20 border border-accent/30 flex items-center justify-center text-accent shrink-0">
