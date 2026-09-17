@@ -23,7 +23,7 @@ export default function DashboardLayout({ children, onAddClient, activeView, onN
           searchQuery={searchQuery}
           onSearchChange={onSearchChange}
         />
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 space-y-6 max-w-full min-w-0">
           {children}
         </main>
       </div>

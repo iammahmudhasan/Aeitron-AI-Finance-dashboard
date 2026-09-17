@@ -49,13 +49,13 @@ export default function ProjectsView() {
   const overallMargin = totalBudget > 0 ? Math.round(((totalBudget - totalSpent) / totalBudget) * 100) : 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-full min-w-0">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 max-w-full min-w-0">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
             <h2 className="text-xl font-bold text-white tracking-tight">Client & Project Delivery Hub</h2>
-            <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-accent/15 text-accent border border-accent/25">
+            <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-accent/15 text-accent border border-accent/25 shrink-0">
               SLA & Milestone Tracking
             </span>
           </div>
@@ -67,9 +67,9 @@ export default function ProjectsView() {
         <button
           type="button"
           onClick={() => setModalOpen(true)}
-          className="h-10 flex items-center gap-2 px-5 bg-accent hover:bg-accent-hover text-white text-xs sm:text-sm font-semibold rounded-full transition-all shadow-md shadow-accent/20 cursor-pointer active:scale-95 shrink-0"
+          className="h-10 flex items-center gap-2 px-5 bg-accent hover:bg-accent-hover text-white text-xs sm:text-sm font-semibold rounded-full transition-all shadow-md shadow-accent/20 cursor-pointer active:scale-95 shrink-0 whitespace-nowrap"
         >
-          <Plus size={16} />
+          <Plus size={16} className="shrink-0" />
           <span>New Project Build</span>
         </button>
       </div>

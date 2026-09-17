@@ -51,13 +51,13 @@ export default function TaskBoardView() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-full min-w-0">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 max-w-full min-w-0">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
             <h2 className="text-xl font-bold text-white tracking-tight">Task & Team Workflow Board</h2>
-            <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-accent/15 text-accent border border-accent/25">
+            <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-accent/15 text-accent border border-accent/25 shrink-0">
               Live Kanban
             </span>
           </div>
@@ -66,12 +66,12 @@ export default function TaskBoardView() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5 sm:gap-3 shrink-0 flex-wrap sm:flex-nowrap">
           {/* Project Filter */}
           <select
             value={selectedProjectFilter}
             onChange={(e) => setSelectedProjectFilter(e.target.value)}
-            className="h-10 bg-[#181a22] border border-[#262934] rounded-full px-4 text-xs font-semibold text-white outline-none"
+            className="h-10 bg-[#181a22] border border-[#262934] rounded-full px-3.5 sm:px-4 text-xs font-semibold text-white outline-none max-w-[170px] sm:max-w-[210px] truncate cursor-pointer"
           >
             <option value="all">All Active Projects ({tasks.length})</option>
             {projects.map((p) => (
@@ -82,119 +82,121 @@ export default function TaskBoardView() {
           <button
             type="button"
             onClick={() => setModalOpen(true)}
-            className="h-10 flex items-center gap-2 px-5 bg-accent hover:bg-accent-hover text-white text-xs sm:text-sm font-semibold rounded-full transition-all shadow-md shadow-accent/20 cursor-pointer active:scale-95 shrink-0"
+            className="h-10 flex items-center gap-2 px-4 sm:px-5 bg-accent hover:bg-accent-hover text-white text-xs sm:text-sm font-semibold rounded-full transition-all shadow-md shadow-accent/20 cursor-pointer active:scale-95 shrink-0 whitespace-nowrap"
           >
-            <Plus size={16} />
+            <Plus size={16} className="shrink-0" />
             <span>Create Task</span>
           </button>
         </div>
       </div>
 
       {/* 4-Column Kanban Board */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 items-start">
-        {COLUMNS.map((col) => {
-          const colTasks = filteredTasks.filter((t) => t.status === col.id);
+      <div className="w-full min-w-0 overflow-x-auto pb-4 custom-scrollbar">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 items-start min-w-[760px] xl:min-w-0">
+          {COLUMNS.map((col) => {
+            const colTasks = filteredTasks.filter((t) => t.status === col.id);
 
-          return (
-            <div
-              key={col.id}
-              className="bg-[#14161f] border border-border/80 rounded-2xl p-4 flex flex-col gap-3 min-h-[500px]"
-            >
-              {/* Column Header */}
-              <div className="flex items-center justify-between pb-3 border-b border-border/50">
-                <span className={`text-xs font-bold uppercase tracking-wider ${col.color}`}>
-                  {col.title}
-                </span>
-                <span className="w-5 h-5 rounded-full bg-[#1e212d] text-[11px] font-bold text-white flex items-center justify-center">
-                  {colTasks.length}
-                </span>
-              </div>
+            return (
+              <div
+                key={col.id}
+                className="bg-[#14161f] border border-border/80 rounded-2xl p-3.5 sm:p-4 flex flex-col gap-3 min-h-[500px] min-w-0 overflow-hidden"
+              >
+                {/* Column Header */}
+                <div className="flex items-center justify-between pb-3 border-b border-border/50">
+                  <span className={`text-xs font-bold uppercase tracking-wider ${col.color}`}>
+                    {col.title}
+                  </span>
+                  <span className="w-5 h-5 rounded-full bg-[#1e212d] text-[11px] font-bold text-white flex items-center justify-center">
+                    {colTasks.length}
+                  </span>
+                </div>
 
-              {/* Tasks List */}
-              <div className="space-y-3 flex-1">
-                {colTasks.map((task) => (
-                  <div
-                    key={task.id}
-                    className="bg-bg-card border border-border/80 hover:border-accent/40 rounded-xl p-4 shadow-xs space-y-3 transition-all group"
-                  >
-                    {/* Project & Priority */}
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-[10px] font-semibold text-text-muted truncate max-w-[140px]">
-                        {task.projectName}
-                      </span>
-                      <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold border ${PRIORITY_COLORS[task.priority] || PRIORITY_COLORS.Medium}`}>
-                        {task.priority}
-                      </span>
-                    </div>
+                {/* Tasks List */}
+                <div className="space-y-3 flex-1 min-w-0">
+                  {colTasks.map((task) => (
+                    <div
+                      key={task.id}
+                      className="bg-bg-card border border-border/80 hover:border-accent/40 rounded-xl p-3.5 shadow-xs space-y-3 transition-all group min-w-0 overflow-hidden"
+                    >
+                      {/* Project & Priority */}
+                      <div className="flex items-center justify-between gap-2 min-w-0">
+                        <span className="text-[10px] font-semibold text-text-muted truncate">
+                          {task.projectName}
+                        </span>
+                        <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold border shrink-0 ${PRIORITY_COLORS[task.priority] || PRIORITY_COLORS.Medium}`}>
+                          {task.priority}
+                        </span>
+                      </div>
 
-                    {/* Task Title */}
-                    <p className="text-xs font-semibold text-white group-hover:text-accent transition-colors leading-snug">
-                      {task.title}
-                    </p>
+                      {/* Task Title */}
+                      <p className="text-xs font-semibold text-white group-hover:text-accent transition-colors leading-snug break-words">
+                        {task.title}
+                      </p>
 
-                    {/* Meta: Hours, Due Date, Assignee */}
-                    <div className="flex items-center justify-between pt-2 border-t border-border/40 text-[11px] text-text-muted">
-                      <span className="flex items-center gap-1 font-mono text-emerald-400">
-                        <Clock size={11} />
-                        {task.hoursSpent}h logged
-                      </span>
+                      {/* Meta: Hours, Due Date, Assignee */}
+                      <div className="flex items-center justify-between pt-2 border-t border-border/40 text-[11px] text-text-muted gap-1 min-w-0">
+                        <span className="flex items-center gap-1 font-mono text-emerald-400 shrink-0 text-[10px]">
+                          <Clock size={11} className="shrink-0" />
+                          {task.hoursSpent}h logged
+                        </span>
 
-                      <span className="flex items-center gap-1">
-                        <Calendar size={11} />
-                        {task.dueDate}
-                      </span>
-                    </div>
+                        <span className="flex items-center gap-1 shrink-0 text-[10px]">
+                          <Calendar size={11} className="shrink-0" />
+                          {task.dueDate}
+                        </span>
+                      </div>
 
-                    {/* Quick Move Status Buttons */}
-                    <div className="flex items-center justify-between pt-1 text-[10px]">
-                      <span className="font-semibold text-text-secondary flex items-center gap-1">
-                        <User size={10} className="text-accent" />
-                        {task.assignee}
-                      </span>
+                      {/* Quick Move Status Buttons */}
+                      <div className="flex items-center justify-between pt-1 text-[10px] gap-1 min-w-0">
+                        <span className="font-semibold text-text-secondary flex items-center gap-1 truncate min-w-0 text-[10px]">
+                          <User size={10} className="text-accent shrink-0" />
+                          <span className="truncate">{task.assignee}</span>
+                        </span>
 
-                      <div className="flex items-center gap-1">
-                        {col.id !== 'todo' && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const order = ['todo', 'in_progress', 'review', 'done'];
-                              const prevIdx = order.indexOf(col.id) - 1;
-                              if (prevIdx >= 0) updateTaskStatus(task.id, order[prevIdx]);
-                            }}
-                            className="p-1 rounded-md hover:bg-[#202330] text-text-muted hover:text-white cursor-pointer"
-                            title="Move back"
-                          >
-                            <ArrowLeft size={12} />
-                          </button>
-                        )}
-                        {col.id !== 'done' && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const order = ['todo', 'in_progress', 'review', 'done'];
-                              const nextIdx = order.indexOf(col.id) + 1;
-                              if (nextIdx < order.length) updateTaskStatus(task.id, order[nextIdx]);
-                            }}
-                            className="p-1 rounded-md hover:bg-[#202330] text-text-muted hover:text-white cursor-pointer"
-                            title="Move forward"
-                          >
-                            <ArrowRight size={12} />
-                          </button>
-                        )}
+                        <div className="flex items-center gap-1 shrink-0">
+                          {col.id !== 'todo' && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const order = ['todo', 'in_progress', 'review', 'done'];
+                                const prevIdx = order.indexOf(col.id) - 1;
+                                if (prevIdx >= 0) updateTaskStatus(task.id, order[prevIdx]);
+                              }}
+                              className="p-1 rounded-md hover:bg-[#202330] text-text-muted hover:text-white cursor-pointer"
+                              title="Move back"
+                            >
+                              <ArrowLeft size={12} />
+                            </button>
+                          )}
+                          {col.id !== 'done' && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const order = ['todo', 'in_progress', 'review', 'done'];
+                                const nextIdx = order.indexOf(col.id) + 1;
+                                if (nextIdx < order.length) updateTaskStatus(task.id, order[nextIdx]);
+                              }}
+                              className="p-1 rounded-md hover:bg-[#202330] text-text-muted hover:text-white cursor-pointer"
+                              title="Move forward"
+                            >
+                              <ArrowRight size={12} />
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
 
-                {colTasks.length === 0 && (
-                  <div className="h-32 border-2 border-dashed border-border/40 rounded-xl flex items-center justify-center text-text-muted text-xs">
-                    No tasks
-                  </div>
-                )}
+                  {colTasks.length === 0 && (
+                    <div className="h-32 border-2 border-dashed border-border/40 rounded-xl flex items-center justify-center text-text-muted text-xs">
+                      No tasks
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
 
       {/* Create Task Modal */}
