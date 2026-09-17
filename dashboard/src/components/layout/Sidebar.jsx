@@ -52,7 +52,6 @@ const NAV_GROUPS = [
   {
     label: 'Management',
     items: [
-      { icon: ShieldCheck, label: 'Roles & Permissions', view: 'roles' },
       { icon: CreditCard, label: 'Billing & Subscription', view: 'billing' },
       { icon: Layers, label: 'Integrations', view: 'integrations' },
     ],
@@ -60,6 +59,7 @@ const NAV_GROUPS = [
   {
     label: 'Settings',
     items: [
+      { icon: ShieldCheck, label: 'Roles & Permissions', view: 'roles' },
       { icon: Headphones, label: 'Customer Support', view: 'support' },
       { icon: HelpCircle, label: 'Help Center', view: 'help' },
       { icon: Settings, label: 'System Settings', view: 'system' },
@@ -350,19 +350,6 @@ export default function Sidebar({ open, onClose, activeView, onNavigate }) {
                   <Settings size={14} className="text-text-muted" />
                   <span>Settings</span>
                 </button>
-                {isCEO && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onNavigate('roles');
-                      setProfileMenuOpen(false);
-                    }}
-                    className="w-full flex items-center gap-2 px-2.5 py-1.5 text-xs text-text hover:bg-bg-hover rounded-lg transition-colors cursor-pointer"
-                  >
-                    <ShieldCheck size={14} className="text-text-muted" />
-                    <span>Roles & Permissions</span>
-                  </button>
-                )}
                 <button
                   type="button"
                   onClick={() => {
@@ -417,6 +404,7 @@ export default function Sidebar({ open, onClose, activeView, onNavigate }) {
       <ProfileSettingsModal
         isOpen={profileSettingsOpen}
         onClose={() => setProfileSettingsOpen(false)}
+        onNavigate={onNavigate}
       />
     </>
   );

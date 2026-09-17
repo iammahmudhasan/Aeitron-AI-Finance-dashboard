@@ -11,6 +11,7 @@ import {
   Sparkles,
   Link,
   Shield,
+  ShieldCheck,
   Trash2,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
@@ -24,10 +25,11 @@ const PRESET_AVATARS = [
   'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=160&h=160&fit=crop&crop=faces',
 ];
 
-export default function ProfileSettingsModal({ isOpen, onClose }) {
-  const { currentUser, updateUser } = useAuth();
+export default function ProfileSettingsModal({ isOpen, onClose, onNavigate }) {
+  const { currentUser, updateUser, isCEO } = useAuth();
   const fileInputRef = useRef(null);
 
+  const [activeTab, setActiveTab] = useState('profile');
   const [name, setName] = useState(currentUser?.name || '');
   const [avatar, setAvatar] = useState(currentUser?.avatar || '/aeitron_icon_fb.png');
   const [phone, setPhone] = useState(currentUser?.phone || '+1 (555) 234-8901');
@@ -90,11 +92,17 @@ export default function ProfileSettingsModal({ isOpen, onClose }) {
         <div className="flex items-center justify-between p-5 border-b border-border bg-bg/20">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-accent/15 text-accent flex items-center justify-center">
-              <User size={18} />
+              {activeTab === 'roles' ? <ShieldCheck size={18} /> : <User size={18} />}
             </div>
             <div>
-              <h3 className="text-sm font-bold text-text">Customize Profile</h3>
-              <p className="text-[11px] text-text-muted">Update your profile picture, display name, and details</p>
+              <h3 className="text-sm font-bold text-text">
+                {activeTab === 'roles' ? 'Roles & Permissions Control' : 'Account & Profile Settings'}
+              </h3>
+              <p className="text-[11px] text-text-muted">
+                {activeTab === 'roles'
+                  ? 'Manage team member permissions and passwords'
+                  : 'Update your profile picture, display name, and details'}
+              </p>
             </div>
           </div>
           <button
@@ -105,14 +113,92 @@ export default function ProfileSettingsModal({ isOpen, onClose }) {
           </button>
         </div>
 
-        {/* Content Form */}
-        <form onSubmit={handleSubmit} className="p-5 space-y-4 max-h-[75vh] overflow-y-auto">
-          {/* Profile Picture Section */}
-          <div className="flex flex-col sm:flex-row sm:items-center gap-4 p-3.5 bg-bg/50 rounded-2xl border border-border/80">
-            {/* Avatar Preview with Camera Button */}
-            <div className="relative mx-auto sm:mx-0 shrink-0 group">
-              <img
-                src={avatar}
+        {/* CEO Tabs: Profile & Roles */}
+        {isCEO && (
+          <div className="flex border-b border-border bg-bg/40 px-5 pt-2 gap-2">
+            <button
+              type="button"
+              onClick={() => setActiveTab('profile')}
+              className={`flex items-center gap-2 pb-2.5 px-2 text-xs font-semibold border-b-2 transition-all cursor-pointer ${
+                activeTab === 'profile'
+                  ? 'border-accent text-accent'
+                  : 'border-transparent text-text-muted hover:text-text'
+              }`}
+            >
+              <User size={14} />
+              <span>My Profile</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('roles')}
+              className={`flex items-center gap-2 pb-2.5 px-2 text-xs font-semibold border-b-2 transition-all cursor-pointer ${
+                activeTab === 'roles'
+                  ? 'border-accent text-accent'
+                  : 'border-transparent text-text-muted hover:text-text'
+              }`}
+            >
+              <ShieldCheck size={14} />
+              <span>Roles & Permissions</span>
+            </button>
+          </div>
+        )}
+
+        {/* Roles & Permissions Tab Content */}
+        {activeTab === 'roles' ? (
+          <div className="p-5 space-y-4">
+            <div className="p-4 bg-accent/10 border border-accent/20 rounded-2xl">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-accent text-white flex items-center justify-center shrink-0">
+                  <ShieldCheck size={20} />
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-text">CEO Master Authorization</h4>
+                  <p className="text-[11px] text-text-muted mt-0.5">
+                    Configure granular permissions, assign accessible modules, and manage passwords for all team members.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-4 bg-bg/50 border border-border rounded-2xl space-y-3">
+              <div className="text-xs font-semibold text-text">Team Security & Access Hub</div>
+              <ul className="text-xs text-text-muted space-y-2">
+                <li className="flex items-center gap-2">
+                  <Check size={14} className="text-success shrink-0" />
+                  <span>18-module granular visibility permissions matrix</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check size={14} className="text-success shrink-0" />
+                  <span>Individual team member password management</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check size={14} className="text-success shrink-0" />
+                  <span>Role presets: Sales Suite, Finance, AI Operations, Full Access</span>
+                </li>
+              </ul>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                onNavigate?.('roles');
+              }}
+              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-accent hover:bg-accent-hover text-white text-xs font-semibold rounded-xl transition-all shadow-xs cursor-pointer active:scale-95"
+            >
+              <ShieldCheck size={15} />
+              <span>Open Roles & Permissions Hub</span>
+            </button>
+          </div>
+        ) : (
+          /* Content Form */
+          <form onSubmit={handleSubmit} className="p-5 space-y-4 max-h-[75vh] overflow-y-auto">
+            {/* Profile Picture Section */}
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4 p-3.5 bg-bg/50 rounded-2xl border border-border/80">
+              {/* Avatar Preview with Camera Button */}
+              <div className="relative mx-auto sm:mx-0 shrink-0 group">
+                <img
+                  src={avatar}
                 alt={name}
                 className="w-20 h-20 rounded-2xl object-cover border-2 border-accent/40 shadow-md ring-4 ring-accent/10"
                 onError={(e) => {
@@ -294,6 +380,7 @@ export default function ProfileSettingsModal({ isOpen, onClose }) {
             </button>
           </div>
         </form>
+      )}
       </div>
     </div>
   );
