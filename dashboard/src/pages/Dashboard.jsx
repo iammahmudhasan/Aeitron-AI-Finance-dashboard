@@ -384,16 +384,24 @@ function DashboardView({ currentUser, searchQuery }) {
   const firstName = currentUser?.name ? currentUser.name.split(' ')[0] : 'Salung';
 
   const handleExportCsv = () => {
+    const kpis = {
+      Daily: { rev: '$2,840', ord: '64', cust: '18', conv: '3.8%' },
+      Weekly: { rev: '$14,650', ord: '420', cust: '95', conv: '3.5%' },
+      Monthly: { rev: '$24,500', ord: '1,240', cust: '320', conv: '3.2%' },
+      Yearly: { rev: '$298,400', ord: '15,620', cust: '3,950', conv: '3.6%' },
+    }[timeframe] || { rev: '$2,840', ord: '64', cust: '18', conv: '3.8%' };
+
     const csvContent = "data:text/csv;charset=utf-8," 
+      + `Aeitron Overview Report - Timeframe: ${timeframe}\n`
       + "Metric,Value\n"
-      + "Total Revenue,$20320\n"
-      + "Total Orders,10320\n"
-      + "New Customers,4305\n"
-      + "Conversion Rate,3.9%\n";
+      + `Total Revenue,${kpis.rev}\n`
+      + `Total Orders,${kpis.ord}\n`
+      + `New Customers,${kpis.cust}\n`
+      + `Conversion Rate,${kpis.conv}\n`;
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `Aeitron_Overview_${Date.now()}.csv`);
+    link.setAttribute("download", `Aeitron_Overview_${timeframe}_${Date.now()}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -445,7 +453,7 @@ function DashboardView({ currentUser, searchQuery }) {
       </div>
 
       {/* 4 Obsidian & Coral Metric Flow KPI Cards */}
-      <MetricFlowKpiCards />
+      <MetricFlowKpiCards timeframe={timeframe} />
 
       {/* Row 2: Monthly Sales Performance (Full Width) */}
       <div className="w-full">
@@ -455,10 +463,10 @@ function DashboardView({ currentUser, searchQuery }) {
       {/* Row 3: Sales by Country & Top Product Sales (2 columns) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
         <div className="lg:col-span-5">
-          <SalesByCountryCard />
+          <SalesByCountryCard timeframe={timeframe} />
         </div>
         <div className="lg:col-span-7">
-          <TopProductSalesTable />
+          <TopProductSalesTable timeframe={timeframe} />
         </div>
       </div>
 
