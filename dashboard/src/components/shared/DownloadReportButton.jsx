@@ -73,12 +73,12 @@ export default function DownloadReportButton() {
     <div className="relative" ref={menuRef}>
       <button
         onClick={() => setOpen(!open)}
-        className="h-10 flex items-center gap-2 px-4 text-xs sm:text-sm font-medium text-text-secondary hover:text-white bg-[#181a22] border border-[#262934] rounded-full hover:bg-[#202330] transition-all cursor-pointer shadow-xs shrink-0"
+        className="h-10 flex items-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 text-xs sm:text-sm font-medium text-text-secondary hover:text-white bg-[#181a22] border border-[#262934] rounded-full hover:bg-[#202330] transition-all cursor-pointer shadow-xs shrink-0 whitespace-nowrap"
         title="Download Report"
       >
-        <Download size={15} className="text-text-muted" />
-        <span className="hidden md:inline">Report</span>
-        <ChevronDown size={14} className={`text-text-muted transition-transform duration-150 ${open ? 'rotate-180' : ''}`} />
+        <Download size={15} className="text-text-muted shrink-0" />
+        <span className="hidden md:inline whitespace-nowrap">Report</span>
+        <ChevronDown size={14} className={`text-text-muted transition-transform duration-150 shrink-0 ${open ? 'rotate-180' : ''}`} />
       </button>
 
       {open && (

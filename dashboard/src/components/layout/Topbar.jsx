@@ -77,9 +77,9 @@ export default function Topbar({ onMenuClick, onAddClient, activeView, searchQue
   const actionLabel = VIEW_ACTIONS[activeView] || 'New Action';
 
   return (
-    <header className="sticky top-0 z-30 h-16 sm:h-[68px] bg-bg/90 backdrop-blur-md border-b border-border flex items-center justify-between px-6 sm:px-8">
+    <header className="sticky top-0 z-30 h-16 sm:h-[68px] bg-bg/90 backdrop-blur-md border-b border-border flex items-center justify-between px-4 sm:px-6 lg:px-8 gap-3 shrink-0">
       {/* Left: Breadcrumbs */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2.5 sm:gap-3 shrink-0 whitespace-nowrap">
         <button
           onClick={onMenuClick}
           className="lg:hidden text-text-muted hover:text-text p-1 transition-colors"
@@ -88,26 +88,26 @@ export default function Topbar({ onMenuClick, onAddClient, activeView, searchQue
           <Menu size={20} />
         </button>
 
-        <div className="flex items-center gap-2 text-xs sm:text-sm font-medium text-text-muted">
+        <div className="flex items-center gap-2 text-xs sm:text-sm font-medium text-text-muted whitespace-nowrap">
           <span className="hover:text-text cursor-pointer transition-colors">Dashboard</span>
-          <ChevronRight size={14} className="text-text-muted/60" />
-          <span className="text-text font-semibold">{currentViewTitle}</span>
+          <ChevronRight size={14} className="text-text-muted/60 shrink-0" />
+          <span className="text-text font-bold whitespace-nowrap tracking-tight">{currentViewTitle}</span>
         </div>
       </div>
 
       {/* Right: Search + Quick Tools + Theme + Profile Avatar */}
-      <div className="flex items-center gap-2.5 sm:gap-3">
+      <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
         {/* Search with Pill Styling matching Mockup */}
-        <div className="hidden md:flex items-center gap-2.5 h-10 px-4 bg-[#181a22] border border-[#262934] rounded-full w-64 lg:w-72 shadow-xs transition-all focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/15 shrink-0">
-          <Search size={15} className="text-text-muted shrink-0" />
+        <div className="hidden md:flex items-center gap-2 h-10 px-3.5 bg-[#181a22] border border-[#262934] rounded-full w-40 lg:w-48 xl:w-56 shadow-xs transition-all focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/15 shrink-0">
+          <Search size={14} className="text-text-muted shrink-0" />
           <input
             type="text"
             placeholder="Search..."
             value={searchQuery}
             onChange={(e) => onSearchChange?.(e.target.value)}
-            className="bg-transparent outline-none text-xs sm:text-sm text-white placeholder:text-text-muted/60 w-full"
+            className="bg-transparent outline-none text-xs sm:text-sm text-white placeholder:text-text-muted/60 w-full min-w-0"
           />
-          <kbd className="hidden sm:inline-flex items-center gap-0.5 px-2 py-0.5 text-[10px] font-mono text-text-muted/70 bg-[#12141a] border border-[#262934] rounded-full shadow-xs shrink-0">
+          <kbd className="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[9px] font-mono text-text-muted/70 bg-[#12141a] border border-[#262934] rounded-full shadow-xs shrink-0">
             ⌘K
           </kbd>
         </div>
@@ -119,11 +119,11 @@ export default function Topbar({ onMenuClick, onAddClient, activeView, searchQue
         <button
           type="button"
           onClick={onAddClient}
-          className="h-10 flex items-center gap-2 px-4.5 bg-accent hover:bg-accent-hover text-white text-xs sm:text-sm font-semibold rounded-full transition-all shadow-md shadow-accent/20 cursor-pointer active:scale-95 shrink-0"
+          className="h-10 flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-4 bg-accent hover:bg-accent-hover text-white text-xs sm:text-sm font-semibold rounded-full transition-all shadow-md shadow-accent/20 cursor-pointer active:scale-95 shrink-0 whitespace-nowrap"
           title={actionLabel}
         >
-          <Plus size={16} />
-          <span className="hidden sm:inline">{actionLabel}</span>
+          <Plus size={16} className="shrink-0" />
+          <span className="hidden sm:inline whitespace-nowrap">{actionLabel}</span>
         </button>
 
         {/* Download Report */}
@@ -143,7 +143,7 @@ export default function Topbar({ onMenuClick, onAddClient, activeView, searchQue
         <div className="relative shrink-0">
           <button
             onClick={() => setNotifOpen(!notifOpen)}
-            className="relative w-10 h-10 flex items-center justify-center text-text-muted hover:text-white bg-[#181a22] border border-[#262934] rounded-full transition-colors cursor-pointer"
+            className="relative w-10 h-10 flex items-center justify-center text-text-muted hover:text-white bg-[#181a22] border border-[#262934] rounded-full transition-colors cursor-pointer shrink-0"
             aria-label="Notifications"
           >
             <Bell size={16} />
@@ -155,11 +155,11 @@ export default function Topbar({ onMenuClick, onAddClient, activeView, searchQue
         </div>
 
         {/* User Circular Avatar */}
-        <div className="flex items-center gap-2 pl-1 shrink-0">
+        <div className="flex items-center gap-2 pl-0.5 shrink-0">
           <img
             src={currentUser?.avatar || '/aeitron_icon_fb.png'}
             alt={currentUser?.name}
-            className="w-10 h-10 rounded-full object-cover border border-[#262934] shadow-xs cursor-pointer hover:ring-2 hover:ring-accent transition-all"
+            className="w-10 h-10 rounded-full object-cover border border-[#262934] shadow-xs cursor-pointer hover:ring-2 hover:ring-accent transition-all shrink-0"
             title={`${currentUser?.name} (${currentUser?.role})`}
           />
         </div>
