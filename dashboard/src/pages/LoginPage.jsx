@@ -160,11 +160,11 @@ export default function LoginPage() {
           <h1 className="text-2xl font-bold text-text tracking-tight flex items-center justify-center gap-2">
             Aeitron AI
             <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-accent/15 text-accent border border-accent/25">
-              FINANCE OS
+              AGENCY OS
             </span>
           </h1>
           <p className="text-text-muted text-xs mt-1">
-            Enterprise Multi-Role Agency Operating System
+            Enterprise Agency Operating System
           </p>
         </div>
 
