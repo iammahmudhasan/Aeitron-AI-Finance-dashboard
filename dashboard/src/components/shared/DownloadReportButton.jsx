@@ -73,31 +73,31 @@ export default function DownloadReportButton() {
     <div className="relative" ref={menuRef}>
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-text-muted hover:text-text border border-border rounded-xl hover:bg-bg-hover transition-all duration-200 cursor-pointer shadow-xs shrink-0"
+        className="h-9 flex items-center gap-1.5 px-3.5 text-xs font-medium text-text-secondary hover:text-white bg-[#181a22] border border-[#262934] rounded-full hover:bg-[#202330] transition-all cursor-pointer shadow-xs shrink-0"
         title="Download Report"
       >
-        <Download size={14} />
+        <Download size={14} className="text-text-muted" />
         <span className="hidden md:inline">Report</span>
-        <ChevronDown size={13} className={`transition-transform ${open ? 'rotate-180' : ''}`} />
+        <ChevronDown size={13} className={`text-text-muted transition-transform duration-150 ${open ? 'rotate-180' : ''}`} />
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-1 w-48 bg-bg-card border border-border rounded-xl shadow-modal py-1 z-50 animate-fade-in">
-          <button onClick={downloadJson} className="w-full text-left px-4 py-2 text-sm text-text hover:bg-bg-hover transition-colors">
+        <div className="absolute right-0 top-full mt-2 w-48 bg-[#181a22] border border-[#262934] rounded-2xl shadow-2xl py-1.5 z-50 animate-fade-in text-xs">
+          <button onClick={downloadJson} className="w-full text-left px-4 py-2 text-xs text-text-secondary hover:text-white hover:bg-[#202330] transition-colors">
             Full Report (JSON)
           </button>
-          <div className="border-t border-border my-1" />
-          <p className="px-4 py-1 text-xs text-text-muted font-medium">Export as CSV</p>
-          <button onClick={() => downloadCsv('clients')} className="w-full text-left px-4 py-2 text-sm text-text hover:bg-bg-hover transition-colors">
+          <div className="border-t border-[#262934] my-1" />
+          <p className="px-4 py-1 text-[10px] text-text-muted font-semibold uppercase tracking-wider">Export as CSV</p>
+          <button onClick={() => downloadCsv('clients')} className="w-full text-left px-4 py-2 text-xs text-text-secondary hover:text-white hover:bg-[#202330] transition-colors">
             Clients
           </button>
-          <button onClick={() => downloadCsv('expenses')} className="w-full text-left px-4 py-2 text-sm text-text hover:bg-bg-hover transition-colors">
+          <button onClick={() => downloadCsv('expenses')} className="w-full text-left px-4 py-2 text-xs text-text-secondary hover:text-white hover:bg-[#202330] transition-colors">
             Expenses
           </button>
-          <button onClick={() => downloadCsv('invoices')} className="w-full text-left px-4 py-2 text-sm text-text hover:bg-bg-hover transition-colors">
+          <button onClick={() => downloadCsv('invoices')} className="w-full text-left px-4 py-2 text-xs text-text-secondary hover:text-white hover:bg-[#202330] transition-colors">
             Invoices
           </button>
-          <button onClick={() => downloadCsv('leads')} className="w-full text-left px-4 py-2 text-sm text-text hover:bg-bg-hover transition-colors">
+          <button onClick={() => downloadCsv('leads')} className="w-full text-left px-4 py-2 text-xs text-text-secondary hover:text-white hover:bg-[#202330] transition-colors">
             Leads
           </button>
         </div>

@@ -113,8 +113,8 @@ export default function RealtimeCalendarPicker({ onDateSelect }) {
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center gap-2 px-3.5 py-2 bg-bg-card border rounded-xl text-xs font-semibold text-text shadow-xs transition-all cursor-pointer select-none active:scale-95 ${
-          isOpen ? 'border-accent ring-2 ring-accent/20 bg-bg-hover' : 'border-border hover:border-accent/40'
+        className={`h-9 flex items-center gap-2 px-3.5 bg-[#181a22] border rounded-full text-xs font-semibold text-text shadow-xs transition-all cursor-pointer select-none active:scale-95 shrink-0 ${
+          isOpen ? 'border-accent ring-2 ring-accent/20 bg-[#202330]' : 'border-[#262934] hover:border-accent/40'
         }`}
         title="Click to view real-time calendar"
       >

@@ -83,7 +83,7 @@ export default function Topbar({ onMenuClick, onAddClient, activeView, searchQue
       {/* Right: Search + Quick Tools + Theme + Profile Avatar */}
       <div className="flex items-center gap-2.5 sm:gap-3">
         {/* Search with Pill Styling matching Mockup */}
-        <div className="hidden md:flex items-center gap-2.5 px-4 py-2 bg-[#181a22] border border-[#262934] rounded-full w-64 shadow-xs transition-all focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/15">
+        <div className="hidden md:flex items-center gap-2.5 h-9 px-4 bg-[#181a22] border border-[#262934] rounded-full w-60 shadow-xs transition-all focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/15 shrink-0">
           <Search size={14} className="text-text-muted shrink-0" />
           <input
             type="text"
@@ -101,7 +101,7 @@ export default function Topbar({ onMenuClick, onAddClient, activeView, searchQue
         <button
           type="button"
           onClick={onAddClient}
-          className="flex items-center gap-1.5 px-3.5 py-2 bg-accent hover:bg-accent-hover text-white text-xs font-semibold rounded-full transition-all shadow-xs cursor-pointer active:scale-95 shrink-0"
+          className="h-9 flex items-center gap-1.5 px-3.5 bg-accent hover:bg-accent-hover text-white text-xs font-semibold rounded-full transition-all shadow-xs cursor-pointer active:scale-95 shrink-0"
           title={actionLabel}
         >
           <Plus size={14} />
@@ -114,7 +114,7 @@ export default function Topbar({ onMenuClick, onAddClient, activeView, searchQue
         {/* Theme Toggle */}
         <button
           onClick={toggleTheme}
-          className="w-9 h-9 flex items-center justify-center text-text-muted hover:text-white bg-[#181a22] border border-[#262934] rounded-full transition-colors cursor-pointer"
+          className="w-9 h-9 flex items-center justify-center text-text-muted hover:text-white bg-[#181a22] border border-[#262934] rounded-full transition-colors cursor-pointer shrink-0"
           title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
           aria-label={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
         >
@@ -122,7 +122,7 @@ export default function Topbar({ onMenuClick, onAddClient, activeView, searchQue
         </button>
 
         {/* Notifications */}
-        <div className="relative">
+        <div className="relative shrink-0">
           <button
             onClick={() => setNotifOpen(!notifOpen)}
             className="relative w-9 h-9 flex items-center justify-center text-text-muted hover:text-white bg-[#181a22] border border-[#262934] rounded-full transition-colors cursor-pointer"
@@ -137,7 +137,7 @@ export default function Topbar({ onMenuClick, onAddClient, activeView, searchQue
         </div>
 
         {/* User Circular Avatar */}
-        <div className="flex items-center gap-2 pl-1">
+        <div className="flex items-center gap-2 pl-1 shrink-0">
           <img
             src={currentUser?.avatar || '/aeitron_icon_fb.png'}
             alt={currentUser?.name}

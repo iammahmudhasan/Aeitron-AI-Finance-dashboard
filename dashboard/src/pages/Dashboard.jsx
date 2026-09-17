@@ -415,18 +415,18 @@ function DashboardView({ currentUser, searchQuery }) {
         {/* Right Tools: Daily dropdown, Date, Export CSV */}
         <div className="flex items-center gap-2.5 self-start sm:self-auto flex-wrap">
           {/* Daily / Monthly Dropdown */}
-          <div className="relative">
+          <div className="relative shrink-0">
             <select
               value={timeframe}
               onChange={(e) => setTimeframe(e.target.value)}
-              className="appearance-none pl-3 pr-8 py-2 bg-bg-card border border-border rounded-xl text-xs font-semibold text-text outline-none cursor-pointer hover:bg-bg transition-colors shadow-xs"
+              className="h-9 appearance-none pl-3.5 pr-8 bg-[#181a22] border border-[#262934] rounded-full text-xs font-semibold text-text outline-none cursor-pointer hover:bg-[#202330] transition-colors shadow-xs"
             >
               <option value="Daily">Daily</option>
               <option value="Weekly">Weekly</option>
               <option value="Monthly">Monthly</option>
               <option value="Yearly">Yearly</option>
             </select>
-            <ChevronDown size={14} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
+            <ChevronDown size={13} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
           </div>
 
           {/* Real-time Interactive Date / Calendar Picker */}
@@ -436,7 +436,7 @@ function DashboardView({ currentUser, searchQuery }) {
           <button
             type="button"
             onClick={handleExportCsv}
-            className="flex items-center gap-2 px-4 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-accent dark:hover:bg-accent-hover text-white text-xs font-semibold rounded-xl transition-all shadow-xs cursor-pointer active:scale-95"
+            className="h-9 flex items-center gap-1.5 px-3.5 bg-accent hover:bg-accent-hover text-white text-xs font-semibold rounded-full transition-all shadow-xs cursor-pointer active:scale-95 shrink-0"
           >
             <Download size={14} />
             <span>Export CSV</span>
@@ -483,7 +483,7 @@ function ClientsView({ onEdit, onRequestDelete, onViewDetail, searchQuery }) {
   return (
     <>
       <div>
-        <h2 className="text-xl font-bold text-text">Customer Portfolio</h2>
+        <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">Customer Portfolio</h2>
         <p className="text-xs text-text-muted mt-0.5">
           Manage your enterprise client accounts and track contract volume
         </p>
@@ -499,7 +499,7 @@ function ExpensesView({ onEdit, onRequestDelete, searchQuery }) {
     <>
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-bold text-text">Expenses</h2>
+          <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">Expenses</h2>
           <p className="text-xs text-text-muted mt-0.5">
             Track and manage operational business expenses
           </p>
@@ -520,7 +520,7 @@ function LeadsView({ onEdit, onRequestDelete, searchQuery }) {
   return (
     <>
       <div>
-        <h2 className="text-xl font-bold text-text">Lead Pipeline</h2>
+        <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">Lead Pipeline</h2>
         <p className="text-xs text-text-muted mt-0.5">
           Track prospects through your sales pipeline
         </p>
@@ -533,9 +533,9 @@ function LeadsView({ onEdit, onRequestDelete, searchQuery }) {
 function InvoicesView({ onEdit, onView, onRequestDelete, searchQuery, onAdd }) {
   return (
     <>
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h2 className="text-xl font-bold text-text">Invoices & Client Settlements</h2>
+          <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">Invoices & Client Settlements</h2>
           <p className="text-xs text-text-muted mt-0.5">
             Create, track, and manage enterprise client invoices with multi-channel payment details
           </p>
@@ -543,7 +543,7 @@ function InvoicesView({ onEdit, onView, onRequestDelete, searchQuery, onAdd }) {
         <button
           type="button"
           onClick={onAdd}
-          className="flex items-center gap-2 px-4 py-2 bg-accent hover:bg-accent-hover text-white text-xs font-semibold rounded-xl transition-all shadow-sm cursor-pointer active:scale-95"
+          className="h-9 flex items-center gap-1.5 px-3.5 bg-accent hover:bg-accent-hover text-white text-xs font-semibold rounded-full transition-all shadow-xs cursor-pointer active:scale-95 shrink-0"
         >
           <Plus size={14} />
           <span>New Invoice</span>
@@ -558,7 +558,7 @@ function TeamView({ onEdit, onRequestDelete }) {
   return (
     <>
       <div>
-        <h2 className="text-xl font-bold text-text">Team & Compensation</h2>
+        <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">Team & Compensation</h2>
         <p className="text-xs text-text-muted mt-0.5">
           Manage team members, commission structures, and payouts
         </p>
@@ -573,7 +573,7 @@ function AgentsView() {
   return (
     <>
       <div>
-        <h2 className="text-xl font-bold text-text">AI Agents Workforce</h2>
+        <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">AI Agents Workforce</h2>
         <p className="text-xs text-text-muted mt-0.5">
           Autonomous AI agents operating your agency pipeline
         </p>
@@ -587,7 +587,7 @@ function SystemView({ onEdit, onRequestDelete }) {
   return (
     <>
       <div>
-        <h2 className="text-xl font-bold text-text">System Health & Automations</h2>
+        <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">System Health & Automations</h2>
         <p className="text-xs text-text-muted mt-0.5">
           Monitor webhook workflows, background jobs, and API credit usage
         </p>
