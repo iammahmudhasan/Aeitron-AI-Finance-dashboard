@@ -30,7 +30,7 @@ function getSmoothPath(points) {
 }
 
 export default function MonthlySalesPerformanceChart() {
-  const [activeIdx, setActiveIdx] = useState(3); // Default to Apr (index 3) matching mockup
+  const [activeIdx, setActiveIdx] = useState(null); // ONLY show on hover!
 
   const yTicks = [6000, 4500, 3000, 1500, 0];
   const chartW = 960;
@@ -52,20 +52,27 @@ export default function MonthlySalesPerformanceChart() {
   const salesPath = getSmoothPath(salesPoints);
   const targetPath = getSmoothPath(targetPoints);
 
-  const activeSalesPoint = salesPoints[activeIdx];
-  const activeTargetPoint = targetPoints[activeIdx];
-  const activeItem = MONTH_DATA[activeIdx];
+  const activeSalesPoint = activeIdx !== null ? salesPoints[activeIdx] : null;
+  const activeTargetPoint = activeIdx !== null ? targetPoints[activeIdx] : null;
+  const activeItem = activeIdx !== null ? MONTH_DATA[activeIdx] : null;
 
-  // Tooltip dimensions and boundary clamping:
-  const tooltipW = 145;
-  const tooltipH = 75;
-  const minTooltipX = padLeft + 6;
-  const maxTooltipX = chartW - padRight - tooltipW;
-  const tooltipX = Math.max(minTooltipX, Math.min(maxTooltipX, activeSalesPoint.x + 14));
-  const tooltipY = Math.max(10, Math.min(plotH - 20, activeSalesPoint.y - 20));
+  // Enlarge tooltip dimensions for high visibility:
+  const tooltipW = 185;
+  const tooltipH = 92;
+
+  // Smart horizontal positioning: position to right if space permits, else to left of cursor:
+  let rawTooltipX = activeSalesPoint ? activeSalesPoint.x + 16 : 0;
+  if (activeSalesPoint && rawTooltipX + tooltipW > chartW - padRight) {
+    rawTooltipX = activeSalesPoint.x - tooltipW - 16;
+  }
+  const tooltipX = activeSalesPoint ? Math.max(padLeft + 6, Math.min(chartW - padRight - tooltipW - 6, rawTooltipX)) : 0;
+  const tooltipY = activeSalesPoint ? Math.max(10, Math.min(chartH - padBottom - tooltipH, activeSalesPoint.y - tooltipH / 2)) : 0;
 
   return (
-    <div className="bg-bg-card border border-border rounded-2xl p-6 shadow-xs flex flex-col justify-between h-full relative overflow-hidden">
+    <div
+      className="bg-bg-card border border-border rounded-2xl p-6 shadow-xs flex flex-col justify-between h-full relative overflow-hidden"
+      onMouseLeave={() => setActiveIdx(null)}
+    >
       {/* Header & Legend */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
         <h3 className="text-base font-bold text-white tracking-tight">
@@ -85,9 +92,16 @@ export default function MonthlySalesPerformanceChart() {
       </div>
 
       {/* SVG Canvas Area */}
-      <div className="relative w-full overflow-x-auto custom-scrollbar select-none">
+      <div
+        className="relative w-full overflow-x-auto custom-scrollbar select-none"
+        onMouseLeave={() => setActiveIdx(null)}
+      >
         <div className="min-w-[500px]">
-          <svg viewBox={`0 0 ${chartW} ${chartH}`} className="w-full h-auto block">
+          <svg
+            viewBox={`0 0 ${chartW} ${chartH}`}
+            className="w-full h-auto block"
+            onMouseLeave={() => setActiveIdx(null)}
+          >
             {/* Horizontal Dashed Guidelines & Y-Axis */}
             {yTicks.map((val) => {
               const y = getY(val);
@@ -133,7 +147,7 @@ export default function MonthlySalesPerformanceChart() {
               strokeLinecap="round"
             />
 
-            {/* Vertical Indicator at Active Month */}
+            {/* Vertical Indicator ONLY when Hovered */}
             {activeSalesPoint && (
               <line
                 x1={activeSalesPoint.x}
@@ -143,16 +157,16 @@ export default function MonthlySalesPerformanceChart() {
                 stroke="var(--color-text-muted)"
                 strokeDasharray="3 3"
                 strokeWidth="1.5"
-                strokeOpacity="0.45"
+                strokeOpacity="0.5"
               />
             )}
 
-            {/* Target Focus Dot */}
+            {/* Target Focus Dot ONLY when Hovered */}
             {activeTargetPoint && (
               <circle
                 cx={activeTargetPoint.x}
                 cy={activeTargetPoint.y}
-                r="5.5"
+                r="6"
                 fill="white"
                 stroke="#7c6df7"
                 strokeWidth="2.5"
@@ -160,12 +174,12 @@ export default function MonthlySalesPerformanceChart() {
               />
             )}
 
-            {/* Sales Focus Dot */}
+            {/* Sales Focus Dot ONLY when Hovered */}
             {activeSalesPoint && (
               <circle
                 cx={activeSalesPoint.x}
                 cy={activeSalesPoint.y}
-                r="5.5"
+                r="6"
                 fill="white"
                 stroke="#ff5530"
                 strokeWidth="2.5"
@@ -173,57 +187,58 @@ export default function MonthlySalesPerformanceChart() {
               />
             )}
 
-            {/* Floating Dark Dual-Stat Tooltip Card */}
-            {activeSalesPoint && (
+            {/* Floating Dark Dual-Stat Tooltip Card - ONLY on Hover & Enlarged */}
+            {activeSalesPoint && activeItem && (
               <g
                 transform={`translate(${tooltipX}, ${tooltipY})`}
                 className="transition-transform duration-150 pointer-events-none drop-shadow-2xl"
               >
-                {/* Background Box */}
+                {/* Background Box with Enlarged Size */}
                 <rect
                   width={tooltipW}
                   height={tooltipH}
-                  rx="10"
+                  rx="12"
                   fill="#0e1017"
-                  stroke="#262a38"
-                  strokeWidth="1"
+                  stroke="#2b2f3e"
+                  strokeWidth="1.2"
                 />
-                {/* Tooltip Title / Date */}
+
+                {/* Tooltip Title / Date (Bigger text) */}
                 <text
-                  x="14"
-                  y="20"
+                  x="16"
+                  y="22"
                   fill="#8c93a4"
-                  className="font-medium text-[10px]"
+                  className="font-semibold text-[12px]"
                 >
                   {activeItem.dateStr}
                 </text>
 
                 {/* Sales Row */}
-                <circle cx="18" cy="38" r="3" fill="#ff5530" />
-                <text x="27" y="41" fill="#8c93a4" className="text-[10px] font-medium">
+                <circle cx="20" cy="46" r="3.5" fill="#ff5530" />
+                <text x="32" y="50" fill="#9ea4b5" className="text-[12px] font-medium">
                   Total sales
                 </text>
                 <text
-                  x={tooltipW - 14}
-                  y="41"
+                  x={tooltipW - 16}
+                  y="50"
                   textAnchor="end"
                   fill="#ffffff"
-                  className="text-[11px] font-bold"
+                  className="text-[13px] font-bold"
                 >
                   {activeItem.sales.toLocaleString()}
                 </text>
 
                 {/* Target Row */}
-                <circle cx="18" cy="56" r="3" fill="#7c6df7" />
-                <text x="27" y="59" fill="#8c93a4" className="text-[10px] font-medium">
+                <circle cx="20" cy="70" r="3.5" fill="#7c6df7" />
+                <text x="32" y="74" fill="#9ea4b5" className="text-[12px] font-medium">
                   Target sales
                 </text>
                 <text
-                  x={tooltipW - 14}
-                  y="59"
+                  x={tooltipW - 16}
+                  y="74"
                   textAnchor="end"
                   fill="#ffffff"
-                  className="text-[11px] font-bold"
+                  className="text-[13px] font-bold"
                 >
                   {activeItem.target.toLocaleString()}
                 </text>
@@ -244,7 +259,6 @@ export default function MonthlySalesPerformanceChart() {
                   fill="transparent"
                   className="cursor-pointer"
                   onMouseEnter={() => setActiveIdx(idx)}
-                  onClick={() => setActiveIdx(idx)}
                 />
               );
             })}
@@ -257,6 +271,7 @@ export default function MonthlySalesPerformanceChart() {
               paddingLeft: `${(padLeft / chartW) * 100}%`,
               paddingRight: `${(padRight / chartW) * 100}%`,
             }}
+            onMouseLeave={() => setActiveIdx(null)}
           >
             {MONTH_DATA.map((m, idx) => {
               const isActive = activeIdx === idx;
@@ -266,9 +281,9 @@ export default function MonthlySalesPerformanceChart() {
                   type="button"
                   onClick={() => setActiveIdx(idx)}
                   onMouseEnter={() => setActiveIdx(idx)}
-                  className={`transition-all duration-150 cursor-pointer py-1 px-1.5 rounded-md ${
+                  className={`transition-all duration-150 cursor-pointer py-1 px-2 rounded-md ${
                     isActive
-                      ? 'font-bold text-white scale-105'
+                      ? 'font-bold text-white scale-110 bg-[#202330]'
                       : 'font-medium text-text-muted hover:text-white'
                   }`}
                 >
