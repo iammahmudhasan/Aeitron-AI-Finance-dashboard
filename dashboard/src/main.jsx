@@ -19,6 +19,7 @@ import { ApiCreditsProvider } from './context/ApiCreditsContext';
 import { TeamProvider } from './context/TeamContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { DiscoveryProvider } from './context/DiscoveryContext';
+import { FineTuningProvider } from './context/FineTuningContext';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -38,9 +39,11 @@ createRoot(document.getElementById('root')).render(
                               <ApiCreditsProvider>
                                 <TeamProvider>
                                   <DiscoveryProvider>
-                                    <ErrorBoundary>
-                                      <App />
-                                    </ErrorBoundary>
+                                    <FineTuningProvider>
+                                      <ErrorBoundary>
+                                        <App />
+                                      </ErrorBoundary>
+                                    </FineTuningProvider>
                                   </DiscoveryProvider>
                                 </TeamProvider>
                               </ApiCreditsProvider>

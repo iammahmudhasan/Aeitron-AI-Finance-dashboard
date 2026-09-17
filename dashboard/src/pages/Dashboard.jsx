@@ -71,6 +71,7 @@ import LeadDiscovery from '../components/discovery/LeadDiscovery';
 import PayoutCalculator from '../components/team/PayoutCalculator';
 import ConfirmDialog from '../components/shared/ConfirmDialog';
 import AICopilot from '../components/copilot/AICopilot';
+import FineTuningStudioView from '../components/finetuning/FineTuningStudioView';
 import useNotificationGenerator from '../hooks/useNotificationGenerator';
 
 export default function Dashboard() {
@@ -329,6 +330,9 @@ export default function Dashboard() {
 
           {/* AI Autonomous Agents */}
           {activeView === 'agents' && <AgentsView />}
+
+          {/* AI Model Fine-Tuning Studio */}
+          {activeView === 'finetuning' && <FineTuningStudioView />}
 
           {/* Lead Discovery Radar */}
           {activeView === 'discovery' && <LeadDiscovery />}

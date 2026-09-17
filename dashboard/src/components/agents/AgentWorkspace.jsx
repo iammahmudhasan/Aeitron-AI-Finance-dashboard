@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { ArrowLeft, Send, Zap, Loader2, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { sendAgentMessage, isConfigured, getActiveProvider } from '../../utils/aiClient';
+import { sendAgentMessage, isConfigured, getActiveProvider, getActiveTunedModel } from '../../utils/aiClient';
 
 export default function AgentWorkspace({ agent, onBack }) {
   const [messages, setMessages] = useState([]);
@@ -86,9 +86,17 @@ export default function AgentWorkspace({ agent, onBack }) {
             <Icon size={18} />
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-text">{agent.name}</h3>
+            <div className="flex items-center gap-2">
+              <h3 className="text-sm font-semibold text-text">{agent.name}</h3>
+              {getActiveTunedModel() && (
+                <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  Fine-Tuned
+                </span>
+              )}
+            </div>
             <p className="text-[11px] text-text-muted">
-              {agent.role} &middot; {getActiveProvider().toUpperCase()}
+              {agent.role} &middot; {getActiveTunedModel() ? `Model: ${getActiveTunedModel()}` : getActiveProvider().toUpperCase()}
             </p>
           </div>
         </div>

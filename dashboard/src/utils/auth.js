@@ -41,6 +41,8 @@ export const AVAILABLE_MODULES = [
   { id: 'invoices', name: 'Invoices & Billing', category: 'Finance & Accounting', description: 'Client invoicing, draft settlements, and paid receipts' },
   { id: 'billing', name: 'Billing & Subscriptions', category: 'Finance & Accounting', description: 'Agency software retainers and subscription plans' },
   { id: 'integrations', name: 'Integrations Hub', category: 'Knowledge & AI', description: 'API endpoints, telephony webhooks, and automation tools' },
+  { id: 'agents', name: 'AI Agents Workforce', category: 'Knowledge & AI', description: 'Autonomous specialized AI agents operating agency workflows' },
+  { id: 'finetuning', name: 'AI Model Fine-Tuning', category: 'Knowledge & AI', description: 'JSONL dataset builder, OpenAI/Gemini fine-tuning jobs, and model deployment' },
 
   { id: 'support', name: 'Customer Support', category: 'Support & System', description: 'Client support tickets, SLA tracking, and responses' },
   { id: 'help', name: 'Help Center & Guides', category: 'Support & System', description: 'Agency standard operating procedures and documentation' },
@@ -98,7 +100,7 @@ export const DEFAULT_USERS = [
     avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&h=120&fit=crop&crop=faces',
     department: 'AI & Automations',
     badge: '🤖 Systems Architect',
-    permissions: ['dashboard', 'projects', 'tasks', 'integrations', 'system', 'support', 'messages', 'channels', 'knowledge', 'attendance'],
+    permissions: ['dashboard', 'projects', 'tasks', 'integrations', 'agents', 'finetuning', 'system', 'support', 'messages', 'channels', 'knowledge', 'attendance'],
     defaultPassword: 'ops@2026',
   },
 ];
