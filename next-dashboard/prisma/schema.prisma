@@ -25,21 +25,30 @@ model User {
   avatarUrl    String?
   phone        String?
   bio          String?
-  permissions  String[]    // Granular module access: ["dashboard", "invoices", "clients", ...]
+  department   String?
+  company      String      @default("Aeitron AI") // Aeitron AI, Craftly
+  permissions  String[]    // Granular module access: ["dashboard", "invoices", "projects", "tasks", ...]
   isActive     Boolean     @default(true)
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
 
-  invoicesCreated Invoice[]  @relation("InvoiceCreator")
-  clientsManaged  Client[]   @relation("ClientAccountManager")
-  messagesSent    Message[]  @relation("MessageSender")
+  invoicesCreated Invoice[]      @relation("InvoiceCreator")
+  clientsManaged  Client[]       @relation("ClientAccountManager")
+  messagesSent    Message[]      @relation("MessageSender")
   auditLogs       AuditLog[]
+  attendances     Attendance[]
+  leaveRequests   LeaveRequest[] @relation("EmployeeLeaves")
+  leavesReviewed  LeaveRequest[] @relation("ReviewedLeaves")
+  payrollRecords  PayrollRecord[]
+  tasksAssigned   Task[]         @relation("TaskAssignee")
+  dealsAssigned   Deal[]         @relation("DealOwner")
 }
 
 model Client {
   id              String      @id @default(uuid())
   name            String
-  company         String
+  company         String      @default("Aeitron AI") // Parent organization: Aeitron AI or Craftly
+  clientCompany   String?     // The client's corporate name
   email           String      @unique
   phone           String?
   status          String      @default("active") // active, lead, churned
@@ -47,6 +56,7 @@ model Client {
   assignedToId    String?
   assignedTo      User?       @relation("ClientAccountManager", fields: [assignedToId], references: [id])
   invoices        Invoice[]
+  projects        Project[]
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
 }
@@ -54,6 +64,7 @@ model Client {
 model Invoice {
   id              String      @id @default(uuid())
   invoiceNumber   String      @unique
+  company         String      @default("Aeitron AI")
   clientId        String
   client          Client      @relation(fields: [clientId], references: [id])
   creatorId       String
@@ -62,7 +73,7 @@ model Invoice {
   currency        String      @default("USD")
   status          String      @default("pending") // paid, pending, overdue, cancelled
   dueDate         DateTime
-  items           Json        // Breakdown of AI services, setup fees, retainers
+  items           Json        // Breakdown of line items, tokens, setup fees, retainers
   fileUrl         String?     // PDF stored in Supabase Storage
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
@@ -71,11 +82,127 @@ model Invoice {
 model Expense {
   id          String      @id @default(uuid())
   title       String
-  category    String      // API Credits, Cloud, Salaries, Tooling
+  company     String      @default("Aeitron AI")
+  category    String      // API Credits, Cloud, Salaries & Payroll, Tooling, Contractors
   amount      Decimal     @db.Decimal(12, 2)
   date        DateTime
+  vendor      String?
+  receiptUrl  String?
   notes       String?
   createdAt   DateTime    @default(now())
+}
+
+model Project {
+  id          String      @id @default(uuid())
+  name        String
+  company     String      @default("Aeitron AI")
+  clientId    String
+  client      Client      @relation(fields: [clientId], references: [id])
+  stage       String      @default("scoping") // scoping, build, testing, deployed, support
+  health      String      @default("On Track") // On Track, At Risk, Delayed
+  budget      Decimal     @db.Decimal(12, 2)
+  spentCost   Decimal     @default(0) @db.Decimal(12, 2)
+  deadline    DateTime?
+  milestones  Milestone[]
+  tasks       Task[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model Milestone {
+  id          String      @id @default(uuid())
+  projectId   String
+  project     Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  title       String
+  completed   Boolean     @default(false)
+  dueDate     DateTime?
+}
+
+model Task {
+  id             String      @id @default(uuid())
+  projectId      String
+  project        Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  title          String
+  priority       String      @default("Medium") // Urgent, High, Medium, Low
+  status         String      @default("todo") // todo, in_progress, review, done
+  assigneeId     String?
+  assignee       User?       @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  dueDate        DateTime?
+  billableHours  Decimal     @default(0) @db.Decimal(8, 2)
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+}
+
+model Attendance {
+  id          String      @id @default(uuid())
+  userId      String
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date        DateTime    @default(now())
+  clockIn     DateTime    @default(now())
+  clockOut    DateTime?
+  workMode    String      @default("Office") // Office, Remote
+  status      String      @default("Present") // Present, Late, Half-Day
+  totalHours  Decimal?    @db.Decimal(5, 2)
+  notes       String?
+}
+
+model LeaveRequest {
+  id           String      @id @default(uuid())
+  userId       String
+  user         User        @relation("EmployeeLeaves", fields: [userId], references: [id], onDelete: Cascade)
+  leaveType    String      // Casual, Sick, Annual, Unpaid
+  startDate    DateTime
+  endDate      DateTime
+  days         Int         @default(1)
+  reason       String
+  status       String      @default("Pending") // Pending, Approved, Rejected
+  reviewedById String?
+  reviewedBy   User?       @relation("ReviewedLeaves", fields: [reviewedById], references: [id])
+  reviewedAt   DateTime?
+  createdAt    DateTime    @default(now())
+}
+
+model PayrollRecord {
+  id             String      @id @default(uuid())
+  userId         String
+  user           User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  month          String      // e.g. "October 2026"
+  company        String      @default("Aeitron AI")
+  baseSalary     Decimal     @db.Decimal(12, 2)
+  bonus          Decimal     @default(0) @db.Decimal(12, 2)
+  deductions     Decimal     @default(0) @db.Decimal(12, 2)
+  netSalary      Decimal     @db.Decimal(12, 2)
+  status         String      @default("Pending") // Pending, Paid
+  paymentMethod  String      @default("Bank Transfer") // Bank Transfer, bKash, Nagad
+  transactionRef String?
+  disbursedAt    DateTime?
+  createdAt      DateTime    @default(now())
+}
+
+model Deal {
+  id          String      @id @default(uuid())
+  title       String
+  clientName  String
+  company     String      @default("Aeitron AI")
+  value       Decimal     @db.Decimal(12, 2)
+  stage       String      @default("lead") // lead, qualified, proposal, negotiation, won, lost
+  source      String?     // Referral, Inbound, Cold Outreach
+  repId       String?
+  rep         User?       @relation("DealOwner", fields: [repId], references: [id])
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model KnowledgeDoc {
+  id          String      @id @default(uuid())
+  title       String
+  category    String      // prompts, tech, sales, hr
+  department  String
+  summary     String
+  content     String
+  author      String?     @default("COO Mahmud Hasan")
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
 }
 
 model Message {
@@ -92,7 +219,7 @@ model AuditLog {
   id          String      @id @default(uuid())
   userId      String
   user        User        @relation(fields: [userId], references: [id])
-  action      String      // "ROLE_CHANGE", "INVOICE_CREATE", "LOGIN"
+  action      String      // "ROLE_CHANGE", "INVOICE_CREATE", "PAYROLL_RUN", "LOGIN"
   details     Json?
   ipAddress   String?
   createdAt   DateTime    @default(now())

@@ -4,9 +4,13 @@ import './index.css';
 import App from './App.jsx';
 import ErrorBoundary from './components/shared/ErrorBoundary';
 import { AuthProvider } from './context/AuthContext';
+import { CompanyProvider } from './context/CompanyContext';
 import { ClientProvider } from './context/ClientContext';
 import { ExpenseProvider } from './context/ExpenseContext';
 import { LeadProvider } from './context/LeadsContext';
+import { AttendanceLeaveProvider } from './context/AttendanceLeaveContext';
+import { PayrollProvider } from './context/PayrollContext';
+import { ProjectTaskProvider } from './context/ProjectTaskContext';
 import { NotificationProvider } from './context/NotificationContext';
 import { InvoiceProvider } from './context/InvoiceContext';
 import { ClientNotesProvider } from './context/ClientNotesContext';
@@ -19,31 +23,39 @@ import { DiscoveryProvider } from './context/DiscoveryContext';
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <ThemeProvider>
-    <AuthProvider>
-      <ClientProvider>
-        <ExpenseProvider>
-          <LeadProvider>
-            <NotificationProvider>
-              <InvoiceProvider>
-                <ClientNotesProvider>
-                <SystemHealthProvider>
-                  <ApiCreditsProvider>
-                    <TeamProvider>
-                      <DiscoveryProvider>
-                        <ErrorBoundary>
-                          <App />
-                        </ErrorBoundary>
-                      </DiscoveryProvider>
-                    </TeamProvider>
-                  </ApiCreditsProvider>
-                </SystemHealthProvider>
-              </ClientNotesProvider>
-              </InvoiceProvider>
-            </NotificationProvider>
-          </LeadProvider>
-        </ExpenseProvider>
-      </ClientProvider>
-    </AuthProvider>
+      <AuthProvider>
+        <CompanyProvider>
+          <ClientProvider>
+            <ExpenseProvider>
+              <LeadProvider>
+                <AttendanceLeaveProvider>
+                  <PayrollProvider>
+                    <ProjectTaskProvider>
+                      <NotificationProvider>
+                        <InvoiceProvider>
+                          <ClientNotesProvider>
+                            <SystemHealthProvider>
+                              <ApiCreditsProvider>
+                                <TeamProvider>
+                                  <DiscoveryProvider>
+                                    <ErrorBoundary>
+                                      <App />
+                                    </ErrorBoundary>
+                                  </DiscoveryProvider>
+                                </TeamProvider>
+                              </ApiCreditsProvider>
+                            </SystemHealthProvider>
+                          </ClientNotesProvider>
+                        </InvoiceProvider>
+                      </NotificationProvider>
+                    </ProjectTaskProvider>
+                  </PayrollProvider>
+                </AttendanceLeaveProvider>
+              </LeadProvider>
+            </ExpenseProvider>
+          </ClientProvider>
+        </CompanyProvider>
+      </AuthProvider>
     </ThemeProvider>
   </StrictMode>
 );

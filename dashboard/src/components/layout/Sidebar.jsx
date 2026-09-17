@@ -23,41 +23,67 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Check,
+  FolderKanban,
+  CheckSquare,
+  CalendarCheck,
+  Banknote,
+  GitPullRequest,
+  BookOpen,
+  Building2,
+  TrendingUp,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useCompany } from '../../context/CompanyContext';
 import ProfileSettingsModal from '../profile/ProfileSettingsModal';
 
 const NAV_GROUPS = [
   {
-    label: 'Main Menu',
+    label: 'Main Operations',
     items: [
       { icon: LayoutDashboard, label: 'Dashboard', view: 'dashboard' },
-      { icon: Package, label: 'Products', view: 'products' },
-      { icon: Receipt, label: 'Transactions', view: 'transactions' },
-      { icon: FileText, label: 'Invoices', view: 'invoices' },
-      { icon: BarChart3, label: 'Reports & Analytics', view: 'reports' },
-      { icon: MessageSquare, label: 'Messages', view: 'messages' },
-      { icon: Users, label: 'Team Performance', view: 'team' },
+      { icon: FolderKanban, label: 'Projects Hub', view: 'projects' },
+      { icon: CheckSquare, label: 'Task Board', view: 'tasks' },
+      { icon: MessageSquare, label: 'Team Messages', view: 'messages' },
+      { icon: Package, label: 'Products & AI', view: 'products' },
       { icon: Megaphone, label: 'Campaigns', view: 'campaigns' },
     ],
   },
   {
-    label: 'Customers',
+    label: 'Team & HR',
     items: [
-      { icon: UsersRound, label: 'Customer List', view: 'clients' },
-      { icon: Globe, label: 'Channels', view: 'channels' },
-      { icon: ClipboardList, label: 'Order Management', view: 'orders' },
+      { icon: Users, label: 'Employee Directory', view: 'team' },
+      { icon: CalendarCheck, label: 'Attendance & Leaves', view: 'attendance' },
+      { icon: Banknote, label: 'Payroll & Comp', view: 'payroll' },
     ],
   },
   {
-    label: 'Management',
+    label: 'Finance & Accounts',
     items: [
-      { icon: CreditCard, label: 'Billing & Subscription', view: 'billing' },
-      { icon: Layers, label: 'Integrations', view: 'integrations' },
+      { icon: FileText, label: 'Invoices & Billing', view: 'invoices' },
+      { icon: Receipt, label: 'Transactions', view: 'transactions' },
+      { icon: TrendingUp, label: 'Cash Flow & Runway', view: 'cashflow' },
+      { icon: BarChart3, label: 'Reports & Analytics', view: 'reports' },
+      { icon: CreditCard, label: 'Billing & Plans', view: 'billing' },
     ],
   },
   {
-    label: 'Settings',
+    label: 'Client & Delivery',
+    items: [
+      { icon: GitPullRequest, label: 'Sales CRM Pipeline', view: 'pipeline' },
+      { icon: UsersRound, label: 'Customer Portfolio', view: 'clients' },
+      { icon: ClipboardList, label: 'Order Deliverables', view: 'orders' },
+      { icon: Globe, label: 'Acquisition Channels', view: 'channels' },
+    ],
+  },
+  {
+    label: 'Knowledge & AI',
+    items: [
+      { icon: BookOpen, label: 'Knowledge Base', view: 'knowledge' },
+      { icon: Layers, label: 'Integrations Hub', view: 'integrations' },
+    ],
+  },
+  {
+    label: 'Settings & Admin',
     items: [
       { icon: ShieldCheck, label: 'Roles & Permissions', view: 'roles' },
       { icon: Headphones, label: 'Customer Support', view: 'support' },
@@ -69,6 +95,10 @@ const NAV_GROUPS = [
 
 export default function Sidebar({ open, onClose, activeView, onNavigate }) {
   const { currentUser, logout, isCEO, hasPermission } = useAuth();
+  const { activeCompany, setActiveCompany, currentCompany, companies } = useCompany();
+  const [companyMenuOpen, setCompanyMenuOpen] = useState(false);
+  const companyMenuRef = useRef(null);
+
   const [collapsed, setCollapsed] = useState(() => {
     try {
       return localStorage.getItem('aeitron_sidebar_collapsed') === 'true';
@@ -76,6 +106,19 @@ export default function Sidebar({ open, onClose, activeView, onNavigate }) {
       return false;
     }
   });
+
+  // Close company dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (companyMenuRef.current && !companyMenuRef.current.contains(e.target)) {
+        setCompanyMenuOpen(false);
+      }
+    }
+    if (companyMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [companyMenuOpen]);
 
   // Dynamic unread count for messages - strictly 0 when user is viewing messages
   const [unreadMessages, setUnreadMessages] = useState(() => {
@@ -206,35 +249,112 @@ export default function Sidebar({ open, onClose, activeView, onNavigate }) {
           ${open ? 'translate-x-0 animate-slide-in' : '-translate-x-full'}
         `}
       >
-        {/* Header Agency Switcher */}
-        <div className={`p-4 border-b border-sidebar-border flex items-center ${collapsed ? 'justify-center' : 'justify-between'}`}>
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="w-9 h-9 rounded-xl bg-white p-1.5 shadow-sm border border-white/20 flex items-center justify-center shrink-0">
-              <img
-                src="/aeitron_logo.jpeg"
-                alt="Logo"
-                className="w-full h-full object-contain"
-                onError={(e) => {
-                  e.currentTarget.src = '/aeitron_icon_fb.png';
-                }}
-              />
-            </div>
-            {!collapsed && (
-              <div className="min-w-0 flex-1">
-                <span className="text-[17px] font-bold text-sidebar-text-active tracking-tight truncate block">
-                  Aeitron AI
-                </span>
+        {/* Header Agency Switcher / Multi-Company Selector */}
+        <div className={`p-3 border-b border-sidebar-border relative`} ref={companyMenuRef}>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setCompanyMenuOpen(!companyMenuOpen)}
+              className={`flex-1 flex items-center gap-2.5 p-1.5 rounded-xl hover:bg-sidebar-hover transition-colors text-left cursor-pointer min-w-0 ${
+                collapsed ? 'justify-center' : 'justify-between'
+              }`}
+              title={collapsed ? `${currentCompany?.name} (${currentCompany?.tag})` : 'Switch Organization Workspace'}
+            >
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div
+                  className="w-8 h-8 rounded-xl p-1 shadow-sm border border-white/20 flex items-center justify-center shrink-0 transition-all"
+                  style={{
+                    backgroundColor:
+                      activeCompany === 'craftly' ? '#7c6df7' : activeCompany === 'aeitron' ? '#ffffff' : '#1e222d',
+                  }}
+                >
+                  {activeCompany === 'craftly' ? (
+                    <span className="text-white font-black text-sm">C</span>
+                  ) : activeCompany === 'aeitron' ? (
+                    <img
+                      src="/aeitron_logo.jpeg"
+                      alt="Logo"
+                      className="w-full h-full object-contain rounded-md"
+                      onError={(e) => {
+                        e.currentTarget.src = '/aeitron_icon_fb.png';
+                      }}
+                    />
+                  ) : (
+                    <Building2 size={16} className="text-accent" />
+                  )}
+                </div>
+                {!collapsed && (
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[14px] font-bold text-sidebar-text-active tracking-tight truncate">
+                        {currentCompany?.name}
+                      </span>
+                    </div>
+                    <span className="text-[10px] text-sidebar-text/60 truncate block font-medium leading-none mt-0.5">
+                      {currentCompany?.tag}
+                    </span>
+                  </div>
+                )}
               </div>
+
+              {!collapsed && (
+                <ChevronsUpDown size={14} className="text-sidebar-text/50 shrink-0" />
+              )}
+            </button>
+
+            {!collapsed && (
+              <button
+                onClick={onClose}
+                className="lg:hidden text-sidebar-text hover:text-sidebar-text-active p-1 shrink-0"
+              >
+                <X size={18} />
+              </button>
             )}
           </div>
 
-          {!collapsed && (
-            <button
-              onClick={onClose}
-              className="lg:hidden text-sidebar-text hover:text-sidebar-text-active p-1"
+          {/* Company Switcher Dropdown */}
+          {companyMenuOpen && (
+            <div
+              className={`
+                absolute top-full left-3 right-3 mt-1.5 bg-bg-card border border-border shadow-2xl rounded-2xl p-1.5 z-50 text-text
+                animate-fade-in
+                ${collapsed ? 'left-3 w-56' : ''}
+              `}
             >
-              <X size={18} />
-            </button>
+              <div className="px-2 py-1 text-[10px] font-bold text-text-muted uppercase tracking-wider">
+                Select Workspace
+              </div>
+              <div className="space-y-1">
+                {companies.map((c) => {
+                  const isSelected = activeCompany === c.id;
+                  return (
+                    <button
+                      key={c.id}
+                      onClick={() => {
+                        setActiveCompany(c.id);
+                        setCompanyMenuOpen(false);
+                      }}
+                      className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl text-xs font-medium transition-all text-left cursor-pointer ${
+                        isSelected
+                          ? 'bg-accent/15 text-accent font-semibold'
+                          : 'text-text hover:bg-bg-hover hover:text-text'
+                      }`}
+                    >
+                      <div
+                        className="w-5 h-5 rounded-lg flex items-center justify-center text-[10px] font-bold text-white shrink-0"
+                        style={{ backgroundColor: c.color }}
+                      >
+                        {c.id === 'all' ? '🌐' : c.id === 'aeitron' ? '⚡' : '🎨'}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate font-semibold">{c.name}</div>
+                        <div className="text-[10px] text-text-muted truncate leading-tight">{c.tag}</div>
+                      </div>
+                      {isSelected && <Check size={14} className="text-accent shrink-0" />}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           )}
         </div>
 

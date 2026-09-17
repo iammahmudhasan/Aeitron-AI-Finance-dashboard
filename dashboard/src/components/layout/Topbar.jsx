@@ -5,14 +5,22 @@ import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import NotificationPanel from '../notifications/NotificationPanel';
 import DownloadReportButton from '../shared/DownloadReportButton';
+import TimeTrackerWidget from '../tasks/TimeTrackerWidget';
 
 const VIEW_TITLES = {
   dashboard: 'Overview',
+  projects: 'Projects Hub',
+  tasks: 'Task Board',
+  attendance: 'Attendance & Leaves',
+  payroll: 'Payroll Engine',
+  pipeline: 'Sales Pipeline',
+  cashflow: 'Cash Flow & Runway',
+  knowledge: 'Knowledge Base',
   products: 'Products',
   transactions: 'Transactions',
   reports: 'Reports & Analytics',
   messages: 'Team Chat',
-  team: 'Team Performance',
+  team: 'Team & HR',
   campaigns: 'Campaigns',
   clients: 'Customer List',
   channels: 'Channels',
@@ -31,6 +39,13 @@ const VIEW_TITLES = {
 
 const VIEW_ACTIONS = {
   dashboard: 'New Transaction',
+  projects: 'New Project',
+  tasks: 'Create Task',
+  attendance: 'Apply Leave',
+  payroll: 'Run Payroll',
+  pipeline: 'New Deal',
+  cashflow: 'Add Expense',
+  knowledge: 'New SOP',
   invoices: 'New Invoice',
   transactions: 'New Transaction',
   clients: 'New Client',
@@ -96,6 +111,9 @@ export default function Topbar({ onMenuClick, onAddClient, activeView, searchQue
             ⌘K
           </kbd>
         </div>
+
+        {/* Global Billable Work Time Tracker */}
+        <TimeTrackerWidget />
 
         {/* Contextual Action Button */}
         <button

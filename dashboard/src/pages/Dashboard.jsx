@@ -30,6 +30,13 @@ import BillingSubscriptionsView from '../components/billing/BillingSubscriptions
 import SupportTicketsView from '../components/support/SupportTicketsView';
 import HelpCenterView from '../components/help/HelpCenterView';
 import RealtimeCalendarPicker from '../components/shared/RealtimeCalendarPicker';
+import ProjectsView from '../components/projects/ProjectsView';
+import TaskBoardView from '../components/tasks/TaskBoardView';
+import AttendanceLeaveView from '../components/hr/AttendanceLeaveView';
+import PayrollView from '../components/hr/PayrollView';
+import CrmPipelineView from '../components/crm/CrmPipelineView';
+import CashFlowRunwayCard from '../components/finance/CashFlowRunwayCard';
+import KnowledgeBaseView from '../components/knowledge/KnowledgeBaseView';
 
 // Existing Modules
 import StatCardGrid from '../components/cards/StatCardGrid';
@@ -256,6 +263,27 @@ export default function Dashboard() {
 
           {/* Communication Channels */}
           {activeView === 'channels' && <ChannelsManagementView />}
+
+          {/* Projects Hub & Delivery */}
+          {activeView === 'projects' && <ProjectsView />}
+
+          {/* Task Board & Workflow */}
+          {activeView === 'tasks' && <TaskBoardView />}
+
+          {/* Attendance & Leave Tracking */}
+          {activeView === 'attendance' && <AttendanceLeaveView />}
+
+          {/* Payroll & Compensation */}
+          {activeView === 'payroll' && <PayrollView />}
+
+          {/* CRM Sales Pipeline */}
+          {activeView === 'pipeline' && <CrmPipelineView />}
+
+          {/* Cash Flow & Runway */}
+          {activeView === 'cashflow' && <CashFlowRunwayCard />}
+
+          {/* Internal Knowledge Base */}
+          {activeView === 'knowledge' && <KnowledgeBaseView />}
 
           {/* Orders & Client Deliverables */}
           {activeView === 'orders' && <OrdersManagementView />}
